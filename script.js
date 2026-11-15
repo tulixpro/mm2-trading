@@ -26,3 +26,22 @@ document.getElementById("reset").onclick=()=>{if(confirm("Dein lokal gespeichert
 document.getElementById("runCheck").onclick=()=>{const counts={};owned.forEach(n=>{const w=weapons.find(x=>x.name===n);if(w)counts[w.rarity]=(counts[w.rarity]||0)+1});document.getElementById("checkResults").innerHTML='<div><span>Items insgesamt</span><strong>'+owned.size+'</strong></div>'+Object.entries(counts).map(([r,n])=>'<div><span>'+r+'</span><strong>'+n+'</strong></div>').join("");document.getElementById("checkMessage").textContent=owned.size?'Check abgeschlossen: '+owned.size+' markierte Waffen lokal gefunden.':'Dein Lager ist noch leer.'};
 document.getElementById("makeTrade").onclick=()=>{const give=document.getElementById("give").value,want=document.getElementById("want").value.trim();document.getElementById("tradeOutput").textContent='DEIN DEMO-ANGEBOT\nDu gibst: '+(owned.size?give:"Noch kein Item")+'\nDu suchst: '+(want||"Bitte Wunsch-Item eintragen")+'\n\nNur Planung – kein echter Trade.'};
 render();
+
+// Settings + safe demo login + local trade safety heuristics
+(()=>{const $=id=>document.getElementById(id);const dlg=$("settingsDialog");if(!dlg)return;
+const settings=JSON.parse(localStorage.getItem("mm2vault_settings")||'{"compact":false,"confirm":true,"theme":"purple"}');
+$("compactMode").checked=settings.compact;$("confirmToggle").checked=settings.confirm;$("themeSelect").value=settings.theme;
+function apply(){document.body.classList.toggle("compact",settings.compact);document.body.classList.toggle("orange-theme",settings.theme==="orange");localStorage.setItem("mm2vault_settings",JSON.stringify(settings))}
+$("settingsOpen").onclick=()=>dlg.showModal();$("settingsClose").onclick=()=>dlg.close();
+$("compactMode").onchange=e=>{settings.compact=e.target.checked;apply()};$("confirmToggle").onchange=e=>{settings.confirm=e.target.checked;apply()};$("themeSelect").onchange=e=>{settings.theme=e.target.value;apply()};
+$("loginBtn").onclick=()=>alert("Roblox Login ist hier noch nicht verbunden. Sicherer Login geht nur über offiziell eingerichtetes Roblox OAuth (mit registrierter App/Redirect-URL) – niemals Passwort oder Cookie auf dieser Seite eingeben. Du kannst die Demo ohne Login nutzen.");
+$("reset").onclick=()=>{if(!settings.confirm||confirm("Dein lokal gespeichertes Demo-Lager wirklich leeren?")){owned.clear();save()}};
+$("makeTrade").onclick=()=>{const give=$("give").value,want=$("want").value.trim();const from=weapons.find(w=>w.name===give);const target=weapons.find(w=>w.name.toLowerCase()===want.toLowerCase());let alerts=[];
+if(!give||!owned.has(give))alerts.push("⚠️ Du wählst kein Item aus deinem Lager.");
+if(!want)alerts.push("⚠️ Wunsch-Item fehlt.");
+if(from&&target&&from.rarity!==target.rarity)alerts.push("🛡️ Anti-Scam-Hinweis: unterschiedliche Seltenheiten – Werte selbst prüfen, Seltenheit ist kein Marktwert.");
+if(/free|giveaway|cookie|password|passwort|token|verify/i.test(want))alerts.push("🚨 Verdächtiger Begriff: niemals Zugangsdaten oder Cookies teilen.");
+$("tradeOutput").textContent="TRADE-SICHERHEITSCHECK (nur Hinweis, kein echter Anti-Cheat)\n"+(alerts.length?alerts.join("\n"):"✅ Keine einfache Auffälligkeit erkannt.")+"\n\nDEMO-ANGEBOT\nDu gibst: "+(give||"—")+"\nDu suchst: "+(want||"—")+"\nNur Planung – kein echter Trade.";
+};
+apply();
+})();

@@ -45,3 +45,6 @@ $("tradeOutput").textContent="TRADE-SICHERHEITSCHECK (nur Hinweis, kein echter A
 };
 apply();
 })();
+
+// Bot-Labor: ausschließlich lokale Demo-Interaktionen
+ document.querySelectorAll('.botAction').forEach(btn=>btn.addEventListener('click',()=>{const out=document.getElementById('botMessage');const messages={'01':'Vault Bot 01: Demo-Profil aktiv. Beispielinventar wird lokal simuliert.','02':'Trade Tester: Demo-Prüfung abgeschlossen. Kein echter Roblox-Trade wurde ausgeführt.','03':'Inventory Mirror: Nutzt ausschließlich deine lokal gespeicherten MM2-Vault-Items.'};out.textContent=messages[btn.dataset.bot]||'Demo gestartet.';}));

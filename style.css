@@ -36,3 +36,15 @@ nav a{font-weight:650;transition:color .18s}nav a:hover{color:#fff}
 .trade-side{border-color:#342841;background:#0d0b13}.trade-side h3{letter-spacing:-.02em}.trade-items .inventory-chip{background:#21172d;border-color:#604080}.safety{background:linear-gradient(120deg,#19120f,#100d0d);border-color:#4a3327}
 button,input,select,textarea{transition:border-color .18s,box-shadow .18s,background .18s}input:focus,select:focus,textarea:focus{border-color:#8e69c9;box-shadow:0 0 0 3px #8e69c91c;outline:none}
 @media(max-width:760px){header{height:auto;min-height:68px}.catalog-grid{grid-template-columns:repeat(auto-fill,minmax(145px,1fr))}.hero h1{letter-spacing:-.045em}.stats{padding-top:15px}}
+
+/* Login-ready panel */
+#loginDialog{width:min(520px,calc(100% - 32px));border:1px solid #49365f;border-radius:22px;background:linear-gradient(145deg,#191421,#0e0c13);color:#f4efff;padding:24px;box-shadow:0 30px 100px #0009}
+#loginDialog::backdrop{background:#050308bb;backdrop-filter:blur(7px)}
+#loginDialog .dialog-head{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.login-status{display:flex;gap:14px;align-items:flex-start;margin:20px 0;padding:16px;border:1px solid #392b49;background:#17111f;border-radius:15px}
+.login-status p{margin:7px 0 0;color:#b9aec8;line-height:1.6;font-size:14px}
+.login-steps{display:grid;gap:10px;margin:18px 0}
+.login-steps div{display:flex;gap:14px;padding:12px;border:1px solid #292231;border-radius:12px;color:#a991d6;font-weight:800}
+.login-steps span{color:#e5dcef;font-weight:500}
+#loginStart{width:100%;margin:8px 0 12px;opacity:.55;cursor:not-allowed}
+#loginDialog small{display:block;text-align:center;color:#988da6}

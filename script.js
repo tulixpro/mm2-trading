@@ -46,5 +46,22 @@ $("tradeOutput").textContent="TRADE-SICHERHEITSCHECK (nur Hinweis, kein echter A
 apply();
 })();
 
-// Bot-Labor: ausschließlich lokale Demo-Interaktionen
- document.querySelectorAll('.botAction').forEach(btn=>btn.addEventListener('click',()=>{const out=document.getElementById('botMessage');const messages={'01':'Vault Bot 01: Demo-Profil aktiv. Beispielinventar wird lokal simuliert.','02':'Trade Tester: Demo-Prüfung abgeschlossen. Kein echter Roblox-Trade wurde ausgeführt.','03':'Inventory Mirror: Nutzt ausschließlich deine lokal gespeicherten MM2-Vault-Items.'};out.textContent=messages[btn.dataset.bot]||'Demo gestartet.';}));
+// Lokale Bot-Testprofile (localStorage), keinerlei Roblox-Zugriff
+(()=>{const $=id=>document.getElementById(id);const grid=$("botGrid");if(!grid)return;
+const key="mm2vault_testbots";let bots=JSON.parse(localStorage.getItem(key)||"null")||[
+{id:1,name:"Vault Bot 01",items:["Chroma Luger","Icebreaker","Harvester"]},
+{id:2,name:"Trade Tester",items:["Elderwood Scythe","Candy"]},
+{id:3,name:"Inventory Mirror",items:["Laser","Seer"]}
+];let next=Math.max(0,...bots.map(b=>b.id))+1;
+function persist(){localStorage.setItem(key,JSON.stringify(bots));draw()}
+function draw(){grid.innerHTML=bots.map(b=>'<article class="bot-card"><div class="bot-head"><span class="bot-avatar">🤖</span><div><h3>'+esc(b.name)+'</h3><small>Testprofil #'+b.id+'</small></div></div><span class="status">● Aktiv (lokal)</span><div class="bot-items"><b>Inventar ('+b.items.length+')</b><br>'+ (b.items.length?b.items.map(esc).join(" · "):"Noch leer")+'</div><button class="secondary bot-remove" data-remove="'+b.id+'">Profil löschen</button></article>').join("")||'<p>Noch keine Bots. Erstelle oben einen Testbot.</p>';
+["botFrom","botTo"].forEach(id=>{$(id).innerHTML=bots.map(b=>'<option value="'+b.id+'">'+esc(b.name)+'</option>').join("")});
+if($("botTo").options.length>1)$("botTo").selectedIndex=1;
+}
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+$("botWeapon").innerHTML=weapons.map(w=>'<option>'+esc(w.name)+'</option>').join("");
+$("createBot").onclick=()=>{let name=$("botName").value.trim()||"TestBot "+next;if(bots.some(b=>b.name.toLowerCase()===name.toLowerCase())){$("botMessage").textContent="Dieser Name existiert schon.";return}bots.push({id:next++,name,items:[]});$("botName").value="";persist();$("botMessage").textContent=name+" wurde als lokales Testprofil erstellt."};
+$("addBotItem").onclick=()=>{let b=bots.find(x=>x.id===Number($("botFrom").value));if(!b){$("botMessage").textContent="Erstelle zuerst einen Bot.";return}let item=$("botWeapon").value;b.items.push(item);persist();$("botMessage").textContent=item+" zu "+b.name+" hinzugefügt."};
+$("simulateBotTrade").onclick=()=>{let a=bots.find(x=>x.id===Number($("botFrom").value)),b=bots.find(x=>x.id===Number($("botTo").value));if(!a||!b||a===b){$("botMessage").textContent="Bitte zwei unterschiedliche Bots auswählen.";return}if(!a.items.length){$("botMessage").textContent=a.name+" hat keine Items zum Tauschen.";return}let item=a.items.shift();b.items.push(item);persist();$("botMessage").textContent="Demo-Trade: "+a.name+" → "+b.name+" | "+item+" übertragen (nur lokal)."};
+grid.addEventListener("click",e=>{let id=e.target.dataset.remove;if(!id)return;bots=bots.filter(b=>b.id!==Number(id));persist();$("botMessage").textContent="Testprofil entfernt."});draw();
+})();

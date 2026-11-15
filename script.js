@@ -34,7 +34,20 @@ $("compactMode").checked=settings.compact;$("confirmToggle").checked=settings.co
 function apply(){document.body.classList.toggle("compact",settings.compact);document.body.classList.toggle("orange-theme",settings.theme==="orange");localStorage.setItem("mm2vault_settings",JSON.stringify(settings))}
 $("settingsOpen").onclick=()=>dlg.showModal();$("settingsClose").onclick=()=>dlg.close();
 $("compactMode").onchange=e=>{settings.compact=e.target.checked;apply()};$("confirmToggle").onchange=e=>{settings.confirm=e.target.checked;apply()};$("themeSelect").onchange=e=>{settings.theme=e.target.value;apply()};
-$("loginBtn").onclick=()=>alert("Roblox Login ist hier noch nicht verbunden. Sicherer Login geht nur über offiziell eingerichtetes Roblox OAuth (mit registrierter App/Redirect-URL) – niemals Passwort oder Cookie auf dieser Seite eingeben. Du kannst die Demo ohne Login nutzen.");
+const importBtn=$("importInventory");
+if(importBtn)importBtn.onclick=()=>{
+ const text=$("inventoryImport").value;
+ const names=text.split(/[\\n,;]+/).map(x=>x.trim()).filter(Boolean);
+ if(!names.length){$("botMessage").textContent="Bitte erst Itemnamen einfügen.";return}
+ let added=0,unknown=[];
+ names.forEach(n=>{const found=weapons.find(w=>w.name.toLowerCase()===n.toLowerCase());const name=found?found.name:n;if(!owned.has(name)){owned.add(name);added++}if(!found)unknown.push(n)});
+ save();
+ const active=bots.find(x=>x.id===Number($("botFrom").value));
+ if(active){names.forEach(n=>{const w=weapons.find(x=>x.name.toLowerCase()===n.toLowerCase());active.items.push(w?w.name:n)});persist()}
+ $("botMessage").textContent="Import geprüft: "+names.length+" Einträge · "+added+" neu im Lager · "+unknown.length+" nicht im Katalog. "+(active?"Auch in "+active.name+" übernommen.":"");
+ $("checkMessage").textContent="Import-Check: "+names.length+" Itemnamen verarbeitet; "+unknown.length+" unbekannte Schreibweisen.";
+ $("inventoryImport").value="";
+};
 $("reset").onclick=()=>{if(!settings.confirm||confirm("Dein lokal gespeichertes Demo-Lager wirklich leeren?")){owned.clear();save()}};
 $("makeTrade").onclick=()=>{const give=$("give").value,want=$("want").value.trim();const from=weapons.find(w=>w.name===give);const target=weapons.find(w=>w.name.toLowerCase()===want.toLowerCase());let alerts=[];
 if(!give||!owned.has(give))alerts.push("⚠️ Du wählst kein Item aus deinem Lager.");

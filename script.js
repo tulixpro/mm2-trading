@@ -42,3 +42,6 @@ apply();
 })();
 
 // Echte Bot-/Inventarverifizierung wird erst mit Backend aktiviert. Keine simulierten Bot-Profile.
+
+/* Safe login placeholder: OAuth only once a backend is deployed. */
+(()=>{const open=document.getElementById("loginOpen"),dlg=document.getElementById("loginDialog"),close=document.getElementById("loginClose");if(!open||!dlg||!close)return;open.addEventListener("click",()=>dlg.showModal());close.addEventListener("click",()=>dlg.close());dlg.addEventListener("click",e=>{if(e.target===dlg)dlg.close()})})();

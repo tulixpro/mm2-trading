@@ -21,13 +21,13 @@ document.getElementById("ownedCount").textContent=owned.size;document.getElement
 document.getElementById("give").innerHTML=[...owned].sort().map(n=>'<option>'+n+'</option>').join("")||'<option>Kein Item im Lager</option>';
 }
 search.addEventListener("input",render);document.getElementById("filters").addEventListener("click",e=>{const b=e.target.closest("[data-filter]");if(!b)return;category=b.dataset.filter;document.querySelectorAll("[data-filter]").forEach(x=>x.classList.toggle("active",x===b));render()});
-grid.addEventListener("click",e=>{const t=e.target.closest("[data-tradeitem]");if(t){const n=t.dataset.tradeitem;tradeItems.has(n)?tradeItems.delete(n):tradeItems.add(n);localStorage.setItem("mm2vault_tradeitems",JSON.stringify([...tradeItems]));renderTrade();render();return}const b=e.target.closest("[data-item]");if(!b)return;owned.has(b.dataset.item)?owned.delete(b.dataset.item):owned.add(b.dataset.item);save()});
+grid.addEventListener("click",e=>{const t=e.target.closest("[data-tradeitem]");if(t){const n=t.dataset.tradeitem;if(!owned.has(n)){alert("Erst lokal im Inventar markieren. Das bestätigt keinen echten Besitz.");return}tradeItems.has(n)?tradeItems.delete(n):tradeItems.add(n);localStorage.setItem("mm2vault_tradeitems",JSON.stringify([...tradeItems]));renderTrade();render();return}const b=e.target.closest("[data-item]");if(!b)return;owned.has(b.dataset.item)?owned.delete(b.dataset.item):owned.add(b.dataset.item);save()});
 document.getElementById("reset").onclick=()=>{if(confirm("Dein lokal gespeichertes Demo-Lager wirklich leeren?")){owned.clear();save()}};
 document.getElementById("runCheck").onclick=()=>{const counts={},unknown=[];owned.forEach(n=>{const w=weapons.find(x=>x.name===n);if(w)counts[w.rarity]=(counts[w.rarity]||0)+1;else unknown.push(n)});const total=[...owned].length;document.getElementById("checkResults").innerHTML='<div><span>Items im Lager</span><strong>'+total+'</strong></div>'+Object.entries(counts).map(([r,n])=>'<div><span>'+r+'</span><strong>'+n+'</strong></div>').join("")+'<div><span>Im Katalog erkannt</span><strong>'+(total-unknown.length)+' / '+total+'</strong></div>';document.getElementById("checkMessage").textContent=total?'Bot-Check fertig: '+(total-unknown.length)+' Items erkannt, '+unknown.length+' unbekannt.':'Lager leer – füge zuerst Waffen im Katalog hinzu.'};
 function renderTrade(){const box=document.getElementById("tradeInventory");if(!box)return;box.innerHTML=[...tradeItems].map(n=>'<span class="inventory-chip">'+n+' <button data-removetrade="'+n.replaceAll('"','&quot;')+'">×</button></span>').join("")||'<p class="empty">Noch keine Items ausgewählt. Nutze im Katalog „Zum Trade“.</p>';document.getElementById("tradeCount").textContent=tradeItems.size+" Items"}
 document.getElementById("tradeInventory")?.addEventListener("click",e=>{const b=e.target.closest("[data-removetrade]");if(!b)return;tradeItems.delete(b.dataset.removetrade);localStorage.setItem("mm2vault_tradeitems",JSON.stringify([...tradeItems]));renderTrade();render()});
 document.getElementById("clearTrade")?.addEventListener("click",()=>{tradeItems.clear();localStorage.setItem("mm2vault_tradeitems","[]");renderTrade();render()});
-document.getElementById("makeTrade").onclick=()=>{const want=document.getElementById("want").value.trim();document.getElementById("tradeOutput").textContent="TRADE-ANGEBOT\\nDu gibst: "+([...tradeItems].join(", ")||"Noch keine Items")+"\\nDu suchst: "+(want||"—")+"\\n\\nAngebot vorbereitet. Bestätige einen echten Trade ausschließlich im Roblox-Spiel."};
+document.getElementById("makeTrade").onclick=()=>{const want=document.getElementById("want").value.trim();const selected=[...tradeItems].filter(n=>owned.has(n));document.getElementById("tradeOutput").textContent="TRADE-PLANUNG\\nDu gibst: "+(selected.join(", ")||"Noch keine bestätigten lokalen Auswahl-Items")+"\\nDu suchst: "+(want||"—")+"\\n\\nNur Planung – kein Roblox-Trade oder Besitznachweis."};
 render();
 
 // Settings + safe demo login + local trade safety heuristics
@@ -40,7 +40,7 @@ $("compactMode").onchange=e=>{settings.compact=e.target.checked;apply()};$("conf
 const importBtn=$("importInventory");
 if(importBtn)importBtn.onclick=()=>{
  const text=$("inventoryImport").value;
- const names=text.split(/[\\n,;]+/).map(x=>x.trim()).filter(Boolean);
+ const names=text.split(/[\\r\\n,;]+/).map(x=>x.trim()).filter(Boolean);
  if(!names.length){$("botMessage").textContent="Bitte erst Itemnamen einfügen.";return}
  let added=0,unknown=[];
  names.forEach(n=>{const found=weapons.find(w=>w.name.toLowerCase()===n.toLowerCase());const name=found?found.name:n;if(!owned.has(name)){owned.add(name);added++}if(!found)unknown.push(n)});

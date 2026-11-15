@@ -36,20 +36,6 @@ $("compactMode").checked=settings.compact;$("confirmToggle").checked=settings.co
 function apply(){document.body.classList.toggle("compact",settings.compact);document.body.classList.toggle("orange-theme",settings.theme==="orange");localStorage.setItem("mm2vault_settings",JSON.stringify(settings))}
 $("settingsOpen").onclick=()=>dlg.showModal();$("settingsClose").onclick=()=>dlg.close();
 $("compactMode").onchange=e=>{settings.compact=e.target.checked;apply()};$("confirmToggle").onchange=e=>{settings.confirm=e.target.checked;apply()};$("themeSelect").onchange=e=>{settings.theme=e.target.value;apply()};
-const importBtn=$("importInventory");
-if(importBtn)importBtn.onclick=()=>{
- const text=$("inventoryImport").value;
- const names=text.split(/[\\r\\n,;]+/).map(x=>x.trim()).filter(Boolean);
- if(!names.length){$("botMessage").textContent="Bitte erst Itemnamen einfügen.";return}
- let added=0,unknown=[];
- names.forEach(n=>{const found=weapons.find(w=>w.name.toLowerCase()===n.toLowerCase());const name=found?found.name:n;if(!owned.has(name)){owned.add(name);added++}if(!found)unknown.push(n)});
- save();
- const active=bots.find(x=>x.id===Number($("botFrom").value));
- if(active){names.forEach(n=>{const w=weapons.find(x=>x.name.toLowerCase()===n.toLowerCase());active.items.push(w?w.name:n)});persist()}
- $("botMessage").textContent="Import geprüft: "+names.length+" Einträge · "+added+" neu im Lager · "+unknown.length+" nicht im Katalog. "+(active?"Auch in "+active.name+" übernommen.":"");
- $("checkMessage").textContent="Import-Check: "+names.length+" Itemnamen verarbeitet; "+unknown.length+" unbekannte Schreibweisen.";
- $("inventoryImport").value="";
-};
 $("reset").onclick=()=>{if(!settings.confirm||confirm("Dein lokal gespeichertes Demo-Lager wirklich leeren?")){owned.clear();save()}};
 $("makeTrade").onclick=()=>{const want=$("want").value.trim();const selected=[...tradeItems].filter(n=>owned.has(n));const notes=[];if(!selected.length)notes.push("Wähle zuerst lokal markierte Items im Trade-Lager.");if(!want)notes.push("Wunsch-Item noch leer.");$("tradeOutput").textContent="TRADE-PLANUNG (lokal)\\nDu gibst: "+(selected.join(", ")||"—")+"\\nDu suchst: "+(want||"—")+"\\n"+(notes.length?notes.join("\\n")+"\\n":"")+"\\nNur Planung – kein Besitznachweis und kein echter Roblox-Trade.";};
 apply();

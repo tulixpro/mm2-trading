@@ -19,10 +19,10 @@ function render(){const q=search.value.toLowerCase();const filtered=weapons.filt
 document.getElementById("ownedCount").textContent=owned.size;document.getElementById("catalogCount").textContent=weapons.length;
 }
 search.addEventListener("input",render);document.getElementById("filters").addEventListener("click",e=>{const b=e.target.closest("[data-filter]");if(!b)return;category=b.dataset.filter;document.querySelectorAll("[data-filter]").forEach(x=>x.classList.toggle("active",x===b));render()});
-document.getElementById("reset").onclick=()=>{owned.clear();tradeItems.clear();localStorage.removeItem(KEY);localStorage.removeItem("mm2vault_tradeitems");localStorage.removeItem(KEY);localStorage.removeItem("mm2vault_tradeitems");render();renderTrade();};
+
 document.getElementById("runCheck").onclick=()=>{const counts={},unknown=[];owned.forEach(n=>{const w=weapons.find(x=>x.name===n);if(w)counts[w.rarity]=(counts[w.rarity]||0)+1;else unknown.push(n)});const total=[...owned].length;document.getElementById("checkResults").innerHTML='<div><span>Items im Lager</span><strong>'+total+'</strong></div>'+Object.entries(counts).map(([r,n])=>'<div><span>'+r+'</span><strong>'+n+'</strong></div>').join("")+'<div><span>Im Katalog erkannt</span><strong>'+(total-unknown.length)+' / '+total+'</strong></div>';document.getElementById("checkMessage").textContent=total?'Katalog-Abgleich (kein Besitznachweis): '+(total-unknown.length)+' Items erkannt, '+unknown.length+' unbekannt.':'Merkliste leer – markiere Items im Katalog.'};
 function renderTrade(){const box=document.getElementById("tradeInventory");if(!box)return;box.innerHTML='<p class="empty">Trade-Auswahl erst verfügbar, wenn dein Inventar serverseitig verifiziert wurde.</p>';document.getElementById("tradeCount").textContent="0 verifiziert"}
-document.getElementById("makeTrade").onclick=()=>{const want=document.getElementById("want").value.trim();const selected=[];document.getElementById("tradeOutput").textContent="TRADE-PLANUNG\\nDu gibst: "+(selected.join(", ")||"Noch keine bestätigten lokalen Auswahl-Items")+"\\nDu suchst: "+(want||"—")+"\\n\\nNur Planung – kein Roblox-Trade oder Besitznachweis."};
+
 render();renderTrade();
 
 // Settings + safe demo login + local trade safety heuristics

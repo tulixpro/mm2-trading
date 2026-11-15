@@ -48,3 +48,25 @@ button,input,select,textarea{transition:border-color .18s,box-shadow .18s,backgr
 .login-steps span{color:#e5dcef;font-weight:500}
 #loginStart{width:100%;margin:8px 0 12px;opacity:.55;cursor:not-allowed}
 #loginDialog small{display:block;text-align:center;color:#988da6}
+
+
+/* Weapon art cards: polished illustration-style thumbnails */
+.weapon{padding:14px;min-height:205px;gap:10px}
+.weapon-visual{height:94px;position:relative;display:grid;place-items:center;overflow:hidden;border:1px solid #382b4b;border-radius:13px;background:radial-gradient(ellipse at 50% 70%,#50366d66,transparent 65%),linear-gradient(145deg,#21192e,#111019)}
+.weapon-art{width:100%;height:100%;display:grid;place-items:center}
+.weapon-art svg{width:82%;height:82%;fill:#c9aaff;filter:drop-shadow(0 4px 8px #a16cff55);transform:rotate(-12deg);transition:transform .25s,filter .25s}
+.weapon:hover .weapon-art svg{transform:rotate(-7deg) scale(1.08);filter:drop-shadow(0 7px 12px #b48aff88)}
+.weapon-icon{position:absolute;right:7px;top:7px;width:27px;height:27px;border-radius:9px;background:#100d18d9;border:1px solid #514064;display:grid;place-items:center;font-size:14px}
+.weapon h3{margin:0;font-size:14px}
+.weapon>small{font-size:10px;letter-spacing:.12em;text-transform:uppercase;font-weight:800}
+.weapon button{margin-top:auto;min-height:34px}
+.weapon.rarity-godly .weapon-art svg{fill:#c6a2ff}
+.weapon.rarity-ancient .weapon-art svg{fill:#ffbd83}
+.weapon.rarity-unique .weapon-art svg{fill:#ffe28c}
+.weapon.rarity-vintage .weapon-art svg,.weapon.rarity-classic .weapon-art svg{fill:#9ec8ff}
+.weapon.rarity-legendary .weapon-art svg{fill:#ffdf8b}
+.weapon.rarity-rare .weapon-art svg{fill:#85d9ff}
+.weapon.rarity-uncommon .weapon-art svg{fill:#9fe6c0}
+.weapon.rarity-common .weapon-art svg{fill:#c5c5d5}
+#resultCount{font-size:12px;color:var(--muted);align-self:center;white-space:nowrap}
+@media(max-width:520px){.weapon{min-height:190px;padding:11px}.weapon-visual{height:82px}.weapon button{font-size:10px;padding:7px 5px}}

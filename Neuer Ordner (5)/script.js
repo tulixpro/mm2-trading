@@ -1,0 +1,5 @@
+const items=[["Chroma Knife","Chroma","🔪"],["Godly Set","Godly","✨"],["Ancient Item","Ancient","🗡️"],["Vintage Item","Vintage","⚔️"],["Legendary Gun","Legendary","🔫"],["Rare Knife","Rare","🌀"],["Pet Collection","Pets","🐾"],["Seasonal Item","Limited","🎃"]];
+const cards=document.getElementById("cards");function render(list){cards.innerHTML=list.map(([name,rarity,emoji])=>`<article class="item"><div class="emoji">${emoji}</div><h3>${name}</h3><div class="rarity">${rarity} · Demo item</div></article>`).join("")}render(items);
+function filterItems(){const q=document.getElementById("search").value.toLowerCase();render(items.filter(x=>x[0].toLowerCase().includes(q)||x[1].toLowerCase().includes(q)))}
+function demoLogin(){alert("Demo-Modus: Es wird kein Roblox-Login benötigt oder gespeichert.");}
+function planTrade(){document.getElementById("tradeStatus").textContent="✓ "+document.getElementById("tradeItem").value+" für deine Demo-Tradeplanung vorgemerkt.";}

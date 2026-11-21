@@ -164,3 +164,11 @@ Hinweis: Die Grafikprofile reduzieren vor allem die GPU-Last. Die tatsächliche 
 - Drei fahrende Stadtbusse auf einer vereinfachten Nord-Süd-Linie.
 - Flughafen-Haltestelle und Flughafen-Express im ÖPNV-Menü.
 - Hinweis: Flugzeug ist zunächst ein statisches 3D-Modell; Busse fahren auf einer einfachen Schleifenroute. Keine realistische Flug- oder Fahrplan-Simulation.
+
+
+## Version 0.4.2 – Verkehr & Taxi
+- Neue Taxi-App im Smartphone: Taxi kann zum aktuellen Standort bestellt werden und fährt im Spiel heran.
+- Ergänzte deutsche Verkehrsbeschilderung mit Stoppschild, Vorfahrt-achten, Tempo-30 und Fußgängerhinweisen.
+- Busse fahren weiterhin auf einer vereinfachten Route; ÖPNV-App bietet die Flughafenverbindung.
+- Flugzeuge bleiben für eine spätere zivile Piloten-/Rundflugmission vorgesehen; keine Flugzeug-Übernahmefunktion.
+- Fahrzeuge werden nicht durch reale Diebstahlmethoden zugänglich gemacht.

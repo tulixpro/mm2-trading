@@ -21,7 +21,8 @@ function applyQuality(){
  renderer.shadowMap.enabled=q.shadows;
  renderer.toneMappingExposure=q.exposure;
  if(scene.fog)scene.fog.far=q.fog;
- if(sunLight){sunLight.intensity=mode==='low'?1.05:mode==='medium'?1.5:1.9;sunLight.castShadow=q.shadows;sunLight.shadow.mapSize.set(1024,1024);sunLight.shadow.camera.left=-65;sunLight.shadow.camera.right=65;sunLight.shadow.camera.top=65;sunLight.shadow.camera.bottom=-65;sunLight.shadow.camera.near=1;sunLight.shadow.camera.far=140;sunLight.shadow.camera.updateProjectionMatrix();}\n if(hemiLight)hemiLight.intensity=q.ambient;
+ if(sunLight){sunLight.intensity=mode==='low'?1.05:mode==='medium'?1.5:1.9;sunLight.castShadow=q.shadows;sunLight.shadow.mapSize.set(1024,1024);sunLight.shadow.camera.left=-65;sunLight.shadow.camera.right=65;sunLight.shadow.camera.top=65;sunLight.shadow.camera.bottom=-65;sunLight.shadow.camera.near=1;sunLight.shadow.camera.far=140;sunLight.shadow.camera.updateProjectionMatrix();}
+ if(hemiLight)hemiLight.intensity=q.ambient;
  scene.traverse(obj=>{if(obj.isMesh){obj.castShadow=q.shadows;obj.receiveShadow=q.shadows;}});
  const hint=document.querySelector('#graphicsHint')||document.querySelector('#qualityStatus');
  if(hint)hint.textContent='Grafik: '+q.label+' · '+(q.shadows?'Schatten AN':'Schatten AUS');

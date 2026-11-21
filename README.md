@@ -79,3 +79,13 @@ Hinweis: Diese Systeme sind spielbare Prototypen. Wettereffekte sind zunächst �
 - GitHub Actions Windows-Build für Version 0.2.9 erfolgreich (Installer und portable Ausgabe erstellt).
 - Version 0.3.0 wird nach dem Commit erneut durch den Windows-Build geprüft.
 - Ein echter Laufzeittest auf einer GT 555M ist nicht möglich, solange das Spiel nicht auf dem betreffenden Laptop ausgeführt wird.
+
+
+## Version 0.3.1 – Fahrzeugschäden & Werkstatt
+- Mehrstufiges Schadensmodell mit sichtbaren Kratzern, Seitendellen, verformten Stoßfängern, beschädigter Frontbeleuchtung und Scheibenrissen.
+- Stärkere Schäden wirken sich auf die Fahrleistung aus.
+- Fahrzeugschäden bleiben im lokalen Spielstand gespeichert und werden beim erneuten Bereitstellen des Autos wiederhergestellt.
+- Im TUNINGWERK können Unfallschäden gegen Geld repariert werden.
+- Schadensanzeige zeigt Fahrzeugzustand und geschätzte Reparaturkosten.
+
+Hinweis: Das ist ein stilisiertes Low-Poly-Schadensmodell, keine realistische Karosserie-Verformung auf Bauteilebene. Die neue Version ist noch nicht auf der GT 555M des Spielers getestet.

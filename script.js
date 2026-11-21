@@ -7,6 +7,8 @@ const status=document.querySelector('#gameStatus');
 const coords=document.querySelector('#coords');
 const qualitySelect=document.querySelector('#qualitySelect');
 const fpsSelect=document.querySelector('#fpsSelect');
+const mouseSelect=document.querySelector('#mouseSelect');
+const fovSelect=document.querySelector('#fovSelect');
 let maxFps=60,lastFrame=0;
 const qualitySettings={
  low:{pixelRatio:.65,shadows:false,fog:125,exposure:.82,ambient:1.65,label:'NIEDRIG'},
@@ -31,6 +33,8 @@ function applyQuality(){
 }
 qualitySelect?.addEventListener('change',applyQuality);
 fpsSelect?.addEventListener('change',()=>{maxFps=fpsSelect.value==='unlimited'?0:Number(fpsSelect.value);});
+mouseSelect?.addEventListener('change',()=>{mouseSensitivity=Number(mouseSelect.value)||1;});
+fovSelect?.addEventListener('change',()=>{cameraFov=Number(fovSelect.value)||68;if(camera){camera.fov=cameraFov;camera.updateProjectionMatrix();}});
 let renderer,scene,camera,raf,started=false,yaw=0,pitch=0,locked=false;
 const keys={};
 const pedestrians=[];

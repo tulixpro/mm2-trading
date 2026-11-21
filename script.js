@@ -20,18 +20,20 @@ const fovSelect=document.querySelector('#fovSelect');
 let maxFps=60,lastFrame=0;
 let perfHud=null,perfFrames=[],perfLastCheck=0,autoResolutionScale=1,perfHudTimer=0;
 const legacyMode=new URLSearchParams(location.search).get('legacy')==='1';
-const lowEndDevice=legacyMode||(navigator.hardwareConcurrency||8)<=2||(navigator.deviceMemory||8)<=4;
+const cpuCores=navigator.hardwareConcurrency||4;
+const memoryGb=navigator.deviceMemory||8;
+const lowEndDevice=legacyMode||cpuCores<=4||memoryGb<=8;
 const liteMode=lowEndDevice;
+const performanceTier=lowEndDevice?'balanced':'full';
 let performanceFrame=0;
 const qualitySettings={
- minimum:{pixelRatio:.38,shadows:false,fog:105,exposure:.84,ambient:1.35,label:'ULTRA-SPARMODUS'},
- legacy:{pixelRatio:.46,shadows:false,fog:125,exposure:.9,ambient:1.5,label:'OLD-SCHOOL-MODUS'},
-
- low:{pixelRatio:.58,shadows:false,fog:125,exposure:.92,ambient:1.65,label:'NIEDRIG'},
- medium:{pixelRatio:.88,shadows:false,fog:185,exposure:1.04,ambient:1.95,label:'MITTEL'},
- high:{pixelRatio:1,shadows:true,fog:225,exposure:1.08,ambient:2.1,label:'HOCH'},
- maximum:{pixelRatio:1.15,shadows:true,fog:260,exposure:1.12,ambient:2.2,label:'MAXIMAL'},
- advanced:{pixelRatio:1.05,shadows:true,fog:245,exposure:1.12,ambient:2.2,label:'ERWEITERT'}
+ minimum:{pixelRatio:.34,shadows:false,fog:92,exposure:.84,ambient:1.35,label:'ULTRA-SPARMODUS'},
+ legacy:{pixelRatio:.42,shadows:false,fog:108,exposure:.9,ambient:1.5,label:'OLD-SCHOOL-MODUS'},
+ low:{pixelRatio:.5,shadows:false,fog:118,exposure:.92,ambient:1.55,label:'NIEDRIG'},
+ medium:{pixelRatio:.72,shadows:false,fog:155,exposure:1.02,ambient:1.8,label:'MITTEL'},
+ high:{pixelRatio:.88,shadows:false,fog:205,exposure:1.06,ambient:2,label:'HOCH'},
+ maximum:{pixelRatio:1,shadows:true,fog:235,exposure:1.1,ambient:2.1,label:'MAXIMAL'},
+ advanced:{pixelRatio:.92,shadows:true,fog:220,exposure:1.08,ambient:2,label:'ERWEITERT'}
 };
 let sunLight=null,hemiLight=null,flashlight=null,flashlightTarget=null,flashlightOn=false;
 function applyQuality(){
@@ -1154,7 +1156,7 @@ function tryStartBoat(){
 }
 
 function makeCity(){
-  scene=new THREE.Scene();scene.background=new THREE.Color(0x91b1c8);scene.fog=new THREE.Fog(0x91b1c8,115,390);
+  scene=new THREE.Scene();scene.background=new THREE.Color(0x91b1c8);scene.fog=new THREE.Fog(0x91b1c8,95,liteMode?175:260);
   camera=new THREE.PerspectiveCamera(cameraFov,viewport.clientWidth/viewport.clientHeight,.1,620);camera.position.set(0,2.1,14);
   flashlight=new THREE.SpotLight(0xddeeff,0,48,Math.PI/7,.42,1.35);
   flashlight.position.set(0,0,0);flashlightTarget=new THREE.Object3D();flashlightTarget.position.set(0,0,-1);
@@ -1253,9 +1255,9 @@ function resize(){
 function updateWorld(dt){
   const t=clock.elapsedTime;
   flUpdateSystems(dt);if(shopScene)updateShopFilmScene(dt);
-  for(const signal of trafficSignals){const phase=(t+signal.phase*1.7)%8;const active=phase<5?0:phase<6.2?1:2;signal.lamps.forEach((lamp,i)=>lamp.material.emissiveIntensity=i===active?.9:.04);}
+  if((performanceFrame%4)===0)for(const signal of trafficSignals){const phase=(t+signal.phase*1.7)%8;const active=phase<5?0:phase<6.2?1:2;signal.lamps.forEach((lamp,i)=>lamp.material.emissiveIntensity=i===active?.9:.04);}
   if((performanceFrame++%4)===0)drawMiniMap();
-  for(const heli of airportHelicopters){heli.rotor.rotation.y+=dt*18;heli.tailRotor.rotation.x+=dt*20;}for(let i=0;i<beachFoam.length;i++){beachFoam[i].position.x+=Math.sin(t*.5+i)*dt*.7;beachFoam[i].material.opacity=.35+Math.sin(t*1.8+i)*.15;}if(waterSurface)waterSurface.position.y=-.18+Math.sin(t*.65)*.025;
+  for(const heli of airportHelicopters){heli.rotor.rotation.y+=dt*18;heli.tailRotor.rotation.x+=dt*20;}if((performanceFrame%2)===0)for(let i=0;i<beachFoam.length;i++){beachFoam[i].position.x+=Math.sin(t*.5+i)*dt*1.4;beachFoam[i].material.opacity=.35+Math.sin(t*1.8+i)*.15;}if(waterSurface)waterSurface.position.y=-.18+Math.sin(t*.65)*.025;
   if(planeFlying&&airportPlane){for(let i=0;i<militaryEscorts.length;i++){const escort=militaryEscorts[i];const side=i===0?-1:1;const tx=airportPlane.position.x-Math.sin(planeHeading)*22+Math.cos(planeHeading)*side*10;const tz=airportPlane.position.z-Math.cos(planeHeading)*22-Math.sin(planeHeading)*side*10;escort.position.x+=(tx-escort.position.x)*Math.min(1,dt*1.2);escort.position.z+=(tz-escort.position.z)*Math.min(1,dt*1.2);escort.position.y=planeAltitude+2+Math.sin(t*2+i)*.35;escort.rotation.y=planeHeading;}}
   for(const bus of airportBuses){bus.group.position.z+=bus.direction*bus.speed*dt*60;if(bus.group.position.z>bus.to&&bus.direction>0)bus.group.position.z=bus.from;if(bus.group.position.z<bus.from&&bus.direction<0)bus.group.position.z=bus.to;}
   for(const taxi of taxiVehicles){if(taxi.state!=='approach')continue;const dx=camera.position.x-taxi.group.position.x,dz=camera.position.z-taxi.group.position.z,dist=Math.hypot(dx,dz);if(dist<5){taxi.state='arrived';status.textContent='TAXI ANGEKOMMEN · STEIGE EIN';}else{taxi.group.position.x+=dx/dist*taxi.speed*dt*60;taxi.group.position.z+=dz/dist*taxi.speed*dt*60;taxi.group.rotation.y=Math.atan2(dx,dz);}}
@@ -1266,7 +1268,7 @@ function updateWorld(dt){
     if(traffic.direction>0&&car.position.z>52)car.position.z=-122;
     if(traffic.direction<0&&car.position.z<-122)car.position.z=52;
   }
-  for(const p of pedestrians){
+  if((performanceFrame%2)===0)for(const p of pedestrians){
     const u=p.userData;
     p.position.z=u.originZ+Math.sin(t*u.speed+u.phase)*2.6;
     p.position.x=u.originX+Math.sin(t*u.speed*.55+u.phase)*.55;
@@ -1275,14 +1277,14 @@ function updateWorld(dt){
   }
   for(const car of dealerDisplayCars){car.rotation.y=Math.PI/2+Math.sin(t*.45)*.025;}
   updateCutscene(dt);
-  if(phonePanel&&!phonePanel.classList.contains('hidden')){const clockEl=phonePanel.querySelector('#phoneClock');if(clockEl)clockEl.textContent=new Date().toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'});}
-  for(const car of policeCars){
+  if(phonePanel&&!phonePanel.classList.contains('hidden')&&(performanceFrame%30)===0){const clockEl=phonePanel.querySelector('#phoneClock');if(clockEl)clockEl.textContent=new Date().toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'});}
+  if((performanceFrame%3)===0)for(const car of policeCars){
     const [red,blue]=car.userData.lights;
     const flash=Math.floor(t*7)%2===0;
     red.material.color.setHex(flash?0xff2038:0x40151d);
     blue.material.color.setHex(flash?0x173c78:0x247bff);
   }
-  for(const car of emergencyVehicles){const [red,blue]=car.userData.emergencyLights;const flash=Math.floor(t*8)%2===0;red.material.color.setHex(flash?0xff2638:0x52121a);blue.material.color.setHex(flash?0x1c7cff:0x142b51);}
+  if((performanceFrame%3)===0)for(const car of emergencyVehicles){const [red,blue]=car.userData.emergencyLights;const flash=Math.floor(t*8)%2===0;red.material.color.setHex(flash?0xff2638:0x52121a);blue.material.color.setHex(flash?0x1c7cff:0x142b51);}
 }
 
 function buildBreakableProps(){
@@ -1557,32 +1559,32 @@ function buildPerformanceHud(){
 }
 function loop(now=0){
   raf=requestAnimationFrame(loop);
-  pollGamepad();
   if(maxFps&&now-lastFrame<1000/maxFps)return;
+  pollGamepad();
   const frameMs=lastFrame?now-lastFrame:0;
   if(frameMs>0){perfFrames.push(frameMs);if(perfFrames.length>45)perfFrames.shift();}
   lastFrame=now;const dt=Math.min(clock.getDelta(),.05);
   if(now-perfLastCheck>3000&&perfFrames.length>=20){
     perfLastCheck=now;const avgMs=perfFrames.reduce((a,b)=>a+b,0)/perfFrames.length;
-    if(avgMs>34&&autoResolutionScale>.2){autoResolutionScale=Math.max(.2,autoResolutionScale*.78);applyQuality();}
-    else if(avgMs<23&&autoResolutionScale<1){autoResolutionScale=Math.min(1,autoResolutionScale+.06);applyQuality();}
+    if(avgMs>30&&autoResolutionScale>.42){autoResolutionScale=Math.max(.42,autoResolutionScale*.82);applyQuality();}
+    else if(avgMs<20&&autoResolutionScale<1){autoResolutionScale=Math.min(1,autoResolutionScale+.04);applyQuality();}
   }
-  if(gamePaused){renderer.render(scene,camera);return;}
+  if(gamePaused)return;
   perfHudTimer+=dt;
-  if(perfHud&&perfHudTimer>.5){perfHudTimer=0;const avg=perfFrames.length?perfFrames.reduce((a,b)=>a+b,0)/perfFrames.length:0;const fps=avg>0?Math.round(1000/avg):0;perfHud.textContent='FPS: '+(fps||'--')+'\nRender-Skalierung: '+Math.round(autoResolutionScale*100)+'%';}
+  if(perfHud&&perfHudTimer>.75){perfHudTimer=0;const avg=perfFrames.length?perfFrames.reduce((a,b)=>a+b,0)/perfFrames.length:0;const fps=avg>0?Math.round(1000/avg):0;perfHud.textContent='FPS: '+(fps||'--')+'\nRender-Skalierung: '+Math.round(autoResolutionScale*100)+'%';}
   move(dt);updateWorld(dt);renderer.render(scene,camera);
 }
 function begin(){
   if(started)return;started=true;placeholder?.remove();
   if(qualitySelect){const saved=localStorage.getItem('flQuality');qualitySelect.value=lowEndDevice?'legacy':(saved&&qualitySettings[saved]?saved:(saved==='ultra'?'legacy':'medium'));}
-  if(fpsSelect){const savedFps=localStorage.getItem('flFps');fpsSelect.value=savedFps|| (lowEndDevice?'30':'60');maxFps=fpsSelect.value==='unlimited'?0:Number(fpsSelect.value);}
+  if(fpsSelect){const savedFps=localStorage.getItem('flFps');fpsSelect.value=savedFps||'60';maxFps=fpsSelect.value==='unlimited'?0:Number(fpsSelect.value);}
   if(mouseSelect){mouseSelect.value=localStorage.getItem('flMouse')||'1';mouseSensitivity=Number(mouseSelect.value)||1;}
   if(fovSelect){fovSelect.value=localStorage.getItem('flFov')||'68';cameraFov=Number(fovSelect.value)||68;}
   if(cameraSelect){cameraSelect.value=localStorage.getItem('flCamera')||'follow';cameraMode=cameraSelect.value||'follow';}
   status.textContent=lowEndDevice?'OLD-SCHOOL-MODUS · STADT BLEIBT GUT ERKENNBAR':'STADT GELADEN · KLICKE INS SPIEL';
   try{
-    renderer=new THREE.WebGLRenderer({antialias:classicEdition?false:!lowEndDevice,powerPreference:lowEndDevice?'low-power':'high-performance',stencil:false,depth:true});
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,classicEdition?.72:1));
+    renderer=new THREE.WebGLRenderer({antialias:false,powerPreference:'high-performance',stencil:false,depth:true,preserveDrawingBuffer:false});
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,classicEdition?.62:lowEndDevice?.72:.9));
     renderer.outputColorSpace=THREE.SRGBColorSpace;
     renderer.toneMapping=THREE.ACESFilmicToneMapping;
     renderer.shadowMap.type=THREE.PCFSoftShadowMap;

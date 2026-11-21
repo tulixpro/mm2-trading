@@ -1257,6 +1257,7 @@ function makeCity(){
 function resize(){
   if(!renderer)return;
   const w=viewport.clientWidth,h=viewport.clientHeight;
+  if(w<1||h<1)return;
   renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();
 }
 function updateWorld(dt){
@@ -1565,22 +1566,30 @@ function buildPerformanceHud(){
   perfHud.textContent='FPS: --\nRender-Skalierung: 100%';viewport.appendChild(perfHud);
 }
 function loop(now=0){
+  if(document.hidden)return;
   raf=requestAnimationFrame(loop);
   if(maxFps&&now-lastFrame<1000/maxFps)return;
   pollGamepad();
   const frameMs=lastFrame?now-lastFrame:0;
   if(frameMs>0){perfFrames.push(frameMs);if(perfFrames.length>45)perfFrames.shift();}
   lastFrame=now;const dt=Math.min(clock.getDelta(),.05);
-  if(now-perfLastCheck>3000&&perfFrames.length>=20){
+  // Dynamic resolution only reacts to real rendering load, not an intentional 30-FPS cap.
+  if((!maxFps||maxFps>=50)&&now-perfLastCheck>3000&&perfFrames.length>=20){
     perfLastCheck=now;const avgMs=perfFrames.reduce((a,b)=>a+b,0)/perfFrames.length;
-    if(avgMs>32&&autoResolutionScale>.5){autoResolutionScale=Math.max(.5,autoResolutionScale*.9);applyQuality();}
-    else if(avgMs<19&&autoResolutionScale<1){autoResolutionScale=Math.min(1,autoResolutionScale+.05);applyQuality();}
+    if(avgMs>28&&autoResolutionScale>.42){autoResolutionScale=Math.max(.42,autoResolutionScale*.88);applyQuality();}
+    else if(avgMs<17.5&&autoResolutionScale<1){autoResolutionScale=Math.min(1,autoResolutionScale+.04);applyQuality();}
   }
   if(gamePaused)return;
   perfHudTimer+=dt;
   if(perfHud&&perfHudTimer>.75){perfHudTimer=0;const avg=perfFrames.length?perfFrames.reduce((a,b)=>a+b,0)/perfFrames.length:0;const fps=avg>0?Math.round(1000/avg):0;perfHud.textContent='FPS: '+(fps||'--')+'\nRender-Skalierung: '+Math.round(autoResolutionScale*100)+'%';}
   move(dt);updateWorld(dt);renderer.render(scene,camera);
 }
+// Stop the animation loop entirely while the game tab is in the background.
+document.addEventListener('visibilitychange',()=>{
+  if(!started)return;
+  if(document.hidden){if(raf)cancelAnimationFrame(raf);raf=0;lastFrame=0;perfFrames.length=0;}
+  else if(!raf){lastFrame=0;clock.getDelta();raf=requestAnimationFrame(loop);}
+});
 function begin(){
   if(started)return;started=true;placeholder?.remove();
   if(qualitySelect){const saved=localStorage.getItem('flQuality');qualitySelect.value=lowEndDevice?'legacy':(saved&&qualitySettings[saved]?saved:(saved==='ultra'?'legacy':'medium'));}

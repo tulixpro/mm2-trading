@@ -781,6 +781,53 @@ function updateBreakableCollisions(dt){
  }
 }
 
+
+// Gamepad-Unterstützung: Standard-Layout für Xbox-, PlayStation- und kompatible Controller.
+let gamepadStatus=null,gamepadPrevButtons=[],gamepadWasConnected=false;
+function gamepadButton(gp,index){return !!gp.buttons[index]?.pressed;}
+function pollGamepad(){
+ if(!navigator.getGamepads)return;
+ const pads=Array.from(navigator.getGamepads()).filter(Boolean);
+ const gp=pads[0];
+ if(!gp){
+  if(gamepadWasConnected&&gamepadStatus)gamepadStatus.textContent='CONTROLLER GETRENNT';
+  gamepadWasConnected=false;
+  return;
+ }
+ gamepadWasConnected=true;
+ if(gamepadStatus)gamepadStatus.textContent='CONTROLLER VERBUNDEN · '+(gp.mapping==='standard'?'STANDARD':'ERKANNT');
+ const axis=(i)=>{const v=gp.axes[i]||0;return Math.abs(v)<.16?0:v;};
+ const lx=axis(0),ly=axis(1),rx=axis(2),ry=axis(3);
+ keys.KeyW=ly<-.22;keys.KeyS=ly>.22;keys.KeyA=lx<-.22;keys.KeyD=lx>.22;
+ // Rechte Achse: Kamera drehen; im Auto bleibt die Fahrtrichtung unabhängig davon.
+ if(Math.abs(rx)>.12){if(driving)cameraLookOffset-=rx*.045;else yaw-=rx*.045;}
+ if(Math.abs(ry)>.12)pitch=Math.max(-1.15,Math.min(1.15,pitch+ry*.035));
+ keys.ShiftLeft=gamepadButton(gp,10);
+ // Trigger funktionieren auch bei Gamepads, die analoge Werte melden.
+ keys.KeyW=keys.KeyW||((gp.buttons[7]?.value||0)>.18);
+ keys.KeyS=keys.KeyS||((gp.buttons[6]?.value||0)>.18);
+ const pressed=(i)=>gamepadButton(gp,i)&&!gamepadPrevButtons[i];
+ if(pressed(0))toggleShopOrDealer();
+ if(pressed(1))togglePhone();
+ if(pressed(2))toggleVehicle();
+ if(pressed(3))toggleJobs();
+ if(pressed(4))cycleCamera();
+ if(pressed(5))toggleFlashlight();
+ if(pressed(9)){if(jobPanel&&!jobPanel.classList.contains('hidden'))jobPanel.classList.add('hidden');else if(shopPanel&&!shopPanel.classList.contains('hidden'))shopPanel.classList.add('hidden');else if(phonePanel&&!phonePanel.classList.contains('hidden'))phonePanel.classList.add('hidden');else if(dealerPanel&&!dealerPanel.classList.contains('hidden'))dealerPanel.classList.add('hidden');}
+ // D-Pad als alternative Bewegung bzw. Lenkung.
+ keys.ArrowUp=gamepadButton(gp,12);keys.ArrowDown=gamepadButton(gp,13);keys.ArrowLeft=gamepadButton(gp,14);keys.ArrowRight=gamepadButton(gp,15);
+ gamepadPrevButtons=gp.buttons.map(b=>!!b.pressed);
+}
+function toggleShopOrDealer(){
+ if(dealerPanel&&!dealerPanel.classList.contains('hidden'))dealerPanel.classList.add('hidden');
+ else if(nearestDealer())openDealer();
+ else toggleShop();
+}
+function buildGamepadStatus(){
+ gamepadStatus=document.createElement('div');gamepadStatus.id='gamepadStatus';
+ gamepadStatus.textContent='CONTROLLER: SUCHE…';viewport.appendChild(gamepadStatus);
+}
+
 function move(){
   if(driving&&jobCar){
     const accelerating=keys.KeyW||keys.ArrowUp, braking=keys.KeyS||keys.ArrowDown;
@@ -844,15 +891,16 @@ function toggleVehicle(){
   if(!driving){
     if(camera.position.distanceTo(jobCar.position)>9){status.textContent='GEHE NÄHER AN DEIN DIENSTFAHRZEUG';return;}
     driving=true;carSpeed=0;cameraLookOffset=0;yaw=jobCar.rotation.y-Math.PI;
-    status.textContent='IM FAHRZEUG · WASD FAHREN · F AUSSTEIGEN';
+    status.textContent='IM FAHRZEUG · WASD / STICK FAHREN · F / X AUSSTEIGEN';
   }else{
     driving=false;carSpeed=0;cameraLookOffset=0;
     camera.position.set(jobCar.position.x+3,2.1,jobCar.position.z+3);
-    status.textContent='AUSGESTIEGEN · F ZUM EINSTEIGEN';
+    status.textContent='AUSGESTIEGEN · F / X ZUM EINSTEIGEN';
   }
 }
 function loop(now=0){
   raf=requestAnimationFrame(loop);
+  pollGamepad();
   if(maxFps&&now-lastFrame<1000/maxFps)return;
   lastFrame=now;const dt=Math.min(clock.getDelta(),.05);
   move();updateWorld(dt);renderer.render(scene,camera);
@@ -868,7 +916,7 @@ function begin(){
     renderer.shadowMap.type=THREE.PCFSoftShadowMap;
     renderer.shadowMap.enabled=false;
     sunLight=null;hemiLight=null;
-    makeCity();buildBreakableProps();buildInGameJobs();buildShopInteraction();buildPhone();buildDealerPanel();buildMiniMap();applyQuality();viewport.appendChild(renderer.domElement);resize();loop();
+    makeCity();buildBreakableProps();buildInGameJobs();buildShopInteraction();buildPhone();buildDealerPanel();buildMiniMap();buildGamepadStatus();applyQuality();viewport.appendChild(renderer.domElement);resize();loop();
     renderer.domElement.tabIndex=0;
     renderer.domElement.addEventListener('click',()=>{renderer.domElement.focus();if(!phonePanel||phonePanel.classList.contains('hidden')){try{const result=renderer.domElement.requestPointerLock?.();if(result?.catch)result.catch(()=>{status.textContent='MAUSZIEHEN ZUM UMSEHEN';});}catch(_){status.textContent='MAUSZIEHEN ZUM UMSEHEN';}}});
     renderer.domElement.addEventListener('pointerdown',e=>{if(e.button!==0||locked)return;lookDrag=true;lastPointerX=e.clientX;lastPointerY=e.clientY;});
@@ -893,6 +941,6 @@ function begin(){
 startButton?.addEventListener('click',begin);
 // In der eigenständigen Windows-Spielansicht direkt in die 3D-Stadt starten.
 if(document.body.classList.contains('game-app')) begin();
-document.addEventListener('keydown',e=>{keys[e.code]=true;if(e.code==='F1'){e.preventDefault();if(!e.repeat)togglePhone();return;}if(e.code==='KeyE'&&!e.repeat){if(dealerPanel&&!dealerPanel.classList.contains('hidden'))dealerPanel.classList.add('hidden');else if(nearestDealer())openDealer();else toggleShop();}if(e.code==='KeyF'&&!e.repeat)toggleVehicle();if(e.code==='KeyJ'&&!e.repeat)toggleJobs();if(e.code==='KeyL'&&!e.repeat)toggleFlashlight();if(e.code==='KeyC'&&!e.repeat)cycleCamera();if(e.code==='Escape'&&jobPanel&&!jobPanel.classList.contains('hidden'))jobPanel.classList.add('hidden');if(e.code==='Escape'&&shopPanel&&!shopPanel.classList.contains('hidden'))shopPanel.classList.add('hidden');if(e.code==='Escape'&&phonePanel&&!phonePanel.classList.contains('hidden'))phonePanel.classList.add('hidden');if(e.code==='Escape'&&dealerPanel&&!dealerPanel.classList.contains('hidden'))dealerPanel.classList.add('hidden');if(['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code))e.preventDefault();});
+document.addEventListener('keydown',e=>{keys[e.code]=true;if(e.code==='F1'){e.preventDefault();if(!e.repeat)togglePhone();return;}if(e.code==='KeyE'&&!e.repeat){toggleShopOrDealer();}if(e.code==='KeyF'&&!e.repeat)toggleVehicle();if(e.code==='KeyJ'&&!e.repeat)toggleJobs();if(e.code==='KeyL'&&!e.repeat)toggleFlashlight();if(e.code==='KeyC'&&!e.repeat)cycleCamera();if(e.code==='Escape'&&jobPanel&&!jobPanel.classList.contains('hidden'))jobPanel.classList.add('hidden');if(e.code==='Escape'&&shopPanel&&!shopPanel.classList.contains('hidden'))shopPanel.classList.add('hidden');if(e.code==='Escape'&&phonePanel&&!phonePanel.classList.contains('hidden'))phonePanel.classList.add('hidden');if(e.code==='Escape'&&dealerPanel&&!dealerPanel.classList.contains('hidden'))dealerPanel.classList.add('hidden');if(['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code))e.preventDefault();});
 document.addEventListener('keyup',e=>keys[e.code]=false);
 window.addEventListener('resize',resize);

@@ -213,3 +213,15 @@ Hinweis: Die Grafikprofile reduzieren vor allem die GPU-Last. Die tatsächliche 
 - Das Küstengebiet ist ein bewusst fiktiver Zusatz und keine geografisch realistische Darstellung Frankfurts.
 
 Hinweis: Boote und Wasser sind einfache 3D-Prototypen ohne realistische Wasserphysik. Die Filmszene ist eine abstrahierte Animation.
+
+
+## Version 0.4.8 – NPC-, Karten- und Shop-Politur
+- NPCs mit differenzierten Gesichtern, Haaren, Hauttönen, Kleidung, Schuhen und kleinen Accessoires.
+- Geh-Animationen für Arme und Beine über stabile Modell-Referenzen.
+- Fehler behoben: Die Karten-Zeichenfunktion verwendete die Koordinatenfunktionen vor ihrer Initialisierung und konnte beim Minimap-Update einen JavaScript-Fehler auslösen.
+- Kartenmaßstab und Stadtgrößenanzeige angepasst; Küstenbereich auf der Karte sichtbar.
+- Bodenfläche endet vor der offenen Wasserfläche, damit das Wasser nicht vom Stadtboden überdeckt wird.
+- Shop-Menü bietet eine kurze, abstrakte, nicht-grafische Filmszene mit Licht- und Kameraschnitten.
+- Schließen des Shop-Menüs setzt den aktuellen Shop korrekt zurück.
+
+Hinweis: NPCs bleiben stilisierte Low-Poly-Figuren. Die Shop-Sequenz ist eine kurze UI-Cutscene und keine voll animierte Raubsimulation.

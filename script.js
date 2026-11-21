@@ -50,6 +50,9 @@ const policeCars=[];
 const trafficCars=[];
 const airportBuses=[];
 const airportHelicopters=[];
+const militaryEscorts=[];
+let airportPlane=null,planeFlying=false,planeSpeed=0,planeHeading=0,planeAltitude=0;
+let takeoverTarget=null,takeoverProgress=0,takeoverHud=null;
 const actionEdition=new URLSearchParams(location.search).get('edition')==='action';
 if(actionEdition){document.body.classList.add('action-edition');document.title='Frankfurt Life Action – Spiel';}
 const taxiVehicles=[];
@@ -643,6 +646,7 @@ function buildInGameJobs(){
  buildIntroTutorialUI();
  careerHud=document.createElement('div');careerHud.id='careerHud';careerHud.style.cssText='position:absolute;top:14px;right:14px;z-index:8;padding:10px 14px;border:1px solid #ffffff30;border-radius:10px;background:#101b2ddd;color:#fff;font:700 13px/1.6 system-ui;pointer-events:none;';careerHud.innerHTML='KONTO: 0 €<br>AUFTRÄGE: 0<br>★ RUF: 1/5';viewport.appendChild(careerHud);
  missionHud=document.createElement('div');missionHud.id='missionHud';missionHud.className='mission-hud hidden';viewport.appendChild(missionHud);
+ takeoverHud=document.createElement('div');takeoverHud.id='takeoverHud';takeoverHud.className='takeover-hud hidden';takeoverHud.innerHTML='<b>FAHRZEUG-INTERAKTION</b><span>Animation läuft …</span><div><i></i></div>';viewport.appendChild(takeoverHud);
  damageHud=document.createElement('div');damageHud.id='damageHud';damageHud.className='damage-hud hidden';viewport.appendChild(damageHud);
  const choices=jobPanel.querySelector('#ingameJobChoices'),detail=jobPanel.querySelector('#ingameJobDetail'),accept=jobPanel.querySelector('#startJob');
  let selected=0;
@@ -942,7 +946,8 @@ function buildAirportAndBuses(){
  const sign=new THREE.Mesh(new THREE.BoxGeometry(11,1.25,.2),new THREE.MeshBasicMaterial({color:0x10283a}));sign.position.set(0,6.1,7.7);terminal.add(sign);
  terminal.position.set(105,0,-260);scene.add(terminal);
  // Parkiertes Passagierflugzeug als gut sichtbares Low-Poly-Modell
- const plane=new THREE.Group();
+ airportPlane=new THREE.Group();
+ const plane=airportPlane;
  const fuselage=new THREE.Mesh(new THREE.CylinderGeometry(.95,.95,19,12),white);fuselage.rotation.x=Math.PI/2;fuselage.position.y=3.4;plane.add(fuselage);
  const nose=new THREE.Mesh(new THREE.ConeGeometry(.95,3.4,12),white);nose.rotation.x=Math.PI/2;nose.position.set(0,3.4,11.15);plane.add(nose);
  const tail=new THREE.Mesh(new THREE.ConeGeometry(.95,2.6,12),white);tail.rotation.x=-Math.PI/2;tail.position.set(0,3.4,-10.8);plane.add(tail);
@@ -1169,8 +1174,10 @@ function updateWorld(dt){
   for(const signal of trafficSignals){const phase=(t+signal.phase*1.7)%8;const active=phase<5?0:phase<6.2?1:2;signal.lamps.forEach((lamp,i)=>lamp.material.emissiveIntensity=i===active?.9:.04);}
   if((performanceFrame++%4)===0)drawMiniMap();
   for(const heli of airportHelicopters){heli.rotor.rotation.y+=dt*18;heli.tailRotor.rotation.x+=dt*20;}
+  if(planeFlying&&airportPlane){for(let i=0;i<militaryEscorts.length;i++){const escort=militaryEscorts[i];const side=i===0?-1:1;const tx=airportPlane.position.x-Math.sin(planeHeading)*22+Math.cos(planeHeading)*side*10;const tz=airportPlane.position.z-Math.cos(planeHeading)*22-Math.sin(planeHeading)*side*10;escort.position.x+=(tx-escort.position.x)*Math.min(1,dt*1.2);escort.position.z+=(tz-escort.position.z)*Math.min(1,dt*1.2);escort.position.y=planeAltitude+2+Math.sin(t*2+i)*.35;escort.rotation.y=planeHeading;}}
   for(const bus of airportBuses){bus.group.position.z+=bus.direction*bus.speed*dt*60;if(bus.group.position.z>bus.to&&bus.direction>0)bus.group.position.z=bus.from;if(bus.group.position.z<bus.from&&bus.direction<0)bus.group.position.z=bus.to;}
   for(const taxi of taxiVehicles){if(taxi.state!=='approach')continue;const dx=camera.position.x-taxi.group.position.x,dz=camera.position.z-taxi.group.position.z,dist=Math.hypot(dx,dz);if(dist<5){taxi.state='arrived';status.textContent='TAXI ANGEKOMMEN · STEIGE EIN';}else{taxi.group.position.x+=dx/dist*taxi.speed*dt*60;taxi.group.position.z+=dz/dist*taxi.speed*dt*60;taxi.group.rotation.y=Math.atan2(dx,dz);}}
+  if(takeoverTarget){takeoverProgress=Math.min(1,takeoverProgress+dt/1.8);if(takeoverHud){const bar=takeoverHud.querySelector('i');if(bar)bar.style.width=(takeoverProgress*100)+'%';}if(takeoverProgress>=1){const target=takeoverTarget;takeoverTarget=null;takeoverProgress=0;if(takeoverHud)takeoverHud.classList.add('hidden');const idx=trafficCars.indexOf(target);if(idx>=0)trafficCars.splice(idx,1);target.userData.traffic=null;jobCar=target;driving=true;carSpeed=0;carSlip=0;carYawRate=0;cameraLookOffset=0;damageLevel=0;yaw=jobCar.rotation.y-Math.PI;status.textContent='FAHRZEUG ÜBERNOMMEN · FILMISCHE POLIZEI-VERFOLGUNG';}}
   for(const car of trafficCars){
     const traffic=car.userData.traffic;
     car.position.z+=traffic.direction*traffic.speed*dt*60;
@@ -1320,6 +1327,16 @@ function buildGamepadStatus(){
 }
 
 function move(dt=1/60){
+  if(planeFlying&&airportPlane){
+    const frameScale=Math.min(3,Math.max(.25,dt*60));
+    if(keys.KeyW||keys.ArrowUp)planeSpeed=Math.min(.72,planeSpeed+.0025*frameScale);else if(keys.KeyS||keys.ArrowDown)planeSpeed=Math.max(0,planeSpeed-.004*frameScale);else planeSpeed*=Math.pow(.997,frameScale);
+    if(keys.KeyA||keys.ArrowLeft)planeHeading+=.009*frameScale;if(keys.KeyD||keys.ArrowRight)planeHeading-=.009*frameScale;
+    if(keys.Space)planeAltitude=Math.min(48,planeAltitude+.12*frameScale);if(keys.ShiftLeft||keys.ShiftRight)planeAltitude=Math.max(0,planeAltitude-.12*frameScale);
+    airportPlane.position.x+=Math.sin(planeHeading)*planeSpeed*frameScale;airportPlane.position.z+=Math.cos(planeHeading)*planeSpeed*frameScale;airportPlane.position.y=planeAltitude;
+    airportPlane.rotation.y=planeHeading;airportPlane.rotation.z=((keys.KeyA||keys.ArrowLeft)?-.16:0)+((keys.KeyD||keys.ArrowRight)?.16:0);airportPlane.rotation.x=(keys.Space?-.035:0)+((keys.ShiftLeft||keys.ShiftRight)?.035:0);
+    camera.position.set(airportPlane.position.x-Math.sin(planeHeading)*18,planeAltitude+7,airportPlane.position.z-Math.cos(planeHeading)*18);camera.lookAt(airportPlane.position.x,planeAltitude+1,airportPlane.position.z+Math.cos(planeHeading)*12);yaw=planeHeading+Math.PI;pitch=-.08;
+    coords.textContent='FLUGZEUG · HÖHE '+Math.round(planeAltitude)+' M · TEMPO '+Math.round(planeSpeed*420)+' KM/H';return;
+  }
   if(driving&&jobCar){
     // Vereinfachtes Fahrzeugmodell: Antrieb, Bremsen, Rollwiderstand und Haftung sind zeitbasiert.
     const frameScale=Math.min(3,Math.max(.25,dt*60));
@@ -1407,6 +1424,20 @@ function move(dt=1/60){
   camera.rotation.order='YXZ';camera.rotation.set(pitch,yaw,0);
   coords.textContent=(driving?'FAHRZEUG ':'POSITION ')+Math.round(camera.position.x)+' / '+Math.round(camera.position.z)+(jobActive&&jobDestination?' · ZIEL '+Math.round((driving?jobCar.position:camera.position).distanceTo(jobDestination))+' M':'');
 }
+function tryStartFlight(){
+ if(!airportPlane||driving||planeFlying)return false;
+ if(camera.position.distanceTo(airportPlane.position)>15){status.textContent='GEHE ZUM FLUGZEUG AM FLUGHAFEN';return false;}
+ planeFlying=true;planeSpeed=0;planeAltitude=0;planeHeading=airportPlane.rotation.y;airportPlane.position.y=0;
+ militaryEscorts.forEach((e,i)=>{e.visible=true;e.position.set(airportPlane.position.x+(i?10:-10),4,airportPlane.position.z-28);});
+ status.textContent='FLUGMISSION · W/S TEMPO · A/D RICHTUNG · LEERTASTE STEIGEN · SHIFT SINKEN · F LANDEN';return true;
+}
+function tryTakeoverVehicle(){
+ if(driving||planeFlying||takeoverTarget)return;
+ let nearest=null,dist=7;
+ for(const car of trafficCars){const d=Math.hypot(car.position.x-camera.position.x,car.position.z-camera.position.z);if(d<dist){dist=d;nearest=car;}}
+ if(!nearest){status.textContent='KEIN FAHRZEUG IN REICHWEITE';return;}
+ takeoverTarget=nearest;takeoverProgress=0;takeoverHud?.classList.remove('hidden');status.textContent='FAHRZEUG-INTERAKTION · BITTE WARTEN';
+}
 function toggleFlashlight(){
   if(!flashlight)return;
   flashlightOn=!flashlightOn;flashlight.intensity=flashlightOn?3.2:0;
@@ -1414,6 +1445,7 @@ function toggleFlashlight(){
 }
 function cycleCamera(){cameraMode=cameraMode==='follow'?'close':cameraMode==='close'?'hood':cameraMode==='hood'?'ego':'follow';status.textContent='KAMERA: '+({follow:'VERFOLGER',close:'NAH',hood:'MOTORHAUBE',ego:'EGO-PERSPEKTIVE'}[cameraMode]);}
 function toggleVehicle(){
+  if(planeFlying){planeFlying=false;planeSpeed=0;status.textContent='FLUG BEENDET · ZURÜCK AM FLUGHAFEN';if(takeoverHud)takeoverHud.classList.add('hidden');camera.position.set(airportPlane.position.x+5,2.1,airportPlane.position.z+5);return;}
   if(!jobCar){status.textContent='WÄHLE ZUERST EINEN JOB MIT J';return;}
   if(!driving){
     if(camera.position.distanceTo(jobCar.position)>9){status.textContent='GEHE NÄHER AN DEIN DIENSTFAHRZEUG';return;}
@@ -1486,6 +1518,6 @@ function begin(){
 startButton?.addEventListener('click',begin);
 // In der eigenständigen Windows-Spielansicht direkt in die 3D-Stadt starten.
 if(document.body.classList.contains('game-app')) begin();
-document.addEventListener('keydown',e=>{keys[e.code]=true;keyboardKeys[e.code]=true;if(e.code==='F1'){e.preventDefault();if(!e.repeat)togglePhone();return;}if(e.code==='KeyQ'&&!e.repeat){e.preventDefault();toggleQuickAccessWheel();return;}if(e.code==='KeyE'&&!e.repeat){if(!tryRefuelAtPump())toggleShopOrDealer();}if(e.code==='KeyF'&&!e.repeat)toggleVehicle();if(e.code==='KeyJ'&&!e.repeat)toggleJobs();if(e.code==='KeyL'&&!e.repeat)toggleFlashlight();if(e.code==='F5'&&!e.repeat){e.preventDefault();flSaveGame(true);}if(e.code==='KeyC'&&!e.repeat)cycleCamera();if(e.code==='Escape'&&jobPanel&&!jobPanel.classList.contains('hidden'))jobPanel.classList.add('hidden');if(e.code==='Escape'&&shopPanel&&!shopPanel.classList.contains('hidden'))shopPanel.classList.add('hidden');if(e.code==='Escape'&&phonePanel&&!phonePanel.classList.contains('hidden'))phonePanel.classList.add('hidden');if(e.code==='Escape')document.querySelector('#quickAccessWheel')?.classList.add('hidden');if(e.code==='Escape'&&dealerPanel&&!dealerPanel.classList.contains('hidden'))dealerPanel.classList.add('hidden');if(['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code))e.preventDefault();});
+document.addEventListener('keydown',e=>{keys[e.code]=true;keyboardKeys[e.code]=true;if(e.code==='F1'){e.preventDefault();if(!e.repeat)togglePhone();return;}if(e.code==='KeyQ'&&!e.repeat){e.preventDefault();toggleQuickAccessWheel();return;}if(e.code==='KeyE'&&!e.repeat){if(!tryRefuelAtPump())toggleShopOrDealer();}if(e.code==='KeyF'&&!e.repeat){if(!tryStartFlight())toggleVehicle();}if(e.code==='KeyG'&&!e.repeat)tryTakeoverVehicle();if(e.code==='KeyJ'&&!e.repeat)toggleJobs();if(e.code==='KeyL'&&!e.repeat)toggleFlashlight();if(e.code==='F5'&&!e.repeat){e.preventDefault();flSaveGame(true);}if(e.code==='KeyC'&&!e.repeat)cycleCamera();if(e.code==='Escape'&&jobPanel&&!jobPanel.classList.contains('hidden'))jobPanel.classList.add('hidden');if(e.code==='Escape'&&shopPanel&&!shopPanel.classList.contains('hidden'))shopPanel.classList.add('hidden');if(e.code==='Escape'&&phonePanel&&!phonePanel.classList.contains('hidden'))phonePanel.classList.add('hidden');if(e.code==='Escape')document.querySelector('#quickAccessWheel')?.classList.add('hidden');if(e.code==='Escape'&&dealerPanel&&!dealerPanel.classList.contains('hidden'))dealerPanel.classList.add('hidden');if(['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code))e.preventDefault();});
 document.addEventListener('keyup',e=>{keys[e.code]=false;keyboardKeys[e.code]=false;});
 window.addEventListener('resize',resize);

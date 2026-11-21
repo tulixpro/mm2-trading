@@ -63,7 +63,8 @@ const airportHelicopters=[];
 const militaryEscorts=[];
 const boats=[];let activeBoat=null,boatSpeed=0,boatHeading=0,waterSurface=null,beachFoam=[];
 let airportPlane=null,planeFlying=false,planeSpeed=0,planeHeading=0,planeAltitude=0;
-let takeoverTarget=null,takeoverProgress=0,takeoverHud=null,takeoverActor=null,shopSceneOverlay=null,shopScene=null;\nlet pausePanel=null,gamePaused=false;
+let takeoverTarget=null,takeoverProgress=0,takeoverHud=null,takeoverActor=null,shopSceneOverlay=null,shopScene=null;
+let pausePanel=null,gamePaused=false;
 const actionEdition=new URLSearchParams(location.search).get('edition')==='action';
 if(actionEdition){document.body.classList.add('action-edition');document.title='Frankfurt Life Action – Spiel';}
 const taxiVehicles=[];
@@ -497,8 +498,7 @@ function makeCar(x,z,color,police=false,model='sedan'){
   const centerScreen=new THREE.Mesh(new THREE.BoxGeometry(.28,.17,.035),screenMat);
   centerScreen.position.set(.12,1.17,.48);car.add(centerScreen);
   const consoleBase=new THREE.Mesh(new THREE.BoxGeometry(.3,.12,.62),dashMat);
-  consoleBase.position.set(0,.91,-.08);car.add(consoleBase);
-  const gearLever=new THREE.Mesh(new THREE.CylinderGeometry(.035,.045,.22,8),chrome);
+  consoleBase.position.set(0,.91,-.08);car.add(consoleBase);  const gearLever=new THREE.Mesh(new THREE.CylinderGeometry(.035,.045,.22,8),chrome);
   gearLever.position.set(-.02,1.08,.04);car.add(gearLever);
   const steeringColumn=new THREE.Mesh(new THREE.CylinderGeometry(.045,.045,.32,10),black);
   steeringColumn.rotation.x=Math.PI/2;steeringColumn.position.set(-.42,1.08,.43);car.add(steeringColumn);
@@ -997,8 +997,7 @@ function buildAirportAndBuses(){
  const fuselage=new THREE.Mesh(new THREE.CylinderGeometry(.95,.95,19,12),white);fuselage.rotation.x=Math.PI/2;fuselage.position.y=3.4;plane.add(fuselage);
  const nose=new THREE.Mesh(new THREE.ConeGeometry(.95,3.4,12),white);nose.rotation.x=Math.PI/2;nose.position.set(0,3.4,11.15);plane.add(nose);
  const tail=new THREE.Mesh(new THREE.ConeGeometry(.95,2.6,12),white);tail.rotation.x=-Math.PI/2;tail.position.set(0,3.4,-10.8);plane.add(tail);
- const wing=new THREE.Mesh(new THREE.BoxGeometry(29,.28,3.5),white);wing.position.set(0,3.25,-.8);plane.add(wing);
- const tailWing=new THREE.Mesh(new THREE.BoxGeometry(10,.22,2),white);tailWing.position.set(0,4.6,-8.2);plane.add(tailWing);
+ const wing=new THREE.Mesh(new THREE.BoxGeometry(29,.28,3.5),white);wing.position.set(0,3.25,-.8);plane.add(wing); const tailWing=new THREE.Mesh(new THREE.BoxGeometry(10,.22,2),white);tailWing.position.set(0,4.6,-8.2);plane.add(tailWing);
  const fin=new THREE.Mesh(new THREE.BoxGeometry(.28,4.2,3.8),new THREE.MeshStandardMaterial({color:0x2873a0,roughness:.5}));fin.position.set(0,5.25,-8.3);plane.add(fin);
  const stripe=new THREE.Mesh(new THREE.BoxGeometry(.08,.12,15),new THREE.MeshBasicMaterial({color:0x2873a0}));stripe.position.set(0,4.05,0);plane.add(stripe);
  for(const x of [-9,9]){const engine=new THREE.Mesh(new THREE.CylinderGeometry(.72,.72,3.2,12),new THREE.MeshStandardMaterial({color:0x58636b,metalness:.4,roughness:.55}));engine.rotation.x=Math.PI/2;engine.position.set(x,2.35,-.6);plane.add(engine);}
@@ -1497,8 +1496,7 @@ function move(dt=1/60){
     if(keys.KeyS||keys.ArrowDown)camera.position.addScaledVector(forward,-speed);
     if(keys.KeyA||keys.ArrowLeft)camera.position.addScaledVector(right,-speed);
     if(keys.KeyD||keys.ArrowRight)camera.position.addScaledVector(right,speed);
-    camera.position.x=Math.max(-178,Math.min(178,camera.position.x));
-    camera.position.z=Math.max(-298,Math.min(360,camera.position.z));
+    camera.position.x=Math.max(-178,Math.min(178,camera.position.x));    camera.position.z=Math.max(-298,Math.min(360,camera.position.z));
     camera.position.y=2.1;
   }
   camera.rotation.order='YXZ';camera.rotation.set(pitch,yaw,0);
@@ -1615,3 +1613,72 @@ if(document.body.classList.contains('game-app')) begin();
 document.addEventListener('keydown',e=>{keys[e.code]=true;keyboardKeys[e.code]=true;if(e.code==='Escape'&&!e.repeat){const overlays=[jobPanel,shopPanel,phonePanel,dealerPanel];const visible=overlays.find(p=>p&&!p.classList.contains('hidden'));if(visible){visible.classList.add('hidden');return;}togglePauseMenu();return;}if(e.code==='F1'){e.preventDefault();if(!e.repeat)togglePhone();return;}if(e.code==='KeyQ'&&!e.repeat){e.preventDefault();toggleQuickAccessWheel();return;}if(e.code==='KeyE'&&!e.repeat){if(!tryRefuelAtPump())toggleShopOrDealer();}if(e.code==='KeyF'&&!e.repeat){if(!tryStartBoat()&&!tryStartFlight())toggleVehicle();}if(e.code==='KeyG'&&!e.repeat)tryTakeoverVehicle();if(e.code==='KeyJ'&&!e.repeat)toggleJobs();if(e.code==='KeyL'&&!e.repeat)toggleFlashlight();if(e.code==='F5'&&!e.repeat){e.preventDefault();flSaveGame(true);}if(e.code==='KeyC'&&!e.repeat)cycleCamera();if(e.code==='Escape'&&jobPanel&&!jobPanel.classList.contains('hidden'))jobPanel.classList.add('hidden');if(e.code==='Escape'&&shopPanel&&!shopPanel.classList.contains('hidden'))shopPanel.classList.add('hidden');if(e.code==='Escape'&&phonePanel&&!phonePanel.classList.contains('hidden'))phonePanel.classList.add('hidden');if(e.code==='Escape')document.querySelector('#quickAccessWheel')?.classList.add('hidden');if(e.code==='Escape'&&!e.repeat&&(!jobPanel||jobPanel.classList.contains('hidden'))&&(!shopPanel||shopPanel.classList.contains('hidden'))&&(!phonePanel||phonePanel.classList.contains('hidden'))&&(!dealerPanel||dealerPanel.classList.contains('hidden')))togglePauseMenu();if(e.code==='Escape'&&dealerPanel&&!dealerPanel.classList.contains('hidden'))dealerPanel.classList.add('hidden');if(['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code))e.preventDefault();});
 document.addEventListener('keyup',e=>{keys[e.code]=false;keyboardKeys[e.code]=false;});
 window.addEventListener('resize',resize);
+
+/* Frankfurt Life 0.5.0 – Fotomodus, MainFeed und filmischer Fahrzeugeinstieg */
+(()=>{
+  const photoStoreKey='flMainFeedPhotosV1';
+  let flPhotos=[];
+  try{flPhotos=JSON.parse(localStorage.getItem(photoStoreKey)||'[]');if(!Array.isArray(flPhotos))flPhotos=[];}catch(_){flPhotos=[];}
+  const savePhotos=()=>{try{localStorage.setItem(photoStoreKey,JSON.stringify(flPhotos.slice(-5)));}catch(_){if(status)status.textContent='FOTOSPEICHER VOLL · ÄLTERE FOTOS LÖSCHEN';}};
+  const escapeHtml=value=>String(value||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const photoStyle=document.createElement('style');
+  photoStyle.textContent='.fl-photo-actions{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}.fl-photo-actions button,.fl-post button{border:1px solid #5b9db9;border-radius:8px;background:#15374d;color:#eefaff;padding:10px 12px;font-weight:800;cursor:pointer}.fl-photo-preview{width:100%;max-height:190px;object-fit:cover;border-radius:12px;border:1px solid #ffffff30;background:#07111c}.fl-post{margin:12px 0;padding:10px;border:1px solid #ffffff22;border-radius:12px;background:#ffffff09}.fl-post img{display:block;width:100%;max-height:190px;object-fit:cover;border-radius:9px;margin:8px 0}.fl-post p{font-size:12px;color:#d4e6f1}.fl-photo-empty{padding:18px;border:1px dashed #6a8799;border-radius:12px;color:#b7cbd8;text-align:center;font-size:12px}';
+  document.head.appendChild(photoStyle);
+
+  function captureCityPhoto(){
+    if(!renderer?.domElement){if(status)status.textContent='FOTOMODUS ERST NACH SPIELSTART VERFÜGBAR';return;}
+    try{
+      const source=renderer.domElement,canvas=document.createElement('canvas');
+      const scale=Math.min(1,640/source.width,360/source.height);
+      canvas.width=Math.max(1,Math.round(source.width*scale));canvas.height=Math.max(1,Math.round(source.height*scale));
+      const ctx=canvas.getContext('2d');ctx.drawImage(source,0,0,canvas.width,canvas.height);
+      const image=canvas.toDataURL('image/jpeg',.68);
+      const photo={id:Date.now(),image,caption:'',posted:false,place:camera?Math.round(camera.position.x)+' / '+Math.round(camera.position.z):'Frankfurt'};
+      flPhotos.push(photo);flPhotos=flPhotos.slice(-5);savePhotos();
+      if(status)status.textContent='FOTO AUFGENOMMEN · IN DEINER GALERIE GESPEICHERT';
+      renderPhotoApp('camera');
+    }catch(_){if(status)status.textContent='FOTO NICHT MÖGLICH · BITTE ERNEUT VERSUCHEN';}
+  }
+  function renderPhotoApp(which){
+    if(!phonePanel)return;
+    const page=phonePanel.querySelector('#phonePage');if(!page)return;
+    const gallery=flPhotos.slice().reverse();
+    if(which==='camera'){
+      const latest=gallery[0];
+      page.innerHTML='<div class="phone-page-head">Frankfurt Kamera</div><p>Halte deinen aktuellen Blick auf die Stadt als Foto fest.</p>'+(latest?'<img class="fl-photo-preview" src="'+latest.image+'" alt="Letztes Stadtfoto">':'<div class="fl-photo-empty">Noch keine Fotos aufgenommen</div>')+'<div class="fl-photo-actions"><button data-photo="capture">📸 Foto aufnehmen</button><button data-photo="feed">MainFeed öffnen</button></div><p>Gespeicherte Fotos: '+flPhotos.length+'/5</p>';
+    }else{
+      page.innerHTML='<div class="phone-page-head">MainFeed</div><p>Dein lokaler Stadt-Feed · Teile deine schönsten Frankfurt-Momente auf diesem Gerät.</p>'+gallery.map(p=>'<article class="fl-post"><img src="'+p.image+'" alt="Stadtfoto"><p>'+escapeHtml(p.caption||'Frankfurt-Moment · '+p.place)+'</p><small>'+escapeHtml(p.place)+' · '+(p.posted?'VERÖFFENTLICHT':'ENTWURF')+'</small>'+(p.posted?'':'<div class="fl-photo-actions"><input data-caption="'+p.id+'" maxlength="90" placeholder="Bildunterschrift..." aria-label="Bildunterschrift"><button data-post="'+p.id+'">Posten</button></div>')+'</article>').join('')+(gallery.length?'':'<div class="fl-photo-empty">Dein Feed ist noch leer. Mach zuerst ein Foto!</div>')+'<div class="fl-photo-actions"><button data-photo="camera">📷 Kamera</button></div>';
+    }
+    page.querySelectorAll('[data-photo]').forEach(b=>b.addEventListener('click',()=>{if(b.dataset.photo==='capture')captureCityPhoto();else renderPhotoApp(b.dataset.photo==='feed'?'feed':'camera');}));
+    page.querySelectorAll('[data-post]').forEach(b=>b.addEventListener('click',()=>{const p=flPhotos.find(x=>x.id===Number(b.dataset.post));if(!p)return;const input=page.querySelector('[data-caption="'+p.id+'"]');p.caption=input?.value?.trim()||'Ein neuer Frankfurt-Moment';p.posted=true;savePhotos();renderPhotoApp('feed');if(status)status.textContent='IM MAINFEED VERÖFFENTLICHT';}));
+  }
+  const originalShowPhoneHome=showPhoneHome;
+  showPhoneHome=function(){
+    originalShowPhoneHome();
+    const grid=phonePanel?.querySelector('#phoneApps');if(!grid||grid.querySelector('[data-app="mainfeed"]'))return;
+    const add=(id,emoji,label)=>{const b=document.createElement('button');b.className='phone-app';b.dataset.app=id;b.innerHTML='<b>'+emoji+'</b><span>'+label+'</span>';b.addEventListener('click',()=>openPhoneApp(id));grid.appendChild(b);};
+    add('mainfeed','✦','MainFeed');
+  };
+  const originalOpenPhoneApp=openPhoneApp;
+  openPhoneApp=function(app){
+    if(app==='camera'||app==='mainfeed'){
+      if(!phonePanel)return;
+      phonePage=app;phonePanel.querySelector('#phoneApps')?.classList.add('hidden');
+      phonePanel.querySelector('#phonePage')?.classList.remove('hidden');
+      renderPhotoApp(app);return;
+    }
+    return originalOpenPhoneApp(app);
+  };
+  const originalToggleVehicle=toggleVehicle;
+  toggleVehicle=function(){
+    const entering=!driving&&!!jobCar;
+    originalToggleVehicle();
+    if(entering&&driving)showVehicleEntryCinema();
+  };
+  function showVehicleEntryCinema(){
+    let overlay=viewport.querySelector('#vehicleEntryCinema');
+    if(!overlay){overlay=document.createElement('div');overlay.id='vehicleEntryCinema';overlay.innerHTML='<div class="fl-cinema-bars top"></div><div class="fl-cinema-title"><small>FRANKFURT LIFE · FAHRZEUGSZENE</small><b>FAHRZEUG ÜBERNOMMEN</b><span>Motor starten · Stadt erkunden</span></div><div class="fl-cinema-bars bottom"></div>';viewport.appendChild(overlay);}
+    overlay.classList.remove('hidden');clearTimeout(overlay._hideTimer);overlay._hideTimer=setTimeout(()=>overlay.classList.add('hidden'),1500);
+  }
+  if(phonePanel)showPhoneHome();
+})();

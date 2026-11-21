@@ -37,6 +37,9 @@ const pedestrians=[];
 const policeCars=[];
 const trafficCars=[];
 const streetLights=[];
+const shops=[];
+const inventory={Kaffee:0,Snack:0,Stadtplan:0};
+let shopPanel=null,currentShop=null;
 const clock=new THREE.Clock();
 
 function building(x,z,w,d,h,color){
@@ -87,6 +90,7 @@ function createShop(x,z,side,name,subtitle,color){
  }
  const base=new THREE.Mesh(new THREE.BoxGeometry(8.3,.24,10.3),trimMat);base.position.y=.12;g.add(base);
  g.position.set(x,0,z);scene.add(g);
+ shops.push({name,subtitle,x,z,side,products:[{name:'Kaffee',price:4},{name:'Snack',price:3},{name:'Stadtplan',price:8}]});
 }
 function streetLamp(x,z){
  const pole=new THREE.Mesh(new THREE.CylinderGeometry(.07,.11,5.2,7),new THREE.MeshStandardMaterial({color:0x27323b,metalness:.55,roughness:.5}));
@@ -230,6 +234,46 @@ function toggleJobs(){
  if(!jobPanel.classList.contains('hidden'))document.exitPointerLock?.();
 }
 
+function buildShopInteraction(){
+ shopPanel=document.createElement('div');shopPanel.id='shopPanel';shopPanel.className='ingame-jobs hidden';
+ shopPanel.innerHTML='<div class="ingame-jobs-head"><b id="shopTitle">FRANKFURT LIFE / GESCHÄFT</b><button id="closeShop" aria-label="Schließen">×</button></div><h3 id="shopName">Geschäft</h3><p id="shopSubtitle" class="ingame-jobs-hint"></p><div id="shopProducts"></div><div id="shopMessage" role="status">Wähle etwas aus.</div><small>E oder ESC · Schließen</small>';
+ viewport.appendChild(shopPanel);
+ shopPanel.querySelector('#closeShop').addEventListener('click',()=>shopPanel.classList.add('hidden'));
+}
+function nearestShop(){
+ if(!camera||driving)return null;
+ let best=null,bestDistance=Infinity;
+ for(const shop of shops){
+  const distance=Math.hypot(camera.position.x-shop.x,camera.position.z-shop.z);
+  if(distance<bestDistance){bestDistance=distance;best=shop;}
+ }
+ return bestDistance<8?best:null;
+}
+function toggleShop(){
+ if(!started||!shopPanel)return;
+ if(!shopPanel.classList.contains('hidden')){shopPanel.classList.add('hidden');currentShop=null;return;}
+ const shop=nearestShop();
+ if(!shop){status.textContent='GEHE NÄHER AN EIN GESCHÄFT · E ZUM ÖFFNEN';return;}
+ currentShop=shop;
+ shopPanel.querySelector('#shopTitle').textContent='FRANKFURT LIFE / '+shop.name;
+ shopPanel.querySelector('#shopName').textContent=shop.name;
+ shopPanel.querySelector('#shopSubtitle').textContent=shop.subtitle+' · Willkommen!';
+ const products=shopPanel.querySelector('#shopProducts');products.replaceChildren();
+ for(const item of shop.products){
+  const button=document.createElement('button');button.className='ingame-job-choice';
+  button.innerHTML='<b>'+item.name+' · '+item.price+' €</b><span>Im Geschäft kaufen</span>';
+  button.addEventListener('click',()=>{
+   const message=shopPanel.querySelector('#shopMessage');
+   if(careerMoney<item.price){message.textContent='Dafür fehlt dir noch Geld. Erledige einen Auftrag mit J.';return;}
+   careerMoney-=item.price;inventory[item.name]=(inventory[item.name]||0)+1;
+   if(careerHud)careerHud.innerHTML='KONTO: '+careerMoney.toLocaleString('de-DE')+' €<br>AUFTRÄGE: '+completedJobs+'<br>INVENTAR: '+Object.values(inventory).reduce((a,b)=>a+b,0);
+   message.textContent=item.name+' gekauft! Im Inventar: '+inventory[item.name];
+  });
+  products.appendChild(button);
+ }
+ shopPanel.querySelector('#shopMessage').textContent='Du bist bei '+shop.name+'.';
+ shopPanel.classList.remove('hidden');document.exitPointerLock?.();
+}
 function createTraffic(){
  const trafficSpecs=[
   [0xb9c5d0,'hatch'],[0x253e59,'sedan'],[0xc6a83a,'hatch'],[0xeeeeea,'van'],[0x7b3034,'sportback'],
@@ -438,7 +482,7 @@ function begin(){
     renderer.shadowMap.type=THREE.PCFSoftShadowMap;
     renderer.shadowMap.enabled=false;
     sunLight=null;hemiLight=null;
-    makeCity();buildInGameJobs();applyQuality();viewport.appendChild(renderer.domElement);resize();loop();
+    makeCity();buildInGameJobs();buildShopInteraction();applyQuality();viewport.appendChild(renderer.domElement);resize();loop();
     renderer.domElement.addEventListener('click',()=>renderer.domElement.requestPointerLock?.());
     document.addEventListener('pointerlockchange',()=>{
       locked=document.pointerLockElement===renderer.domElement;
@@ -456,6 +500,6 @@ function begin(){
 startButton?.addEventListener('click',begin);
 // In der eigenständigen Windows-Spielansicht direkt in die 3D-Stadt starten.
 if(document.body.classList.contains('game-app')) begin();
-document.addEventListener('keydown',e=>{keys[e.code]=true;if(e.code==='KeyF'&&!e.repeat)toggleVehicle();if(e.code==='KeyJ'&&!e.repeat)toggleJobs();if(e.code==='KeyL'&&!e.repeat)toggleFlashlight();if(e.code==='Escape'&&jobPanel&&!jobPanel.classList.contains('hidden'))jobPanel.classList.add('hidden');if(['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code))e.preventDefault();});
+document.addEventListener('keydown',e=>{keys[e.code]=true;if(e.code==='KeyE'&&!e.repeat)toggleShop();if(e.code==='KeyF'&&!e.repeat)toggleVehicle();if(e.code==='KeyJ'&&!e.repeat)toggleJobs();if(e.code==='KeyL'&&!e.repeat)toggleFlashlight();if(e.code==='Escape'&&jobPanel&&!jobPanel.classList.contains('hidden'))jobPanel.classList.add('hidden');if(e.code==='Escape'&&shopPanel&&!shopPanel.classList.contains('hidden'))shopPanel.classList.add('hidden');if(['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code))e.preventDefault();});
 document.addEventListener('keyup',e=>keys[e.code]=false);
 window.addEventListener('resize',resize);

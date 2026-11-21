@@ -202,3 +202,14 @@ Hinweis: Die Grafikprofile reduzieren vor allem die GPU-Last. Die tatsächliche 
 - Während einer Flugmission erscheinen zwei stilisierte Begleitflugzeuge als geskriptete militärische Verfolgungs-/Begleitsequenz. Keine Waffen oder taktischen Ausweichmechaniken.
 - Mit G kann in Reichweite ein vorbeifahrendes NPC-Fahrzeug über eine kurze, abstrakte Interaktion übernommen werden. Es werden keine realen Einbruchstechniken simuliert.
 - Die übernommenen Fahrzeuge verwenden das vorhandene Fahr- und Kamerasystem.
+
+
+## Version 0.4.7 – Küste, Strand und Motorboote
+- Neues, frei erfundenes Küstengebiet südlich der Stadt mit Sandstrand, Wasserfläche, Palmen und Sonnenschirmen.
+- Drei einfache Motorboote können am Ufer mit **F** betreten und verlassen werden.
+- Arcade-Steuerung auf dem Wasser: **W/S** beschleunigen/bremsen, **A/D** lenken; Kamera folgt dem Boot.
+- Wasseroberfläche und kleine Uferwellen bewegen sich dezent.
+- Die Fahrzeug-Interaktion erhält einen kurzen, nicht-grafischen Filmschnitt: Die NPC-Figur steigt aus und tritt zur Seite. Keine Gewaltdarstellung.
+- Das Küstengebiet ist ein bewusst fiktiver Zusatz und keine geografisch realistische Darstellung Frankfurts.
+
+Hinweis: Boote und Wasser sind einfache 3D-Prototypen ohne realistische Wasserphysik. Die Filmszene ist eine abstrahierte Animation.

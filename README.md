@@ -40,3 +40,11 @@ npm run dist
 Die Ausgabe liegt in `dist/`. GitHub Actions kann dieselben Windows-Builds erzeugen.
 
 Die ursprüngliche Version bleibt auf `main`; diese Neugestaltung liegt auf `frankfurt-life-redesign`.
+
+
+## Version 0.2.5 – Controller & Stadt-Upgrade
+- Standard-Gamepad-Unterstützung über die Gamepad API: linker Stick zum Bewegen/Fahren, rechter Stick zum Umsehen, Trigger zum Gasgeben/Bremsen.
+- Controller-Belegung: A Interaktion, B Handy, X Fahrzeug, Y Jobs, LB Kamera, RB Taschenlampe, Start Menüs schließen; D-Pad als Bewegungsalternative.
+- Tastatur und Controller können parallel verwendet werden.
+- Zusätzliche Zebrastreifen, animierte Ampeln und zwei gestaltete Bushaltestellen.
+- PS5-Portierung ist nicht enthalten; dafür sind Sonys Entwicklerzugang und das PlayStation-SDK erforderlich.

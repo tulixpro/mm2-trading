@@ -246,6 +246,65 @@ function createTraffic(){
   trafficCars.push(car);
  }
 }
+function plazaLamp(x,z){
+ const pole=new THREE.Mesh(new THREE.CylinderGeometry(.06,.1,4.6,8),new THREE.MeshStandardMaterial({color:0x34414a,metalness:.5,roughness:.45}));
+ pole.position.set(x,2.3,z);scene.add(pole);
+ const head=new THREE.Mesh(new THREE.BoxGeometry(.55,.16,.32),new THREE.MeshStandardMaterial({color:0xffe5a6,emissive:0x7b5424,emissiveIntensity:.55}));
+ head.position.set(x,4.55,z);scene.add(head);
+}
+function createPedestrianDistrict(){
+ const paving=new THREE.Mesh(new THREE.PlaneGeometry(20,164),new THREE.MeshStandardMaterial({color:0xb8b6ad,roughness:.94}));
+ paving.rotation.x=-Math.PI/2;paving.position.set(32,-.005,-35);scene.add(paving);
+ const edgeMat=new THREE.MeshStandardMaterial({color:0x747f83,roughness:.8});
+ for(const x of [21.8,42.2]){
+  const edge=new THREE.Mesh(new THREE.BoxGeometry(.35,.22,164),edgeMat);edge.position.set(x,.08,-35);scene.add(edge);
+ }
+ const tileMat=new THREE.MeshStandardMaterial({color:0x999e9c,roughness:.9});
+ for(let z=-112;z<48;z+=8){
+  const seam=new THREE.Mesh(new THREE.BoxGeometry(19.2,.025,.08),tileMat);seam.position.set(32,.018,z);scene.add(seam);
+ }
+ // Kleiner Stadtplatz mit Brunnen
+ const square=new THREE.Mesh(new THREE.PlaneGeometry(27,24),new THREE.MeshStandardMaterial({color:0xc7c1b2,roughness:.9}));
+ square.rotation.x=-Math.PI/2;square.position.set(31.5,.025,-48);scene.add(square);
+ const basin=new THREE.Mesh(new THREE.CylinderGeometry(3.1,3.4,.55,24),new THREE.MeshStandardMaterial({color:0x777f82,roughness:.35,metalness:.35}));
+ basin.position.set(31.5,.32,-48);scene.add(basin);
+ const water=new THREE.Mesh(new THREE.CylinderGeometry(2.72,2.72,.12,24),new THREE.MeshStandardMaterial({color:0x55a8c0,roughness:.18,metalness:.25,transparent:true,opacity:.9}));
+ water.position.set(31.5,.64,-48);scene.add(water);
+ const jet=new THREE.Mesh(new THREE.CylinderGeometry(.12,.2,1.15,10),new THREE.MeshStandardMaterial({color:0x9db4bd,metalness:.55,roughness:.25}));
+ jet.position.set(31.5,1.05,-48);scene.add(jet);
+ for(const z of [-105,-82,-24,4,28]){
+  for(const x of [24.5,39.5]){
+   const trunk=new THREE.Mesh(new THREE.CylinderGeometry(.14,.2,2,7),new THREE.MeshStandardMaterial({color:0x604a38}));
+   trunk.position.set(x,1,z);scene.add(trunk);
+   const crown=new THREE.Mesh(new THREE.SphereGeometry(1.25,9,7),new THREE.MeshStandardMaterial({color:0x477b58,roughness:.95}));
+   crown.position.set(x,2.65,z);scene.add(crown);
+  }
+ }
+ for(const z of [-92,-66,-30,0,25]){
+  plazaLamp(22.8,z);plazaLamp(41.2,z);
+ }
+ // Sitzbänke entlang der Fußgängerzone
+ for(const z of [-100,-72,-20,10]){
+  for(const x of [26,37]){
+   const seat=new THREE.Mesh(new THREE.BoxGeometry(2.1,.18,.62),new THREE.MeshStandardMaterial({color:0x805c3e,roughness:.8}));
+   seat.position.set(x,.65,z);scene.add(seat);
+   const legs=new THREE.Mesh(new THREE.BoxGeometry(1.8,.65,.12),edgeMat);legs.position.set(x,.34,z);scene.add(legs);
+  }
+ }
+ // Kleine Poller markieren die autofreie Zone
+ for(const z of [-114,-108,-2,4,42]){
+  for(const x of [22.5,41.5]){
+   const bollard=new THREE.Mesh(new THREE.CylinderGeometry(.13,.16,.8,8),new THREE.MeshStandardMaterial({color:0x283c4b,metalness:.45,roughness:.35}));
+   bollard.position.set(x,.4,z);scene.add(bollard);
+   const cap=new THREE.Mesh(new THREE.CylinderGeometry(.14,.14,.08,8),new THREE.MeshStandardMaterial({color:0xe0b85b,metalness:.25}));
+   cap.position.set(x,.82,z);scene.add(cap);
+  }
+ }
+ for(let i=0;i<14;i++){
+  const x=25+(i%4)*4.2,z=-108+Math.floor(i/4)*36+(i%3)*3;
+  makePedestrian(x,z,24+i);
+ }
+}
 function makeCity(){
   scene=new THREE.Scene();scene.background=new THREE.Color(0x91b1c8);scene.fog=new THREE.Fog(0x91b1c8,65,185);
   camera=new THREE.PerspectiveCamera(72,viewport.clientWidth/viewport.clientHeight,.1,260);camera.position.set(0,2.1,14);
@@ -271,6 +330,7 @@ function makeCity(){
   makeCar(4,-8,0x1c354d,false,'sportback');
   makeCar(-3,-35,0xffffff,true,'sedan');
   createTraffic();
+  createPedestrianDistrict();
   for(let i=0;i<24;i++){
     const side=i%2===0?-1:1;
     makePedestrian(side*(9.1+(i%4)*.38),-108+(i*9.7)%128,i);
@@ -322,6 +382,8 @@ function move(){
       status.textContent='AUFTRAG ERLEDIGT · +'+reward+' € · F ZUM AUSSTEIGEN';
       jobDestination=null;
     }
+    // Der östliche Stadtplatz ist autofrei; Fahrzeuge bleiben auf den Straßen.
+    if(jobCar.position.x>22&&jobCar.position.z>-118&&jobCar.position.z<48)jobCar.position.x=22;
     jobCar.position.x=Math.max(-48,Math.min(48,jobCar.position.x));
     jobCar.position.z=Math.max(-115,Math.min(45,jobCar.position.z));
     yaw=jobCar.rotation.y-Math.PI;

@@ -140,3 +140,10 @@ Hinweis: Das ist ein stilisiertes Low-Poly-Schadensmodell, keine realistische Ka
 - Handbremse verstärkt das Ausbrechen des Hecks und ermöglicht Drifts.
 - Fortschreitende optische Schäden: versetzte Stoßfänger, Dellen, Kratzer, Risse, beschädigte Scheinwerfer und Rauch bei schweren Schäden.
 - Weiterhin vereinfachte Arcade-Physik; Reifen-, Federungs- und echte Crashsimulation sind nicht enthalten.
+
+### Version 0.3.9 – Fahrphysik- und Schadens-Update
+- Überarbeitete Fahrphysik mit stärker differenziertem Antrieb, Betriebsbremse und Rollwiderstand.
+- Regen und Nebel reduzieren die Reifenhaftung; beschädigte Fahrzeuge verlieren zusätzlich Grip und Höchstgeschwindigkeit.
+- Lenkreaktion und seitlicher Reifenschlupf reagieren stärker auf Tempo, Fahrbahnzustand und Handbremse.
+- Kollisionen unterscheiden leichte und stärkere Aufpralle; stärkere Treffer verursachen mehr Fahrzeugschaden und beeinflussen die Fahrstabilität.
+- Weiterhin eine Arcade-/Prototyp-Physik, keine vollständige Reifen-, Federungs- oder Crashsimulation.

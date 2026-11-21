@@ -110,18 +110,22 @@ function flClaimDaily(){flCheckDailyDate();if(flDailyClaimed){status.textContent
 function flBuildStatus(){flWeatherLabel=document.createElement('div');flWeatherLabel.style.cssText='position:absolute;left:16px;top:16px;z-index:8;padding:7px 10px;border:1px solid #ffffff35;border-radius:8px;background:#101b2ddd;color:#eaf6ff;font:700 11px system-ui;pointer-events:none';viewport.appendChild(flWeatherLabel);flFuelLabel=document.createElement('div');flFuelLabel.style.cssText='position:absolute;left:16px;top:52px;z-index:8;padding:7px 10px;border:1px solid #ffffff35;border-radius:8px;background:#101b2ddd;color:#eaf6ff;font:700 11px system-ui;pointer-events:none';viewport.appendChild(flFuelLabel);flUpdateStatus();}
 function flUpdateStatus(){if(flWeatherLabel)flWeatherLabel.textContent='🕒 '+String(Math.floor(flGameHour)).padStart(2,'0')+':'+String(Math.floor(flGameHour%1*60)).padStart(2,'0')+' · '+flWeather;if(flFuelLabel)flFuelLabel.textContent='⛽ TANK: '+Math.round(flFuel)+'%';}
 function flApplyWeather(){if(!scene||!sunLight||!hemiLight)return;const wet=flWeather==='Regen';for(const mat of flWetRoadMaterials){mat.opacity=wet?.34:0;mat.needsUpdate=true;}if(flRainPoints)flRainPoints.visible=wet;const night=flGameHour<6||flGameHour>20,daylight=Math.max(.18,Math.sin((flGameHour-6)/14*Math.PI)),factor=flWeather==='Regen'?.62:flWeather==='Nebel'?.72:flWeather==='Bewölkt'?.82:1;sunLight.intensity=(night?.22:.55+daylight*1.25)*factor;sunLight.color.setHex(night?0x9bb8e8:classicEdition?(flWeather==='Regen'?0xc5a77d:0xffc078):(flWeather==='Regen'?0xaabbd0:0xffe0b4));hemiLight.intensity=(night?.65:1.1+daylight*.85)*factor;const color=night?0x17283d:classicEdition?(flWeather==='Nebel'?0xa99b80:flWeather==='Regen'?0x8c806b:flWeather==='Bewölkt'?0xa69778:0xb99a70):(flWeather==='Nebel'?0xaab6bc:flWeather==='Regen'?0x71899a:flWeather==='Bewölkt'?0x91a2ad:0x91b1c8);scene.background.setHex(color);if(scene.fog)scene.fog.color.setHex(color);}
+function flAddWetRoad(width,length,x,z){
+  const mat=new THREE.MeshPhongMaterial({color:0x526574,transparent:true,opacity:0,shininess:105,specular:0x8fa8bb,depthWrite:false});
+  const mesh=new THREE.Mesh(new THREE.PlaneGeometry(width,length),mat);mesh.rotation.x=-Math.PI/2;mesh.position.set(x,.018,z);scene.add(mesh);flWetRoadMaterials.push(mat);
+}
 function flCreateWeatherEffects(){
   if(!scene||flRainPoints)return;
-  const count=liteMode?90:260;flRainPositions=new Float32Array(count*3);
-  for(let i=0;i<count;i++){flRainPositions[i*3]=(Math.random()-.5)*46;flRainPositions[i*3+1]=Math.random()*24;flRainPositions[i*3+2]=(Math.random()-.5)*58;}
+  const count=liteMode?70:190;flRainPositions=new Float32Array(count*6);
+  for(let i=0;i<count;i++){const k=i*6;flRainPositions[k]=(Math.random()-.5)*46;flRainPositions[k+1]=Math.random()*24;flRainPositions[k+2]=(Math.random()-.5)*58;flRainPositions[k+3]=flRainPositions[k]+.12;flRainPositions[k+4]=flRainPositions[k+1]-.62;flRainPositions[k+5]=flRainPositions[k+2]+.05;}
   const geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.BufferAttribute(flRainPositions,3));
-  const material=new THREE.PointsMaterial({color:0xb9d9ed,size:liteMode?.045:.065,transparent:true,opacity:.58,depthWrite:false});
-  flRainPoints=new THREE.Points(geometry,material);flRainPoints.visible=flWeather==='Regen';scene.add(flRainPoints);
+  const material=new THREE.LineBasicMaterial({color:0xc7e4f4,transparent:true,opacity:.48,depthWrite:false});
+  flRainPoints=new THREE.LineSegments(geometry,material);flRainPoints.visible=flWeather==='Regen';scene.add(flRainPoints);
 }
 function flUpdateRain(dt){
   if(!flRainPoints||!camera||flWeather!=='Regen')return;
   const p=flRainPoints.geometry.attributes.position.array;
-  for(let i=0;i<p.length;i+=3){p[i+1]-=dt*22;if(p[i+1]<0){p[i]=camera.position.x+(Math.random()-.5)*46;p[i+1]=18+Math.random()*8;p[i+2]=camera.position.z+(Math.random()-.5)*58;}}
+  for(let i=0;i<p.length;i+=6){p[i+1]-=dt*22;p[i+4]-=dt*22;if(p[i+1]<0){p[i]=camera.position.x+(Math.random()-.5)*46;p[i+1]=18+Math.random()*8;p[i+2]=camera.position.z+(Math.random()-.5)*58;p[i+3]=p[i]+.12;p[i+4]=p[i+1]-.62;p[i+5]=p[i+2]+.05;}}
   flRainPoints.position.set(0,0,0);flRainPoints.geometry.attributes.position.needsUpdate=true;
 }
 function flBuyHome(){if(flHomeOwned){status.textContent='DU HAST BEREITS EINE WOHNUNG';return;}if(careerMoney<800){status.textContent='DU BENÖTIGST 800 € FÜR DIE ERSTE MIETE';return;}careerMoney-=800;flHomeOwned=true;flSaveGame();if(careerHud)careerHud.innerHTML='KONTO: '+careerMoney.toLocaleString('de-DE')+' €<br>AUFTRÄGE: '+completedJobs;status.textContent='WOHNUNG GEMIETET · 800 € KAUTION';openPhoneApp('housing');}
@@ -1287,7 +1291,7 @@ function makeCity(){
   const sideWalkMat=new THREE.MeshStandardMaterial({color:0x92999b,roughness:.9});
   for(const x of [-160,-130,-82,-48,48,82,130,160]){
     const avenue=new THREE.Mesh(new THREE.PlaneGeometry(11,520),sideRoadMat);
-    avenue.rotation.x=-Math.PI/2;avenue.position.set(x,.005,-45);scene.add(avenue);
+    avenue.rotation.x=-Math.PI/2;avenue.position.set(x,.005,-45);scene.add(avenue);flAddWetRoad(10.8,519,x,-45);
     for(const sx of [x-7.5,x+7.5]){
       const pavement=new THREE.Mesh(new THREE.BoxGeometry(3,.2,520),sideWalkMat);
       pavement.position.set(sx,.06,-45);scene.add(pavement);
@@ -1295,7 +1299,7 @@ function makeCity(){
   }
   for(let z=-190;z<=95;z+=(liteMode?76:38)){
     const cross=new THREE.Mesh(new THREE.PlaneGeometry(360,9),sideRoadMat);
-    cross.rotation.x=-Math.PI/2;cross.position.set(0,.012,z);scene.add(cross);
+    cross.rotation.x=-Math.PI/2;cross.position.set(0,.012,z);scene.add(cross);flAddWetRoad(359,8.8,0,z);
     for(const x of [-166,-136,-96,-66,-30,30,66,96,136,166]){
       const h=18+((Math.abs(Math.floor(z/38))+Math.abs(Math.floor(x/30)))%5)*7;
       const palette=[0xb7b2a7,0x8c9da5,0xc2b59f,0x697c89,0xa6b0ad];

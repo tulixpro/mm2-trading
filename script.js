@@ -35,6 +35,8 @@ qualitySelect?.addEventListener('change',applyQuality);
 fpsSelect?.addEventListener('change',()=>{maxFps=fpsSelect.value==='unlimited'?0:Number(fpsSelect.value);});
 mouseSelect?.addEventListener('change',()=>{mouseSensitivity=Number(mouseSelect.value)||1;});
 fovSelect?.addEventListener('change',()=>{cameraFov=Number(fovSelect.value)||68;if(camera){camera.fov=cameraFov;camera.updateProjectionMatrix();}});
+const cameraSelect=document.querySelector('#cameraSelect');
+cameraSelect?.addEventListener('change',()=>{cameraMode=cameraSelect.value||'follow';status.textContent='KAMERA: '+({follow:'VERFOLGER',close:'NAH',hood:'MOTORHAUBE'}[cameraMode]||'VERFOLGER');});
 let renderer,scene,camera,raf,started=false,yaw=0,pitch=0,locked=false;
 const keys={};
 const pedestrians=[];
@@ -89,18 +91,18 @@ function openPhoneApp(app){
  bank:'<div class="phone-page-head">Frankfurt Bank</div><div class="phone-balance">'+careerMoney.toLocaleString('de-DE')+' €</div><p>Dein Kontostand</p><div class="phone-stat">Abgeschlossene Jobs <b>'+completedJobs+'</b></div>',
  garage:'<div class="phone-page-head">Meine Garage</div><p>Eigene Fahrzeuge: '+ownedCars.length+'</p>'+ownedCars.map(id=>'<div class="phone-stat">'+(dealerCars.find(v=>v.id===id)?.name||id)+' <b>✓</b></div>').join('')+'<button data-action="dealer">Autohändler öffnen</button>',
  dealer:'<div class="phone-page-head">Frankfurt Motors</div><p>Fahrzeuge ansehen und kaufen – besuche auch den Showroom in der Stadt.</p><button data-action="dealer">Showroom öffnen</button>',
- inventory:'<div class="phone-page-head">Inventar & Essen</div><div class="phone-stat">Sättigung <b>'+appetite+'%</b></div>'+['Brot','Brezel','Croissant','Kuchen','Kaffee','Snack','Pizza','Pasta','Limo'].map(name=>'<div class="phone-stat"><span>'+name+' · '+(inventory[name]||0)+'</span><button data-eat="'+name+'">Verzehren</button></div>').join(''),
+ inventory:'<div class="phone-page-head">Inventar & Essen</div><div class="phone-stat">Sättigung <b>'+appetite+'%</b></div>'+['Brot','Brezel','Croissant','Kuchen','Kaffee','Snack','Pizza','Pasta','Limo','Burger-Menü','Schnitzel','Salat','Cola'].map(name=>'<div class="phone-stat"><span>'+name+' · '+(inventory[name]||0)+'</span><button data-eat="'+name+'">Verzehren</button></div>').join(''),
  housing:'<div class="phone-page-head">Wohnen</div><div class="phone-stat">Wohnviertel <b>Erreichbar</b></div><p>Entdecke Wohnungen und Mehrfamilienhäuser in der Stadt.</p>',
  transit:'<div class="phone-page-head">ÖPNV</div><div class="phone-stat">Linie 1 <b>Innenstadt</b></div><div class="phone-stat">Linie 2 <b>Wohnviertel</b></div><p>Fahrpläne sind eine Spiel-Demo.</p>',
  news:'<div class="phone-page-head">Stadt-News</div><div class="phone-stat">Neue Jobs in der Innenstadt</div><div class="phone-stat">Frankfurt Motors eröffnet</div><p>Bleib auf dem Laufenden.</p>',
  camera:'<div class="phone-page-head">Kamera</div><p>Fotomodus – richte die Kamera in der Stadt aus und mach einen Screenshot mit Windows.</p>',
  services:'<div class="phone-page-head">Stadtservice</div><div class="phone-stat">Mängel melden <b>Online</b></div><div class="phone-stat">Fundbüro <b>Offen</b></div>',
  settings:'<div class="phone-page-head">Einstellungen</div><p>Grafikqualität und FPS kannst du oben im Spiel ändern.</p>',
- help:'<div class="phone-page-head">Hilfe & Steuerung</div><p>WASD bewegen · Maus umsehen · Shift sprinten · J Missionen · F Auto · E Interaktion · F1 Handy.</p>'
+ help:'<div class="phone-page-head">Hilfe & Steuerung</div><p>WASD bewegen · Maus umsehen · Shift sprinten · J Missionen · F Auto · C Kamera wechseln · E Interaktion · F1 Handy.</p>'
  };
  page.innerHTML='<button class="phone-back" data-action="home">‹ Apps</button>'+(pages[app]||'');
  if(app==='map'){const mc=page.querySelector('#phoneMapCanvas');if(mc){const cx=mc.getContext('2d');cx.fillStyle='#324c51';cx.fillRect(0,0,520,420);cx.strokeStyle='#a6aaa0';cx.lineWidth=18;for(let x=35;x<520;x+=95){cx.beginPath();cx.moveTo(x,0);cx.lineTo(x,420);cx.stroke();}for(let y=35;y<420;y+=85){cx.beginPath();cx.moveTo(0,y);cx.lineTo(520,y);cx.stroke();}cx.fillStyle='#397f98';cx.fillRect(0,345,520,45);cx.fillStyle='#e7e1cc';cx.font='bold 18px Arial';cx.fillText('MAIN',25,374);cx.fillStyle='#f0c65b';cx.font='bold 15px Arial';cx.fillText('BANKENVIERTEL',270,80);cx.fillText('INNENSTADT',40,220);cx.fillStyle='#68e7ff';cx.beginPath();cx.arc(260,210,9,0,Math.PI*2);cx.fill();}}
- page.querySelectorAll('[data-eat]').forEach(b=>b.addEventListener('click',()=>{const name=b.dataset.eat;if((inventory[name]||0)<1){b.textContent='Nicht vorhanden';return;}inventory[name]--;appetite=Math.min(100,appetite+({Brot:18,Brezel:15,Croissant:16,Kuchen:20,Kaffee:7,Snack:12,Pizza:28,Pasta:25,Limo:6}[name]||10));openPhoneApp('inventory');}));
+ page.querySelectorAll('[data-eat]').forEach(b=>b.addEventListener('click',()=>{const name=b.dataset.eat;if((inventory[name]||0)<1){b.textContent='Nicht vorhanden';return;}inventory[name]--;appetite=Math.min(100,appetite+({Brot:18,Brezel:15,Croissant:16,Kuchen:20,Kaffee:7,Snack:12,Pizza:28,Pasta:25,Limo:6,'Burger-Menü':24,Schnitzel:26,Salat:15,Cola:5}[name]||10));openPhoneApp('inventory');}));
  page.querySelectorAll('[data-action]').forEach(b=>b.addEventListener('click',()=>{const action=b.dataset.action;if(action==='home')showPhoneHome();if(action==='jobs'){phonePanel.classList.add('hidden');toggleJobs();}if(action==='dealer'){phonePanel.classList.add('hidden');openDealer();}}));
 }
 function togglePhone(){

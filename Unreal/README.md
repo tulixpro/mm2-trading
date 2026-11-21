@@ -1,36 +1,65 @@
 # Frankfurt Life – native Unreal projects
 
-This folder contains the initial native Unreal Engine project scaffolds. They are separate from the existing Three.js/Electron prototype.
+Two separate native Unreal Engine starter projects are maintained alongside the existing Three.js/Electron prototype.
 
-## Projects
+## Editions
 
-- `Realistic/FrankfurtLifeRealistic.uproject`: Unreal Engine **5.4**, intended for newer gaming laptops/PCs.
-- `SanAndreas/FrankfurtLifeSanAndreas.uproject`: Unreal Engine **4.27**, intended as a lower-cost retro edition for older laptops.
+- **Realistic:** Unreal Engine 5.4 – `Realistic/FrankfurtLifeRealistic.uproject`, intended for newer gaming PCs/laptops.
+- **San Andreas:** Unreal Engine 4.27 – `SanAndreas/FrankfurtLifeSanAndreas.uproject`, retro-inspired visual direction and lower-cost rendering target.
 
-## Important status
+## Implemented starter functionality
 
-These are starter projects, not finished games. They do not yet contain the Frankfurt map, vehicle assets, character models, missions, cutscenes, or packaged installers. They must be opened with the matching Unreal Engine version, compiled, and tested on real hardware.
+Both projects now include:
+- Native C++ first-person character with camera and basic walking/jumping
+- Keyboard/mouse input mappings (WASD, mouse look, Space)
+- Dedicated GameMode selecting the native player character
+- Separate engine and input configuration per edition
 
-## Design targets
+## Honest project status
 
-### Realistic Edition (UE 5.4)
-- High-detail urban environment, physically based materials, modern lighting.
-- Lumen is enabled as the high-end lighting path; scalability profiles must be tested and tuned.
-- Target hardware: modern dedicated GPU, 16–32 GB RAM recommended for development.
+**These are early playable-code foundations, not finished open-world games.** They do not yet include a finished Frankfurt map, authored buildings/interiors, vehicle driving, NPC AI, mission system, cutscenes, audio, save system, UI, or packaged installers. The new C++ projects have not yet been compiled in Unreal Editor in this environment. Build compatibility must be confirmed with the exact engine version and Visual Studio toolchain.
 
-### San Andreas Edition (UE 4.27)
-- Retro-inspired art direction, simpler materials and geometry, smaller texture budgets.
-- DirectX 11 / scalable rendering path; no Lumen or Nanite.
-- Lower shadow quality, shorter view distance, reduced effects by default.
-- UE 4.27 is an older toolchain and may not support every current GPU/driver combination. Compatibility needs testing.
+The existing browser game remains available:
+- Modern/browser: https://tulixpro.github.io/mm2-trading/game.html
+- San Andreas browser preset: https://tulixpro.github.io/mm2-trading/game.html?edition=sanandreas
 
-## Build workflow
+## Open and build
 
-1. Install the exact engine version from Epic Games Launcher.
-2. Install Visual Studio with the matching C++ desktop/game development components.
-3. Right-click the `.uproject` and generate project files if prompted.
-4. Build the Editor target in Development Editor / Win64.
-5. Open the project, then add the actual world, assets, gameplay, audio and UI.
-6. Package Development builds first; only publish after playtesting and profiling.
+1. Install the matching engine version from Epic Games Launcher (UE 5.4 for Realistic; UE 4.27 for San Andreas).
+2. Install Visual Studio with the C++ game-development workload and the Windows SDK.
+3. Open the matching `.uproject` file and allow Unreal to generate project files.
+4. Build the Development Editor target, then open the editor.
+5. Create a level and set up lighting, landscape, roads, buildings and a PlayerStart before packaging.
 
-The existing browser game remains available while these native projects are developed.
+## Performance direction
+
+### Realistic (UE 5.4)
+- High-detail PBR assets and modern lighting are the target.
+- Lumen/Nanite should be profiled and offered as optional high-end settings, not assumed to run well on every laptop.
+- Target audience: recent dedicated-GPU gaming laptops/PCs.
+
+### San Andreas (UE 4.27)
+- Retro-inspired art direction, simplified geometry and materials, smaller texture budgets.
+- DirectX 11-friendly rendering target, no Lumen/Nanite.
+- Shorter view distance, restrained shadows and effects by default.
+- UE 4.27 is an older toolchain; modern OS/GPU driver compatibility still requires testing.
+
+## Hardware notes
+
+Requirements below are planning targets, not validated minimum specifications. Final requirements must be based on packaged builds and tests on real devices.
+
+| Edition | Provisional minimum target | Recommended target |
+|---|---|---|
+| San Andreas UE 4.27 | 8 GB RAM, quad-core CPU, DX11-capable GPU with 2 GB VRAM | 16 GB RAM, 4+ CPU cores, dedicated GPU with 4 GB VRAM, SSD |
+| Realistic UE 5.4 | 16 GB RAM, 6-core CPU, DX12-capable dedicated GPU with 6 GB VRAM | 32 GB RAM, 8-core CPU, dedicated GPU with 8+ GB VRAM, SSD |
+
+These are internal targets only and are not yet confirmed by performance tests. UE4.27 does not guarantee support for every very old laptop; an integrated GPU may still be below the target.
+
+## Next production milestones
+
+1. Create and profile a compact vertical-slice level in each engine.
+2. Build modular Frankfurt streets, landmarks and interiors.
+3. Add drivable vehicles and traffic.
+4. Add NPC schedules, jobs, missions and cinematic sequences.
+5. Add save/load, audio, settings and accessibility.
+6. Test packaged builds on low-, mid- and high-spec hardware before publishing installers.

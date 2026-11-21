@@ -97,7 +97,9 @@ const dealerCars=[
  {id:'alpina',name:'Luxury Coupé',model:'coupe',color:0x075b45,price:5200,desc:'Elegantes Oberklasse-Coupé.'},
  {id:'super',name:'Super Sport',model:'super',color:0xd7ed12,price:9500,desc:'Für schnelle Ausfahrten.'},
  {id:'van',name:'Cargo Van',model:'van',color:0xe6e8e8,price:2400,desc:'Viel Platz für Transportjobs.'},
- {id:'bmw-xm-label',name:'XM Label · 748 PS',model:'suv',color:0x263b35,price:185000,desc:'Großes Performance-SUV · 748 PS · prozedurales Platzhaltermodell, kein Original-3D-Scan.'}
+ {id:'bmw-xm-label',name:'XM Label · 748 PS',model:'suv',color:0x263b35,price:185000,desc:'Großes Performance-SUV · 748 PS · prozedurales Platzhaltermodell, kein Original-3D-Scan.'},
+ {id:'bmw-m3-touring',name:'BMW M3 Competition Touring · 530 PS',model:'sedan',color:0x1c3548,price:118000,desc:'530 PS · 650 Nm · 0–100 km/h: 3,6 s · generische Platzhalter-Karosserie, kein lizenziertes BMW-3D-Modell.'},
+ {id:'porsche-911-gts',name:'Porsche 911 Carrera GTS · 541 PS',model:'super',color:0x8f171d,price:165000,desc:'541 PS Systemleistung · 610 Nm Systemdrehmoment · 0–100 km/h: 3,0 s · generische Platzhalter-Karosserie, kein lizenziertes Porsche-3D-Modell.'}
 ];
 let dealerPanel=null,dealership={x:-28,z:82,name:'Frankfurt Motors'};
 /* 0.2.9 gameplay systems */

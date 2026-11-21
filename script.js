@@ -1,3 +1,5 @@
+const classicEdition=new URLSearchParams(location.search).get('edition')==='classic';
+if(classicEdition){document.body.classList.add('classic-edition');document.title='Frankfurt Life Classic – Retro-3D';}
 const THREE = await import('./node_modules/three/build/three.module.js').catch(()=>import('https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js'));
 
 let deferredInstallPrompt=null;
@@ -11,6 +13,7 @@ const viewport=document.querySelector('#gameViewport');
 const status=document.querySelector('#gameStatus');
 const coords=document.querySelector('#coords');
 const qualitySelect=document.querySelector('#qualitySelect');
+if(classicEdition&&qualitySelect){qualitySelect.value='legacy';qualitySelect.disabled=true;const label=qualitySelect.closest('label');if(label)label.firstChild.textContent='CLASSIC-GRAFIK ';}
 const fpsSelect=document.querySelector('#fpsSelect');
 const mouseSelect=document.querySelector('#mouseSelect');
 const fovSelect=document.querySelector('#fovSelect');

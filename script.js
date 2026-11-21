@@ -121,13 +121,13 @@ const jobs=[
  {name:'Möbeltransport',vehicle:'van',desc:'Transportiere Möbel zu einer neuen Wohnung.'},
  {name:'Stadtwerke',vehicle:'service',desc:'Fahre zu einer gemeldeten Störung.'}
 ];
-let jobPanel,jobActive=false,jobCar=null,jobDestination=null;
+let jobPanel,careerHud,jobActive=false,jobCar=null,jobDestination=null;
 let driving=false,carSpeed=0,careerMoney=0,completedJobs=0;
 function buildInGameJobs(){
  jobPanel=document.createElement('div');jobPanel.id='inGameJobs';jobPanel.className='ingame-jobs hidden';
  jobPanel.innerHTML='<div class="ingame-jobs-head"><b>FRANKFURT LIFE / JOBZENTRALE</b><button id="closeJobs" aria-label="Schließen">×</button></div><h3>Wähle deinen Beruf</h3><p class="ingame-jobs-hint">Dein Auftrag und das passende Dienstfahrzeug starten direkt in der 3D-Stadt.</p><div id="ingameJobChoices"></div><div id="ingameJobDetail">Wähle einen Job aus.</div><button id="startJob" class="ingame-start" disabled>AUFTRAG ANNEHMEN</button><small>J oder ESC · Menü schließen</small>';
  viewport.appendChild(jobPanel);
- const careerHud=document.createElement('div');careerHud.id='careerHud';careerHud.style.cssText='position:absolute;top:14px;right:14px;z-index:8;padding:10px 14px;border:1px solid #ffffff30;border-radius:10px;background:#101b2ddd;color:#fff;font:700 13px/1.6 system-ui;pointer-events:none;';careerHud.innerHTML='KONTO: 0 €<br>AUFTRÄGE: 0';viewport.appendChild(careerHud);
+ careerHud=document.createElement('div');careerHud.id='careerHud';careerHud.style.cssText='position:absolute;top:14px;right:14px;z-index:8;padding:10px 14px;border:1px solid #ffffff30;border-radius:10px;background:#101b2ddd;color:#fff;font:700 13px/1.6 system-ui;pointer-events:none;';careerHud.innerHTML='KONTO: 0 €<br>AUFTRÄGE: 0';viewport.appendChild(careerHud);
  const choices=jobPanel.querySelector('#ingameJobChoices'),detail=jobPanel.querySelector('#ingameJobDetail'),accept=jobPanel.querySelector('#startJob');
  let selected=0;
  jobs.forEach((job,i)=>{
@@ -270,8 +270,7 @@ function begin(){
     renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,1));
     renderer.outputColorSpace=THREE.SRGBColorSpace;
     renderer.shadowMap.enabled=false;
-    applyQuality();viewport.appendChild(renderer.domElement);
-    makeCity();buildInGameJobs();resize();loop();
+    makeCity();buildInGameJobs();applyQuality();viewport.appendChild(renderer.domElement);resize();loop();
     renderer.domElement.addEventListener('click',()=>renderer.domElement.requestPointerLock?.());
     document.addEventListener('pointerlockchange',()=>{
       locked=document.pointerLockElement===renderer.domElement;

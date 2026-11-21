@@ -40,7 +40,7 @@ fpsSelect?.addEventListener('change',()=>{maxFps=fpsSelect.value==='unlimited'?0
 mouseSelect?.addEventListener('change',()=>{mouseSensitivity=Number(mouseSelect.value)||1;});
 fovSelect?.addEventListener('change',()=>{cameraFov=Number(fovSelect.value)||68;if(camera){camera.fov=cameraFov;camera.updateProjectionMatrix();}});
 const cameraSelect=document.querySelector('#cameraSelect');
-cameraSelect?.addEventListener('change',()=>{cameraMode=cameraSelect.value||'follow';status.textContent='KAMERA: '+({follow:'VERFOLGER',close:'NAH',hood:'MOTORHAUBE'}[cameraMode]||'VERFOLGER');});
+cameraSelect?.addEventListener('change',()=>{cameraMode=cameraSelect.value||'follow';status.textContent='KAMERA: '+({follow:'VERFOLGER',close:'NAH',hood:'MOTORHAUBE',ego:'EGO-PERSPEKTIVE'}[cameraMode]||'VERFOLGER');});
 let renderer,scene,camera,raf,started=false,yaw=0,pitch=0,locked=false;
 const keys={};
 const keyboardKeys={};
@@ -1158,8 +1158,13 @@ function move(){
     jobCar.position.x=Math.max(-178,Math.min(178,jobCar.position.x));
     jobCar.position.z=Math.max(-298,Math.min(218,jobCar.position.z));
     yaw=jobCar.rotation.y-Math.PI+cameraLookOffset;
-    camera.position.copy(jobCar.position).addScaledVector(forward,cameraMode==='close'?-3.6:cameraMode==='hood'?1:-6);
-    camera.position.y=cameraMode==='hood'?1.55:cameraMode==='close'?2.55:3.2;
+    if(cameraMode==='ego'){
+      // Fahrerblick knapp hinter dem Lenkrad, innerhalb des Cockpits.
+      camera.position.copy(jobCar.localToWorld(new THREE.Vector3(-.42,1.48,.43)));
+    }else{
+      camera.position.copy(jobCar.position).addScaledVector(forward,cameraMode==='close'?-3.6:cameraMode==='hood'?1:-6);
+      camera.position.y=cameraMode==='hood'?1.55:cameraMode==='close'?2.55:3.2;
+    }
     if(damageFlash>0)damageFlash=Math.max(0,damageFlash-.02);
   }else{
     const speed=(keys.ShiftLeft||keys.ShiftRight)?.2:.12;
@@ -1181,7 +1186,7 @@ function toggleFlashlight(){
   flashlightOn=!flashlightOn;flashlight.intensity=flashlightOn?3.2:0;
   status.textContent=flashlightOn?'TASCHENLAMPE AN · L ZUM AUSSCHALTEN':'TASCHENLAMPE AUS · L ZUM EINSCHALTEN';
 }
-function cycleCamera(){cameraMode=cameraMode==='follow'?'close':cameraMode==='close'?'hood':'follow';status.textContent='KAMERA: '+({follow:'VERFOLGER',close:'NAH',hood:'MOTORHAUBE'}[cameraMode]);}
+function cycleCamera(){cameraMode=cameraMode==='follow'?'close':cameraMode==='close'?'hood':cameraMode==='hood'?'ego':'follow';status.textContent='KAMERA: '+({follow:'VERFOLGER',close:'NAH',hood:'MOTORHAUBE',ego:'EGO-PERSPEKTIVE'}[cameraMode]);}
 function toggleVehicle(){
   if(!jobCar){status.textContent='WÄHLE ZUERST EINEN JOB MIT J';return;}
   if(!driving){

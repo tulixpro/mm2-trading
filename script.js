@@ -44,6 +44,7 @@ const streetLights=[];
 const shops=[];
 const inventory={Kaffee:0,Snack:0,Stadtplan:0,Brot:0,Brezel:0,Croissant:0,Kuchen:0};
 let miniMapCanvas=null,miniMapCtx=null,tuningLevel=0,paintLevel=0,mouseSensitivity=1,cameraFov=68;
+let appetite=65;
 let shopPanel=null,currentShop=null;
 const clock=new THREE.Clock();
 let missionHud=null,jobStops=[],jobStopIndex=0;
@@ -72,7 +73,7 @@ function buildPhone(){
 function showPhoneHome(){
  phonePage='home';const grid=phonePanel.querySelector('#phoneApps'),page=phonePanel.querySelector('#phonePage');
  page.classList.add('hidden');grid.classList.remove('hidden');
- const apps=[['map','🗺️','Karte'],['jobs','💼','Missionen'],['bank','🏦','Bank'],['garage','🚘','Garage'],['housing','🏠','Wohnen'],['transit','🚋','ÖPNV'],['news','📰','News'],['camera','📷','Kamera'],['services','🛠️','Service'],['settings','⚙️','Einstellungen'],['help','❔','Hilfe'],['dealer','🚗','Autohändler']];
+ const apps=[['map','🗺️','Karte'],['jobs','💼','Missionen'],['bank','🏦','Bank'],['garage','🚘','Garage'],['housing','🏠','Wohnen'],['transit','🚋','ÖPNV'],['news','📰','News'],['camera','📷','Kamera'],['services','🛠️','Service'],['settings','⚙️','Einstellungen'],['inventory','🎒','Inventar'],['help','❔','Hilfe'],['dealer','🚗','Autohändler']];
  grid.innerHTML=apps.map(a=>'<button class="phone-app" data-app="'+a[0]+'"><b>'+a[1]+'</b><span>'+a[2]+'</span></button>').join('');
  grid.querySelectorAll('[data-app]').forEach(b=>b.addEventListener('click',()=>openPhoneApp(b.dataset.app)));
 }
@@ -87,6 +88,7 @@ function openPhoneApp(app){
  bank:'<div class="phone-page-head">Frankfurt Bank</div><div class="phone-balance">'+careerMoney.toLocaleString('de-DE')+' €</div><p>Dein Kontostand</p><div class="phone-stat">Abgeschlossene Jobs <b>'+completedJobs+'</b></div>',
  garage:'<div class="phone-page-head">Meine Garage</div><p>Eigene Fahrzeuge: '+ownedCars.length+'</p>'+ownedCars.map(id=>'<div class="phone-stat">'+(dealerCars.find(v=>v.id===id)?.name||id)+' <b>✓</b></div>').join('')+'<button data-action="dealer">Autohändler öffnen</button>',
  dealer:'<div class="phone-page-head">Frankfurt Motors</div><p>Fahrzeuge ansehen und kaufen – besuche auch den Showroom in der Stadt.</p><button data-action="dealer">Showroom öffnen</button>',
+ inventory:'<div class="phone-page-head">Inventar & Essen</div><div class="phone-stat">Sättigung <b>'+appetite+'%</b></div>'+['Brot','Brezel','Croissant','Kuchen','Kaffee','Snack','Pizza','Pasta','Limo'].map(name=>'<div class="phone-stat"><span>'+name+' · '+(inventory[name]||0)+'</span><button data-eat="'+name+'">Verzehren</button></div>').join(''),
  housing:'<div class="phone-page-head">Wohnen</div><div class="phone-stat">Wohnviertel <b>Erreichbar</b></div><p>Entdecke Wohnungen und Mehrfamilienhäuser in der Stadt.</p>',
  transit:'<div class="phone-page-head">ÖPNV</div><div class="phone-stat">Linie 1 <b>Innenstadt</b></div><div class="phone-stat">Linie 2 <b>Wohnviertel</b></div><p>Fahrpläne sind eine Spiel-Demo.</p>',
  news:'<div class="phone-page-head">Stadt-News</div><div class="phone-stat">Neue Jobs in der Innenstadt</div><div class="phone-stat">Frankfurt Motors eröffnet</div><p>Bleib auf dem Laufenden.</p>',
@@ -97,6 +99,7 @@ function openPhoneApp(app){
  };
  page.innerHTML='<button class="phone-back" data-action="home">‹ Apps</button>'+(pages[app]||'');
  if(app==='map'){const mc=page.querySelector('#phoneMapCanvas');if(mc){const cx=mc.getContext('2d');cx.fillStyle='#324c51';cx.fillRect(0,0,520,420);cx.strokeStyle='#a6aaa0';cx.lineWidth=18;for(let x=35;x<520;x+=95){cx.beginPath();cx.moveTo(x,0);cx.lineTo(x,420);cx.stroke();}for(let y=35;y<420;y+=85){cx.beginPath();cx.moveTo(0,y);cx.lineTo(520,y);cx.stroke();}cx.fillStyle='#397f98';cx.fillRect(0,345,520,45);cx.fillStyle='#e7e1cc';cx.font='bold 18px Arial';cx.fillText('MAIN',25,374);cx.fillStyle='#f0c65b';cx.font='bold 15px Arial';cx.fillText('BANKENVIERTEL',270,80);cx.fillText('INNENSTADT',40,220);cx.fillStyle='#68e7ff';cx.beginPath();cx.arc(260,210,9,0,Math.PI*2);cx.fill();}}
+ page.querySelectorAll('[data-eat]').forEach(b=>b.addEventListener('click',()=>{const name=b.dataset.eat;if((inventory[name]||0)<1){b.textContent='Nicht vorhanden';return;}inventory[name]--;appetite=Math.min(100,appetite+({Brot:18,Brezel:15,Croissant:16,Kuchen:20,Kaffee:7,Snack:12,Pizza:28,Pasta:25,Limo:6}[name]||10));openPhoneApp('inventory');}));
  page.querySelectorAll('[data-action]').forEach(b=>b.addEventListener('click',()=>{const action=b.dataset.action;if(action==='home')showPhoneHome();if(action==='jobs'){phonePanel.classList.add('hidden');toggleJobs();}if(action==='dealer'){phonePanel.classList.add('hidden');openDealer();}}));
 }
 function togglePhone(){

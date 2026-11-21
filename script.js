@@ -864,8 +864,8 @@ function buildAirportAndBuses(){
  // Parkiertes Passagierflugzeug als gut sichtbares Low-Poly-Modell
  const plane=new THREE.Group();
  const fuselage=new THREE.Mesh(new THREE.CylinderGeometry(.95,.95,19,12),white);fuselage.rotation.x=Math.PI/2;fuselage.position.y=3.4;plane.add(fuselage);
- const nose=new THREE.Mesh(new THREE.ConeGeometry(.95,3.4,12),white);nose.rotation.x=-Math.PI/2;nose.position.set(0,3.4,11.15);plane.add(nose);
- const tail=new THREE.Mesh(new THREE.ConeGeometry(.95,2.6,12),white);tail.rotation.x=Math.PI/2;tail.position.set(0,3.4,-10.8);plane.add(tail);
+ const nose=new THREE.Mesh(new THREE.ConeGeometry(.95,3.4,12),white);nose.rotation.x=Math.PI/2;nose.position.set(0,3.4,11.15);plane.add(nose);
+ const tail=new THREE.Mesh(new THREE.ConeGeometry(.95,2.6,12),white);tail.rotation.x=-Math.PI/2;tail.position.set(0,3.4,-10.8);plane.add(tail);
  const wing=new THREE.Mesh(new THREE.BoxGeometry(29,.28,3.5),white);wing.position.set(0,3.25,-.8);plane.add(wing);
  const tailWing=new THREE.Mesh(new THREE.BoxGeometry(10,.22,2),white);tailWing.position.set(0,4.6,-8.2);plane.add(tailWing);
  const fin=new THREE.Mesh(new THREE.BoxGeometry(.28,4.2,3.8),new THREE.MeshStandardMaterial({color:0x2873a0,roughness:.5}));fin.position.set(0,5.25,-8.3);plane.add(fin);

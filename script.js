@@ -49,6 +49,9 @@ const pedestrians=[];
 const policeCars=[];
 const trafficCars=[];
 const airportBuses=[];
+const airportHelicopters=[];
+const actionEdition=new URLSearchParams(location.search).get('edition')==='action';
+if(actionEdition){document.body.classList.add('action-edition');document.title='Frankfurt Life Action – Spiel';}
 const taxiVehicles=[];
 const streetLights=[];
 const shops=[];
@@ -950,6 +953,24 @@ function buildAirportAndBuses(){
  for(const x of [-9,9]){const engine=new THREE.Mesh(new THREE.CylinderGeometry(.72,.72,3.2,12),new THREE.MeshStandardMaterial({color:0x58636b,metalness:.4,roughness:.55}));engine.rotation.x=Math.PI/2;engine.position.set(x,2.35,-.6);plane.add(engine);}
  for(const x of [-1.3,1.3]){const gear=new THREE.Mesh(new THREE.CylinderGeometry(.12,.12,1.5,8),new THREE.MeshStandardMaterial({color:0x333b42,metalness:.5}));gear.position.set(x,1.1,1.5);plane.add(gear);}
  plane.position.set(133,0,-245);scene.add(plane);
+ // Geparkter Rettungs-/Rundflughelikopter am Flughafen mit animiertem Rotor
+ const heli=new THREE.Group();
+ const heliBodyMat=new THREE.MeshStandardMaterial({color:0x1d526e,metalness:.22,roughness:.48});
+ const heliGlass=new THREE.MeshStandardMaterial({color:0x9bd8e8,transparent:true,opacity:.58,roughness:.18});
+ const heliBody=new THREE.Mesh(new THREE.SphereGeometry(1,14,10),heliBodyMat);heliBody.scale.set(1.35,.82,2.15);heli.add(heliBody);
+ const cockpit=new THREE.Mesh(new THREE.SphereGeometry(1,12,9),heliGlass);cockpit.scale.set(1.12,.62,.92);cockpit.position.set(0,.2,1.35);heli.add(cockpit);
+ const tailBoom=new THREE.Mesh(new THREE.CylinderGeometry(.16,.32,5.3,10),heliBodyMat);tailBoom.rotation.x=Math.PI/2;tailBoom.position.set(0,.12,-3.45);heli.add(tailBoom);
+ const fin=new THREE.Mesh(new THREE.BoxGeometry(.12,1.35,.8),heliBodyMat);fin.position.set(0,.55,-5.65);heli.add(fin);
+ const skidMat=new THREE.MeshStandardMaterial({color:0x252d34,metalness:.6,roughness:.38});
+ for(const x of [-.95,.95]){const skid=new THREE.Mesh(new THREE.CylinderGeometry(.07,.07,4.1,8),skidMat);skid.rotation.x=Math.PI/2;skid.position.set(x,-.85,.05);heli.add(skid);const strut=new THREE.Mesh(new THREE.CylinderGeometry(.055,.055,1.05,8),skidMat);strut.position.set(x,-.38,.55);heli.add(strut);}
+ const rotorHub=new THREE.Group();rotorHub.position.y=1.03;heli.add(rotorHub);
+ for(let a=0;a<4;a++){const blade=new THREE.Mesh(new THREE.BoxGeometry(.22,.055,6.8),skidMat);blade.rotation.y=a*Math.PI/2;blade.position.y=.04;rotorHub.add(blade);}
+ const tailRotor=new THREE.Group();tailRotor.position.set(0,.55,-5.75);heli.add(tailRotor);
+ for(let a=0;a<4;a++){const blade=new THREE.Mesh(new THREE.BoxGeometry(.1,.12,1.35),skidMat);blade.rotation.y=a*Math.PI/2;tailRotor.add(blade);}
+ heli.position.set(109,.95,-231);heli.rotation.y=Math.PI/2;scene.add(heli);
+ airportHelicopters.push({rotor:rotorHub,tailRotor});
+ const pad=new THREE.Mesh(new THREE.CircleGeometry(5.5,32),new THREE.MeshStandardMaterial({color:0x4c5961,roughness:.9}));pad.rotation.x=-Math.PI/2;pad.position.set(109,.035,-231);scene.add(pad);
+ const padMark=new THREE.Mesh(new THREE.BoxGeometry(3.4,.035,3.4),new THREE.MeshBasicMaterial({color:0xf2f1e9}));padMark.position.set(109,.06,-231);scene.add(padMark);
  // Beschilderung und Vorfeldmarkierungen
  for(const [x,z,label] of [[82,-245,"AIRPORT"],[82,-72,"CITY"],[82,48,"OSTEND"],[82,165,"SÜD"]]){
   const post=new THREE.Mesh(new THREE.BoxGeometry(.12,2.5,.12),new THREE.MeshStandardMaterial({color:0x3c4b56}));post.position.set(x+4,1.25,z);scene.add(post);
@@ -1147,6 +1168,7 @@ function updateWorld(dt){
   flUpdateSystems(dt);
   for(const signal of trafficSignals){const phase=(t+signal.phase*1.7)%8;const active=phase<5?0:phase<6.2?1:2;signal.lamps.forEach((lamp,i)=>lamp.material.emissiveIntensity=i===active?.9:.04);}
   if((performanceFrame++%4)===0)drawMiniMap();
+  for(const heli of airportHelicopters){heli.rotor.rotation.y+=dt*18;heli.tailRotor.rotation.x+=dt*20;}
   for(const bus of airportBuses){bus.group.position.z+=bus.direction*bus.speed*dt*60;if(bus.group.position.z>bus.to&&bus.direction>0)bus.group.position.z=bus.from;if(bus.group.position.z<bus.from&&bus.direction<0)bus.group.position.z=bus.to;}
   for(const taxi of taxiVehicles){if(taxi.state!=='approach')continue;const dx=camera.position.x-taxi.group.position.x,dz=camera.position.z-taxi.group.position.z,dist=Math.hypot(dx,dz);if(dist<5){taxi.state='arrived';status.textContent='TAXI ANGEKOMMEN · STEIGE EIN';}else{taxi.group.position.x+=dx/dist*taxi.speed*dt*60;taxi.group.position.z+=dz/dist*taxi.speed*dt*60;taxi.group.rotation.y=Math.atan2(dx,dz);}}
   for(const car of trafficCars){

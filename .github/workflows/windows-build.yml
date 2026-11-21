@@ -21,7 +21,6 @@ on:
       - 'electron/**'
       - 'electron-builder-action.yml'
       - 'electron-builder-classic.yml'
-      - 'classic-2d.html'
       - '.github/workflows/windows-build.yml'
 
 jobs:
@@ -48,7 +47,7 @@ jobs:
         env:
           CSC_LINK: ${{ secrets.WINDOWS_CERTIFICATE }}
           CSC_KEY_PASSWORD: ${{ secrets.WINDOWS_CERTIFICATE_PASSWORD }}
-      - name: Build separate Classic retro-3D edition
+      - name: Build separate San Andreas retro-3D edition
         run: npm run dist:classic
         env:
           CSC_LINK: ${{ secrets.WINDOWS_CERTIFICATE }}
@@ -66,7 +65,7 @@ jobs:
             dist/*
             dist-action/*
             dist-legacy/*
-            dist-classic/*
+            dist-sanandreas/*
           if-no-files-found: error
           retention-days: 7
 
@@ -83,6 +82,6 @@ jobs:
             dist/*.exe
             dist-action/*.exe
             dist-legacy/*.exe
-            dist-classic/*.exe
+            dist-sanandreas/*.exe
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

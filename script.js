@@ -48,6 +48,7 @@ const keyboardKeys={};
 const pedestrians=[];
 const policeCars=[];
 const trafficCars=[];
+const airportBuses=[];
 const streetLights=[];
 const shops=[];
 const inventory={Kaffee:0,Snack:0,Stadtplan:0,Brot:0,Brezel:0,Croissant:0,Kuchen:0};
@@ -87,7 +88,7 @@ function flBuyHome(){if(flHomeOwned){status.textContent='DU HAST BEREITS EINE WO
 function flGoHome(){if(!flHomeOwned){flBuyHome();return;}if(driving){status.textContent='STEIGE ZUERST AUS';return;}camera.position.set(-26.5,2.1,-96);status.textContent='ZU HAUSE · WESTEND-WOHNUNG';phonePanel?.classList.add('hidden');}
 function flBuyFurniture(){if(!flHomeOwned||careerMoney<180){status.textContent='MIETE ZUERST EINE WOHNUNG ODER SAMMLE 180 €';return;}careerMoney-=180;flHomeFurniture++;flSaveGame();status.textContent='MÖBEL GEKAUFT · AUSSTATTUNG '+flHomeFurniture;openPhoneApp('housing');}
 function flChangeOutfit(){flOutfit=(flOutfit+1)%6;const person=pedestrians[0];if(person&&person.children[0]?.material?.color)person.children[0].material.color.setHex([0x345b80,0x8c5747,0x526c54,0x454b59,0xb18b4d,0x6c557f][flOutfit]);status.textContent='OUTFIT GEWECHSELT · STIL '+(flOutfit+1);flSaveGame();openPhoneApp('customize');}
-function flTransitRide(){if(driving){status.textContent='STEIGE ZUERST AUS, UM ÖPNV ZU NUTZEN';return;}const stops=[{x:13,z:-72,name:'Innenstadt'},{x:-26,z:-96,name:'Wohnviertel'},{x:145,z:-145,name:'Ostend'},{x:-145,z:165,name:'Südquartier'}],stop=stops[flTransitTrips%stops.length];camera.position.set(stop.x,2.1,stop.z);flTransitTrips++;flCheckDailyDate();flDailyRides++;status.textContent='ÖPNV · ANGEKOMMEN: '+stop.name;flSaveGame();openPhoneApp('transit');}
+function flTransitRide(){if(driving){status.textContent='STEIGE ZUERST AUS, UM ÖPNV ZU NUTZEN';return;}const stops=[{x:82,z:-245,name:'Flughafen'},{x:13,z:-72,name:'Innenstadt'},{x:-26,z:-96,name:'Wohnviertel'},{x:145,z:-145,name:'Ostend'},{x:-145,z:165,name:'Südquartier'}],stop=stops[flTransitTrips%stops.length];camera.position.set(stop.x,2.1,stop.z);flTransitTrips++;flCheckDailyDate();flDailyRides++;status.textContent='ÖPNV · ANGEKOMMEN: '+stop.name;flSaveGame();openPhoneApp('transit');}
 function flUpdateSystems(dt){flGameHour=(flGameHour+dt*.075)%24;flWeatherTimer+=dt;flSaveTimer+=dt;flStatusTimer+=dt;if(flWeatherTimer>150){flWeatherTimer=0;const choices=['Klar','Bewölkt','Regen','Nebel'];flWeather=choices[(choices.indexOf(flWeather)+1+Math.floor(Math.random()*3))%choices.length];flApplyWeather();}if(driving&&Math.abs(carSpeed)>.02)flFuel=Math.max(0,flFuel-dt*.012*Math.max(1,Math.abs(carSpeed)*8));if(driving&&flFuel<=0){carSpeed=0;status.textContent='TANK LEER · FAHRE ZUR TANKSTELLE';}if(flSaveTimer>20){flSaveTimer=0;flSaveGame();}const lightStep=Math.floor(flGameHour*4);if(lightStep!==flLightingStep){flLightingStep=lightStep;flApplyWeather();}if(flStatusTimer>.25){flStatusTimer=0;flUpdateStatus();}}
 
 function buildPhone(){
@@ -119,7 +120,7 @@ function openPhoneApp(app){
  dealer:'<div class="phone-page-head">Frankfurt Motors</div><p>Fahrzeuge ansehen und kaufen – besuche auch den Showroom in der Stadt.</p><button data-action="dealer">Showroom öffnen</button>',
  inventory:'<div class="phone-page-head">Inventar & Essen</div><div class="phone-stat">Sättigung <b>'+appetite+'%</b></div>'+['Brot','Brezel','Croissant','Kuchen','Kaffee','Snack','Pizza','Pasta','Limo','Burger-Menü','Schnitzel','Salat','Cola'].map(name=>'<div class="phone-stat"><span>'+name+' · '+(inventory[name]||0)+'</span><button data-eat="'+name+'">Verzehren</button></div>').join(''),
  housing:'<div class="phone-page-head">Meine Wohnung</div><div class="phone-stat">Status <b>'+(flHomeOwned?'Gemietet':'Noch keine Wohnung')+'</b></div><div class="phone-stat">Möbel <b>'+flHomeFurniture+'</b></div><p>Miete deine erste Wohnung im Westend und ergänze nach und nach Möbel.</p><button data-action="homebuy">'+(flHomeOwned?'Wohnung gemietet':'Wohnung mieten · 800 €')+'</button><button data-action="gohome">Nach Hause fahren</button><button data-action="furniture">Möbel kaufen · 180 €</button>',
- transit:'<div class="phone-page-head">Frankfurt ÖPNV</div><div class="phone-stat">Linie 1 <b>Innenstadt</b></div><div class="phone-stat">Linie 2 <b>Westend – Ostend</b></div><div class="phone-stat">Fahrten <b>'+flTransitTrips+'</b></div><p>Wähle eine Haltestelle und fahre zum nächsten Stadtteil.</p><button data-action="transitride">Fahrt starten</button>',
+ transit:'<div class="phone-page-head">Frankfurt ÖPNV</div><div class="phone-stat">Linie 1 <b>Innenstadt</b></div><div class="phone-stat">Flughafen-Express <b>Airport</b></div><div class="phone-stat">Linie 2 <b>Westend – Ostend</b></div><div class="phone-stat">Fahrten <b>'+flTransitTrips+'</b></div><p>Wähle eine Haltestelle und fahre zum nächsten Stadtteil.</p><button data-action="transitride">Fahrt starten</button>',
  news:'<div class="phone-page-head">Stadt-News</div><div class="phone-stat">Neue Jobs in der Innenstadt</div><div class="phone-stat">Frankfurt Motors eröffnet</div><p>Bleib auf dem Laufenden.</p>',
  camera:'<div class="phone-page-head">Kamera</div><p>Fotomodus – richte die Kamera in der Stadt aus und mach einen Screenshot mit Windows.</p>',
  services:'<div class="phone-page-head">Stadtservice</div><div class="phone-stat">Mängel melden <b>Online</b></div><div class="phone-stat">Fundbüro <b>Offen</b></div>',
@@ -839,6 +840,63 @@ function buildEmergencyServices(){
 }
 
 const trafficSignals=[];
+
+function buildAirportAndBuses(){
+ // Flughafenareal am nordöstlichen Stadtrand
+ const asphalt=new THREE.MeshStandardMaterial({color:0x303943,roughness:.96});
+ const concrete=new THREE.MeshStandardMaterial({color:0x92999b,roughness:.9});
+ const terminalMat=new THREE.MeshStandardMaterial({color:0x647b8b,roughness:.72});
+ const glass=new THREE.MeshStandardMaterial({color:0x75b9d0,metalness:.18,roughness:.2,transparent:true,opacity:.62});
+ const white=new THREE.MeshStandardMaterial({color:0xe9edf0,roughness:.45});
+ const yellow=new THREE.MeshStandardMaterial({color:0xf0c94e,roughness:.65});
+ const runway=new THREE.Mesh(new THREE.PlaneGeometry(34,150),asphalt);
+ runway.rotation.x=-Math.PI/2;runway.position.set(135,.012,-220);scene.add(runway);
+ const apron=new THREE.Mesh(new THREE.PlaneGeometry(72,48),concrete);
+ apron.rotation.x=-Math.PI/2;apron.position.set(116,.02,-245);scene.add(apron);
+ for(let z=-288;z<-150;z+=12){const mark=new THREE.Mesh(new THREE.PlaneGeometry(.65,6),white);mark.rotation.x=-Math.PI/2;mark.position.set(135,.025,z);scene.add(mark);}
+ const terminal=new THREE.Group();
+ const hall=new THREE.Mesh(new THREE.BoxGeometry(32,7,15),terminalMat);hall.position.y=3.5;terminal.add(hall);
+ const roof=new THREE.Mesh(new THREE.BoxGeometry(34,.65,17),white);roof.position.y=7.25;terminal.add(roof);
+ for(let x=-13;x<=13;x+=4.3){const pane=new THREE.Mesh(new THREE.BoxGeometry(3.2,4.5,.12),glass);pane.position.set(x,3.8,7.58);terminal.add(pane);}
+ const canopy=new THREE.Mesh(new THREE.BoxGeometry(35,.35,3),white);canopy.position.set(0,2.8,9);terminal.add(canopy);
+ const sign=new THREE.Mesh(new THREE.BoxGeometry(11,1.25,.2),new THREE.MeshBasicMaterial({color:0x10283a}));sign.position.set(0,6.1,7.7);terminal.add(sign);
+ terminal.position.set(105,0,-260);scene.add(terminal);
+ // Parkiertes Passagierflugzeug als gut sichtbares Low-Poly-Modell
+ const plane=new THREE.Group();
+ const fuselage=new THREE.Mesh(new THREE.CylinderGeometry(.95,.95,19,12),white);fuselage.rotation.x=Math.PI/2;fuselage.position.y=3.4;plane.add(fuselage);
+ const nose=new THREE.Mesh(new THREE.ConeGeometry(.95,3.4,12),white);nose.rotation.x=-Math.PI/2;nose.position.set(0,3.4,11.15);plane.add(nose);
+ const tail=new THREE.Mesh(new THREE.ConeGeometry(.95,2.6,12),white);tail.rotation.x=Math.PI/2;tail.position.set(0,3.4,-10.8);plane.add(tail);
+ const wing=new THREE.Mesh(new THREE.BoxGeometry(29,.28,3.5),white);wing.position.set(0,3.25,-.8);plane.add(wing);
+ const tailWing=new THREE.Mesh(new THREE.BoxGeometry(10,.22,2),white);tailWing.position.set(0,4.6,-8.2);plane.add(tailWing);
+ const fin=new THREE.Mesh(new THREE.BoxGeometry(.28,4.2,3.8),new THREE.MeshStandardMaterial({color:0x2873a0,roughness:.5}));fin.position.set(0,5.25,-8.3);plane.add(fin);
+ const stripe=new THREE.Mesh(new THREE.BoxGeometry(.08,.12,15),new THREE.MeshBasicMaterial({color:0x2873a0}));stripe.position.set(0,4.05,0);plane.add(stripe);
+ for(const x of [-9,9]){const engine=new THREE.Mesh(new THREE.CylinderGeometry(.72,.72,3.2,12),new THREE.MeshStandardMaterial({color:0x58636b,metalness:.4,roughness:.55}));engine.rotation.x=Math.PI/2;engine.position.set(x,2.35,-.6);plane.add(engine);}
+ for(const x of [-1.3,1.3]){const gear=new THREE.Mesh(new THREE.CylinderGeometry(.12,.12,1.5,8),new THREE.MeshStandardMaterial({color:0x333b42,metalness:.5}));gear.position.set(x,1.1,1.5);plane.add(gear);}
+ plane.position.set(133,0,-245);scene.add(plane);
+ // Beschilderung und Vorfeldmarkierungen
+ for(const [x,z,label] of [[82,-245,"AIRPORT"],[82,-72,"CITY"],[82,48,"OSTEND"],[82,165,"SÜD"]]){
+  const post=new THREE.Mesh(new THREE.BoxGeometry(.12,2.5,.12),new THREE.MeshStandardMaterial({color:0x3c4b56}));post.position.set(x+4,1.25,z);scene.add(post);
+  const board=new THREE.Mesh(new THREE.BoxGeometry(3.4,.85,.14),new THREE.MeshStandardMaterial({color:0x123c55}));board.position.set(x+4,2.35,z);scene.add(board);
+ }
+ const busBody=new THREE.MeshStandardMaterial({color:0xf0f1ed,roughness:.55});
+ const busBlue=new THREE.MeshStandardMaterial({color:0x247ca4,roughness:.45});
+ const busGlass=new THREE.MeshStandardMaterial({color:0x244253,roughness:.18,metalness:.15});
+ const rubber=new THREE.MeshStandardMaterial({color:0x171b20,roughness:.9});
+ for(let i=0;i<3;i++){
+  const bus=new THREE.Group();
+  const body=new THREE.Mesh(new THREE.BoxGeometry(2.55,2.9,10.2),busBody);body.position.y=1.65;bus.add(body);
+  const belt=new THREE.Mesh(new THREE.BoxGeometry(2.59,.62,10.22),busBlue);belt.position.set(0,1.1,0);bus.add(belt);
+  const roof=new THREE.Mesh(new THREE.BoxGeometry(2.45,.16,9.9),white);roof.position.y=3.13;bus.add(roof);
+  for(const side of [-1,1])for(let z=-3.55;z<=3.56;z+=1.75){const win=new THREE.Mesh(new THREE.BoxGeometry(.035,1.15,1.48),busGlass);win.position.set(side*1.29,2.18,z);bus.add(win);}
+  const front=new THREE.Mesh(new THREE.BoxGeometry(2.05,1.05,.06),busGlass);front.position.set(0,2.28,5.13);bus.add(front);
+  const rear=new THREE.Mesh(new THREE.BoxGeometry(2.05,1.05,.06),busGlass);rear.position.set(0,2.28,-5.13);bus.add(rear);
+  const display=new THREE.Mesh(new THREE.BoxGeometry(1.45,.34,.07),new THREE.MeshBasicMaterial({color:0xffd75c}));display.position.set(0,2.85,5.18);bus.add(display);
+  for(const x of [-1.32,1.32])for(const z of [-3.35,3.35]){const wheel=new THREE.Mesh(new THREE.CylinderGeometry(.48,.48,.22,12),rubber);wheel.rotation.z=Math.PI/2;wheel.position.set(x,.52,z);bus.add(wheel);}
+  const direction=i===1?-1:1;bus.position.set(82,.02,-250+(i*145));bus.rotation.y=direction>0?0:Math.PI;scene.add(bus);
+  airportBuses.push({group:bus,direction,speed:.085+i*.012,from:-278,to:185,route: i===2?"AIRPORT EXPRESS":"CITY BUS"});
+ }
+}
+
 function buildStreetInfrastructure(){
  const stripeMat=new THREE.MeshStandardMaterial({color:0xf1eee2,roughness:.9});
  const poleMat=new THREE.MeshStandardMaterial({color:0x26333c,metalness:.55,roughness:.45});
@@ -890,7 +948,7 @@ function makeCity(){
   for(let z=-300;z<225;z+=12){const line=new THREE.Mesh(new THREE.PlaneGeometry(.18,5),new THREE.MeshBasicMaterial({color:0xe5dfc5}));line.rotation.x=-Math.PI/2;line.position.set(0,.015,z);scene.add(line);}
   const sidewalkMat=new THREE.MeshLambertMaterial({color:0x92999b});
   for(const x of [-9.2,9.2]){const s=new THREE.Mesh(new THREE.BoxGeometry(3.5,.25,520),sidewalkMat);s.position.set(x,.08,-45);scene.add(s);}
-  buildStreetInfrastructure();buildTransitStops();
+  buildStreetInfrastructure();buildTransitStops();buildAirportAndBuses();
   const leftShops=new Map([[-87,['SUPERMARKT','MARKT · FRISCHE WAREN',0x3c966c]],[ -51,['BÄCKEREI','BROT · KAFFEE · KUCHEN',0xc58b43]],[ -15,['MODEHAUS','MODE FÜR JEDEN TAG',0x8a638e]],[21,['ELEKTRO','TECHNIK & ZUBEHÖR',0x397ca5]]]);
   const rightShops=new Map([[-94,['CAFÉ AM MAIN','KAFFEE · SNACKS',0x9b6547]],[ -58,['AUTOWELT','FAHRZEUGE & SERVICE',0x397a91]],[ -22,['SPORTTREFF','SPORT · OUTDOOR',0x62884f]],[14,['KIOSK 24','ZEITUNGEN · GETRÄNKE',0xb68a39]]]);
   for(let z=-105;z<35;z+=18){
@@ -978,6 +1036,7 @@ function updateWorld(dt){
   flUpdateSystems(dt);
   for(const signal of trafficSignals){const phase=(t+signal.phase*1.7)%8;const active=phase<5?0:phase<6.2?1:2;signal.lamps.forEach((lamp,i)=>lamp.material.emissiveIntensity=i===active?.9:.04);}
   if((performanceFrame++%4)===0)drawMiniMap();
+  for(const bus of airportBuses){bus.group.position.z+=bus.direction*bus.speed*dt*60;if(bus.group.position.z>bus.to&&bus.direction>0)bus.group.position.z=bus.from;if(bus.group.position.z<bus.from&&bus.direction<0)bus.group.position.z=bus.to;}
   for(const car of trafficCars){
     const traffic=car.userData.traffic;
     car.position.z+=traffic.direction*traffic.speed*dt*60;

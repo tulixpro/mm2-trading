@@ -1,7 +1,7 @@
 {
   "name": "frankfurt-life",
-  "version": "0.4.7",
-  "description": "Frankfurt Life - coastal expansion, arcade boats and cinematic vehicle scenes",
+  "version": "0.4.8",
+  "description": "Frankfurt Life - improved NPCs, map fixes and cinematic shop scene",
   "main": "electron/main.cjs",
   "author": "Frankfurt Life Community",
   "license": "UNLICENSED",

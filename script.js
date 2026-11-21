@@ -53,7 +53,7 @@ const airportHelicopters=[];
 const militaryEscorts=[];
 const boats=[];let activeBoat=null,boatSpeed=0,boatHeading=0,waterSurface=null,beachFoam=[];
 let airportPlane=null,planeFlying=false,planeSpeed=0,planeHeading=0,planeAltitude=0;
-let takeoverTarget=null,takeoverProgress=0,takeoverHud=null,takeoverActor=null;
+let takeoverTarget=null,takeoverProgress=0,takeoverHud=null,takeoverActor=null,shopSceneOverlay=null,shopScene=null;
 const actionEdition=new URLSearchParams(location.search).get('edition')==='action';
 if(actionEdition){document.body.classList.add('action-edition');document.title='Frankfurt Life Action – Spiel';}
 const taxiVehicles=[];
@@ -95,7 +95,7 @@ function flApplyWeather(){if(!scene||!sunLight||!hemiLight)return;const night=fl
 function flBuyHome(){if(flHomeOwned){status.textContent='DU HAST BEREITS EINE WOHNUNG';return;}if(careerMoney<800){status.textContent='DU BENÖTIGST 800 € FÜR DIE ERSTE MIETE';return;}careerMoney-=800;flHomeOwned=true;flSaveGame();if(careerHud)careerHud.innerHTML='KONTO: '+careerMoney.toLocaleString('de-DE')+' €<br>AUFTRÄGE: '+completedJobs;status.textContent='WOHNUNG GEMIETET · 800 € KAUTION';openPhoneApp('housing');}
 function flGoHome(){if(!flHomeOwned){flBuyHome();return;}if(driving){status.textContent='STEIGE ZUERST AUS';return;}camera.position.set(-26.5,2.1,-96);status.textContent='ZU HAUSE · WESTEND-WOHNUNG';phonePanel?.classList.add('hidden');}
 function flBuyFurniture(){if(!flHomeOwned||careerMoney<180){status.textContent='MIETE ZUERST EINE WOHNUNG ODER SAMMLE 180 €';return;}careerMoney-=180;flHomeFurniture++;flSaveGame();status.textContent='MÖBEL GEKAUFT · AUSSTATTUNG '+flHomeFurniture;openPhoneApp('housing');}
-function flChangeOutfit(){flOutfit=(flOutfit+1)%6;const person=pedestrians[0];if(person&&person.children[0]?.material?.color)person.children[0].material.color.setHex([0x345b80,0x8c5747,0x526c54,0x454b59,0xb18b4d,0x6c557f][flOutfit]);status.textContent='OUTFIT GEWECHSELT · STIL '+(flOutfit+1);flSaveGame();openPhoneApp('customize');}
+function flChangeOutfit(){flOutfit=(flOutfit+1)%6;const person=pedestrians[0],palette=[0x345b80,0x8c5747,0x526c54,0x454b59,0xb18b4d,0x6c557f];if(person?.userData?.torso?.material?.color)person.userData.torso.material.color.setHex(palette[flOutfit]);status.textContent='OUTFIT-VORSCHAU GEWECHSELT · STIL '+(flOutfit+1);flSaveGame();openPhoneApp('customize');}
 function flTransitRide(){if(driving){status.textContent='STEIGE ZUERST AUS, UM ÖPNV ZU NUTZEN';return;}const stops=[{x:82,z:-245,name:'Flughafen'},{x:13,z:-72,name:'Innenstadt'},{x:-26,z:-96,name:'Wohnviertel'},{x:145,z:-145,name:'Ostend'},{x:-145,z:165,name:'Südquartier'}],stop=stops[flTransitTrips%stops.length];camera.position.set(stop.x,2.1,stop.z);flTransitTrips++;flCheckDailyDate();flDailyRides++;status.textContent='ÖPNV · ANGEKOMMEN: '+stop.name;flSaveGame();openPhoneApp('transit');}
 function flUpdateSystems(dt){flGameHour=(flGameHour+dt*.075)%24;flWeatherTimer+=dt;flSaveTimer+=dt;flStatusTimer+=dt;if(flWeatherTimer>150){flWeatherTimer=0;const choices=['Klar','Bewölkt','Regen','Nebel'];flWeather=choices[(choices.indexOf(flWeather)+1+Math.floor(Math.random()*3))%choices.length];flApplyWeather();}if(driving&&Math.abs(carSpeed)>.02)flFuel=Math.max(0,flFuel-dt*.012*Math.max(1,Math.abs(carSpeed)*8));if(driving&&flFuel<=0){carSpeed=0;status.textContent='TANK LEER · FAHRE ZUR TANKSTELLE';}if(flSaveTimer>20){flSaveTimer=0;flSaveGame();}const lightStep=Math.floor(flGameHour*4);if(lightStep!==flLightingStep){flLightingStep=lightStep;flApplyWeather();}if(flStatusTimer>.25){flStatusTimer=0;flUpdateStatus();}}
 
@@ -139,7 +139,7 @@ function openPhoneApp(app){
  grid.classList.add('hidden');page.classList.remove('hidden');
  const pos=camera?Math.round(camera.position.x)+' / '+Math.round(camera.position.z):'–';
  const pages={
- map:'<div class="phone-page-head">Frankfurt · Stadtkarte</div><div class="phone-map-tools"><span>● GPS LIVE</span><button data-action="recenter">Zentrieren</button></div><div class="phone-map phone-map-large"><canvas id="phoneMapCanvas" width="720" height="1040"></canvas></div><div class="phone-map-legend"><span>● Du</span><span>● Geschäfte</span><span>■ Autohaus</span><span>● Missionsziel</span></div><p>GPS-Position: '+pos+' · Stadtgebiet 360 × 520 m</p>',
+ map:'<div class="phone-page-head">Frankfurt · Stadtkarte</div><div class="phone-map-tools"><span>● GPS LIVE</span><button data-action="recenter">Zentrieren</button></div><div class="phone-map phone-map-large"><canvas id="phoneMapCanvas" width="720" height="1040"></canvas></div><div class="phone-map-legend"><span>● Du</span><span>● Geschäfte</span><span>■ Autohaus</span><span>● Missionsziel</span></div><p>GPS-Position: '+pos+' · Stadtgebiet 360 × 660 m</p>',
  jobs:'<div class="phone-page-head">Missionen</div><div class="phone-stat">Aktive Aufträge <b>'+(jobActive?'1':'0')+'</b></div><div class="phone-stat">Erledigt <b>'+completedJobs+'</b></div><p>Öffne die Jobzentrale und wähle deinen nächsten Auftrag.</p><button data-action="jobs">Jobzentrale öffnen</button>',
  bank:'<div class="phone-page-head">Frankfurt Bank</div><div class="phone-balance">'+careerMoney.toLocaleString('de-DE')+' €</div><p>Dein Kontostand</p><div class="phone-stat">Abgeschlossene Jobs <b>'+completedJobs+'</b></div>',
  garage:'<div class="phone-page-head">Meine Garage</div><p>Eigene Fahrzeuge: '+ownedCars.length+'</p>'+ownedCars.map(id=>'<div class="phone-stat">'+(dealerCars.find(v=>v.id===id)?.name||id)+' <b>✓</b></div>').join('')+'<button data-action="dealer">Autohändler öffnen</button>',
@@ -398,18 +398,29 @@ function tree(x,z){
 }
 function makePedestrian(x,z,index){
   const group=new THREE.Group();
-  const colors=[0x345b80,0x8c5747,0x526c54,0x454b59,0xb18b4d,0x6c557f];
-  const shirt=new THREE.Mesh(new THREE.CylinderGeometry(.25,.3,.85,7),new THREE.MeshLambertMaterial({color:colors[index%colors.length]}));
-  shirt.position.y=1.18;group.add(shirt);
-  const head=new THREE.Mesh(new THREE.SphereGeometry(.2,8,7),new THREE.MeshLambertMaterial({color:0xc99570}));
-  head.position.y=1.78;group.add(head);
+  const shirts=[0x345b80,0x8c5747,0x526c54,0x454b59,0xb18b4d,0x6c557f,0x287d83,0x9a493f,0x526b91,0x737b4c];
+  const pants=[0x263342,0x343b49,0x4b4039,0x202b31,0x5b6067],skins=[0xc99570,0x9b684d,0xe0b18d,0x704832,0xb77f5d,0xe8c7a6],hairs=[0x30251f,0x5b3b27,0x17191d,0x9b7548,0x77716b];
+  const shirtMat=new THREE.MeshStandardMaterial({color:shirts[index%shirts.length],roughness:.9}),pantsMat=new THREE.MeshStandardMaterial({color:pants[index%pants.length],roughness:.95}),skinMat=new THREE.MeshStandardMaterial({color:skins[(index*3)%skins.length],roughness:.88}),hairMat=new THREE.MeshStandardMaterial({color:hairs[(index*7)%hairs.length],roughness:1}),shoeMat=new THREE.MeshStandardMaterial({color:index%3===0?0xe5e7e8:0x20252b,roughness:.8});
+  const torso=new THREE.Mesh(new THREE.BoxGeometry(.55,.76,.32),shirtMat);torso.position.y=1.18;group.add(torso);
+  const hips=new THREE.Mesh(new THREE.BoxGeometry(.43,.2,.29),pantsMat);hips.position.y=.72;group.add(hips);
+  const neck=new THREE.Mesh(new THREE.CylinderGeometry(.085,.095,.18,8),skinMat);neck.position.y=1.62;group.add(neck);
+  const head=new THREE.Group(),face=new THREE.Mesh(new THREE.SphereGeometry(.205,12,10),skinMat);face.scale.set(.9,1.08,.88);head.add(face);
+  const hair=new THREE.Mesh(new THREE.SphereGeometry(.211,12,8,0,Math.PI*2,0,Math.PI*.56),hairMat);hair.position.y=.075;head.add(hair);
+  const eyeMat=new THREE.MeshStandardMaterial({color:0x20252b,roughness:1});
+  for(const side of [-1,1]){const eye=new THREE.Mesh(new THREE.SphereGeometry(.022,6,5),eyeMat);eye.position.set(side*.073,.025,.18);head.add(eye);}
+  const nose=new THREE.Mesh(new THREE.SphereGeometry(.035,7,6),skinMat);nose.scale.set(.72,.8,.8);nose.position.set(0,-.025,.19);head.add(nose);head.position.y=1.83;group.add(head);
+  const arms=[],legs=[];
   for(const side of [-1,1]){
-    const leg=new THREE.Mesh(new THREE.BoxGeometry(.13,.62,.15),new THREE.MeshLambertMaterial({color:0x263342}));
-    leg.position.set(side*.12,.42,0);group.add(leg);
+    const arm=new THREE.Group();arm.position.set(side*.34,1.43,0);
+    const upper=new THREE.Mesh(new THREE.CapsuleGeometry(.075,.35,3,6),shirtMat);upper.position.y=-.22;arm.add(upper);
+    const hand=new THREE.Mesh(new THREE.SphereGeometry(.085,7,6),skinMat);hand.position.y=-.48;arm.add(hand);group.add(arm);arms.push(arm);
+    const leg=new THREE.Group();leg.position.set(side*.14,.67,0);
+    const lower=new THREE.Mesh(new THREE.CapsuleGeometry(.085,.34,3,6),pantsMat);lower.position.y=-.23;leg.add(lower);
+    const shoe=new THREE.Mesh(new THREE.BoxGeometry(.17,.12,.28),shoeMat);shoe.position.set(0,-.47,.055);leg.add(shoe);group.add(leg);legs.push(leg);
   }
-  group.position.set(x,0,z);
-  group.userData={originX:x,originZ:z,phase:index*.8,speed:.35+(index%4)*.09};
-  pedestrians.push(group);scene.add(group);
+  if(index%5===0){const bag=new THREE.Mesh(new THREE.BoxGeometry(.25,.32,.13),new THREE.MeshStandardMaterial({color:0x654a36,roughness:.95}));bag.position.set(-.36,1.05,-.02);group.add(bag);}
+  if(index%7===0){const cap=new THREE.Mesh(new THREE.CylinderGeometry(.19,.2,.07,10),new THREE.MeshStandardMaterial({color:shirts[(index+3)%shirts.length]}));cap.position.y=2.08;group.add(cap);}
+  group.position.set(x,0,z);group.userData={originX:x,originZ:z,phase:index*.8,speed:.35+(index%4)*.09,arms,legs,torso,head};pedestrians.push(group);scene.add(group);
 }
 function makeCar(x,z,color,police=false,model='sedan'){
   const car=new THREE.Group();
@@ -698,8 +709,7 @@ function buildMiniMap(){
 }
 function drawCityMap(ctx,w,h,large=false){
  if(!ctx)return;
- const c=ctx;c.clearRect(0,0,w,h);c.fillStyle='#197fa5';c.fillRect(0,0,w,h);c.fillStyle='#314b48';c.fillRect(0,0,w,py(320));c.fillStyle='#d8c18d';c.fillRect(0,py(250),w,py(320)-py(250));
- const px=x=>(x+180)/360*w,py=z=>(z+300)/660*h;
+ const c=ctx;const px=x=>(x+180)/360*w,py=z=>(z+300)/660*h;c.clearRect(0,0,w,h);c.fillStyle='#197fa5';c.fillRect(0,0,w,h);c.fillStyle='#314b48';c.fillRect(0,0,w,py(250));c.fillStyle='#d8c18d';c.fillRect(0,py(250),w,py(320)-py(250));
  // Blocks and local streets across the expanded playable district.
  c.fillStyle='#3b5650';
  for(let x=-165;x<180;x+=24)for(let z=-286;z<220;z+=30){c.fillRect(px(x+2),py(z+2),Math.max(2,px(x+21)-px(x+2)),Math.max(2,py(z+27)-py(z+2)));}
@@ -727,11 +737,16 @@ function drawMiniMap(){
  drawCityMap(miniMapCtx,220,220,false);
  const label=document.querySelector('#miniMapCoords');if(label)label.textContent=Math.round(camera.position.x)+' / '+Math.round(camera.position.z);
 }
+
+function startShopFilmScene(){if(!currentShop||!shopSceneOverlay)return;shopPanel.classList.add('hidden');shopScene={elapsed:0,stage:-1,name:currentShop.name};shopSceneOverlay.classList.remove('hidden');document.exitPointerLock?.();updateShopFilmScene(0);}
+function updateShopFilmScene(dt){if(!shopScene)return;shopScene.elapsed+=dt;const stage=Math.min(2,Math.floor(shopScene.elapsed/2.15));if(stage!==shopScene.stage){shopScene.stage=stage;const titles=['EIN UNERWARTETER MOMENT','ALARMSTIMMUNG IM LADEN','FILMSCHNITT · SZENE BEENDET'];const captions=['Die Kamera fährt in einer kurzen Einstellung durch '+shopScene.name+'.','Lichtsignale und Musik markieren die fiktive Action-Szene. Die Handlung bleibt abstrakt und ohne Gewalt.','Die Szene blendet aus. Du kannst wieder frei durch die Stadt gehen.'];const title=shopSceneOverlay.querySelector('#shopSceneTitle'),caption=shopSceneOverlay.querySelector('#shopSceneCaption'),step=shopSceneOverlay.querySelector('#shopSceneStep');if(title)title.textContent=titles[stage];if(caption)caption.textContent=captions[stage];if(step)step.textContent='SZENE '+(stage+1)+' / 3';}if(shopScene.elapsed>=6.6)finishShopFilmScene();}
+function finishShopFilmScene(){if(!shopScene)return;shopScene=null;shopSceneOverlay?.classList.add('hidden');if(status)status.textContent='FILMISCHE SHOP-SZENE BEENDET · KEINE SPIELWELT-AKTION';}
+
 function buildShopInteraction(){
  shopPanel=document.createElement('div');shopPanel.id='shopPanel';shopPanel.className='ingame-jobs hidden';
- shopPanel.innerHTML='<div class="ingame-jobs-head"><b id="shopTitle">FRANKFURT LIFE / GESCHÄFT</b><button id="closeShop" aria-label="Schließen">×</button></div><h3 id="shopName">Geschäft</h3><p id="shopSubtitle" class="ingame-jobs-hint"></p><div id="shopProducts"></div><div id="shopMessage" role="status">Wähle etwas aus.</div><small>E oder ESC · Schließen</small>';
+ shopPanel.innerHTML='<div class="ingame-jobs-head"><b id="shopTitle">FRANKFURT LIFE / GESCHÄFT</b><button id="closeShop" aria-label="Schließen">×</button></div><h3 id="shopName">Geschäft</h3><p id="shopSubtitle" class="ingame-jobs-hint"></p><div id="shopProducts"></div><button id="shopFilmScene" class="shop-film-scene">🎬 FILMISCHE SHOP-ACTION-SZENE</button><div id="shopMessage" role="status">Wähle etwas aus.</div><small>E oder ESC · Schließen</small><div id="shopSceneOverlay" class="shop-scene-overlay hidden"><div class="shop-scene-frame"><span>FRANKFURT LIFE · FILM-MODUS</span><h2 id="shopSceneTitle">SHOP-SZENE</h2><p id="shopSceneCaption">Eine fiktive, nicht-grafische Filmszene.</p><small id="shopSceneStep">SZENE 1 / 3</small><button id="shopSceneSkip">SZENE ÜBERSPRINGEN</button></div></div>';
  viewport.appendChild(shopPanel);
- shopPanel.querySelector('#closeShop').addEventListener('click',()=>shopPanel.classList.add('hidden'));
+ shopPanel.querySelector('#closeShop').addEventListener('click',()=>{shopPanel.classList.add('hidden');currentShop=null;});shopPanel.querySelector('#shopFilmScene').addEventListener('click',startShopFilmScene);shopSceneOverlay=shopPanel.querySelector('#shopSceneOverlay');shopPanel.querySelector('#shopSceneSkip').addEventListener('click',finishShopFilmScene);
 }
 function nearestShop(){
  if(!camera||driving)return null;
@@ -1114,7 +1129,7 @@ function makeCity(){
   camera.add(flashlight,flashlightTarget);flashlight.target=flashlightTarget;
   hemiLight=new THREE.HemisphereLight(0xd7ecff,0x4a5260,2);scene.add(hemiLight);
   sunLight=new THREE.DirectionalLight(0xffe0b4,1.5);sunLight.position.set(-25,45,25);sunLight.castShadow=false;scene.add(sunLight);
-  const ground=new THREE.Mesh(new THREE.PlaneGeometry(900,900),new THREE.MeshLambertMaterial({color:0x58636b}));ground.rotation.x=-Math.PI/2;ground.position.y=-.12;scene.add(ground);
+  const ground=new THREE.Mesh(new THREE.PlaneGeometry(900,700),new THREE.MeshLambertMaterial({color:0x58636b}));ground.rotation.x=-Math.PI/2;ground.position.set(0,-.12,-80);scene.add(ground);
   const road=new THREE.Mesh(new THREE.PlaneGeometry(18,520),new THREE.MeshLambertMaterial({color:0x202a35}));road.rotation.x=-Math.PI/2;road.position.set(0,0,-45);scene.add(road);
   for(let z=-300;z<225;z+=12){const line=new THREE.Mesh(new THREE.PlaneGeometry(.18,5),new THREE.MeshBasicMaterial({color:0xe5dfc5}));line.rotation.x=-Math.PI/2;line.position.set(0,.015,z);scene.add(line);}
   const sidewalkMat=new THREE.MeshLambertMaterial({color:0x92999b});
@@ -1204,7 +1219,7 @@ function resize(){
 }
 function updateWorld(dt){
   const t=clock.elapsedTime;
-  flUpdateSystems(dt);
+  flUpdateSystems(dt);if(shopScene)updateShopFilmScene(dt);
   for(const signal of trafficSignals){const phase=(t+signal.phase*1.7)%8;const active=phase<5?0:phase<6.2?1:2;signal.lamps.forEach((lamp,i)=>lamp.material.emissiveIntensity=i===active?.9:.04);}
   if((performanceFrame++%4)===0)drawMiniMap();
   for(const heli of airportHelicopters){heli.rotor.rotation.y+=dt*18;heli.tailRotor.rotation.x+=dt*20;}for(let i=0;i<beachFoam.length;i++){beachFoam[i].position.x+=Math.sin(t*.5+i)*dt*.7;beachFoam[i].material.opacity=.35+Math.sin(t*1.8+i)*.15;}if(waterSurface)waterSurface.position.y=-.18+Math.sin(t*.65)*.025;
@@ -1223,8 +1238,7 @@ function updateWorld(dt){
     p.position.z=u.originZ+Math.sin(t*u.speed+u.phase)*2.6;
     p.position.x=u.originX+Math.sin(t*u.speed*.55+u.phase)*.55;
     p.rotation.y=Math.cos(t*u.speed+u.phase)*.18;
-    p.children[2].rotation.x=Math.sin(t*5+u.phase)*.22;
-    p.children[3].rotation.x=-Math.sin(t*5+u.phase)*.22;
+    if(u.legs){u.legs[0].rotation.x=Math.sin(t*5+u.phase)*.42;u.legs[1].rotation.x=-Math.sin(t*5+u.phase)*.42;}if(u.arms){u.arms[0].rotation.x=-Math.sin(t*5+u.phase)*.24;u.arms[1].rotation.x=Math.sin(t*5+u.phase)*.24;}if(u.head)u.head.rotation.y=Math.sin(t*.7+u.phase)*.07;
   }
   for(const car of dealerDisplayCars){car.rotation.y=Math.PI/2+Math.sin(t*.45)*.025;}
   updateCutscene(dt);

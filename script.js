@@ -454,7 +454,17 @@ function makeCar(x,z,color,police=false,model='sedan'){
   const lower=new THREE.Mesh(new THREE.BoxGeometry(W,.48,L),paint);lower.position.y=.58;car.add(lower);
   const hood=new THREE.Mesh(new THREE.BoxGeometry(W*.96,.2,profile.hood),paint);hood.position.set(0,.83,L*.34);car.add(hood);
   const rear=new THREE.Mesh(new THREE.BoxGeometry(W*.94,.22,Math.max(.65,L-profile.hood-1.7)),paint);rear.position.set(0,.79,-L*.34);car.add(rear);
-  const cabin=new THREE.Mesh(new THREE.BoxGeometry(W*.78,profile.cabin,L*.43),glass);cabin.position.set(0,1.08,-.12);car.add(cabin);
+  const cabin=new THREE.Mesh(new THREE.BoxGeometry(W*.78,profile.cabin,L*.43),glass);cabin.position.set(0,1.08,-.12);cabin.material.opacity=.24;car.add(cabin);
+  // Sichtbare NPC-Fahrer sitzen in jedem KI-Fahrzeug hinter dem Lenkrad.
+  const driver=new THREE.Group();
+  const driverSkin=new THREE.MeshStandardMaterial({color:0xc58f6c,roughness:.9});
+  const driverShirt=new THREE.MeshStandardMaterial({color:[0x345b80,0x526c54,0x8c5747,0x454b59][Math.abs(Math.round(x*7+z*3))%4],roughness:.95});
+  const driverHair=new THREE.MeshStandardMaterial({color:0x30251f,roughness:1});
+  const driverBody=new THREE.Mesh(new THREE.BoxGeometry(.38,.42,.24),driverShirt);driverBody.position.set(-W*.18,1.02,.27);driver.add(driverBody);
+  const driverHead=new THREE.Mesh(new THREE.SphereGeometry(.145,9,8),driverSkin);driverHead.position.set(-W*.18,1.34,.34);driver.add(driverHead);
+  const driverHairCap=new THREE.Mesh(new THREE.SphereGeometry(.15,9,6,0,Math.PI*2,0,Math.PI*.55),driverHair);driverHairCap.position.set(-W*.18,1.39,.34);driver.add(driverHairCap);
+  for(const side of [-1,1]){const arm=new THREE.Mesh(new THREE.CapsuleGeometry(.055,.25,3,5),driverShirt);arm.position.set(-W*.18+side*.2,1.03,.43);arm.rotation.x=-.85;arm.rotation.z=side*.28;driver.add(arm);const hand=new THREE.Mesh(new THREE.SphereGeometry(.055,6,5),driverSkin);hand.position.set(-W*.18+side*.2,1.13,.56);driver.add(hand);}
+  driver.userData.isNpcDriver=true;car.add(driver);
   const roof=new THREE.Mesh(new THREE.BoxGeometry(W*.72,.12,L*.32),paint);roof.position.set(0,1.08+profile.cabin/2,-.18);car.add(roof);
   // Sichtbarer Innenraum: Sitze, Kopfstützen, Mittelkonsole und Armaturenbrett.
   const upholstery=new THREE.MeshStandardMaterial({color:0x252b32,roughness:.92});
@@ -813,6 +823,14 @@ function createTraffic(){
   const car=makeCar(lane,-115+slot*17.2,color,false,model);
   car.rotation.y=direction===1?0:Math.PI;
   car.userData.traffic={direction,speed:.05+(i%5)*.009};
+  trafficCars.push(car);
+ }
+ // Zusätzliche Fahrzeuge auf dem Hauptstraßenzug sorgen für sichtbareren Stadtverkehr.
+ if(!liteMode)for(let i=0;i<8;i++){
+  const direction=i<4?1:-1,lane=direction>0?-6.1:6.1;
+  const car=makeCar(lane,-103+(i%4)*42,[0x263746,0xb9c5d0,0x7b3034,0xe0e4e6][i%4],false,['sedan','hatch','sportback','van'][i%4]);
+  car.rotation.y=direction>0?0:Math.PI;
+  car.userData.traffic={direction,speed:.045+(i%3)*.012};
   trafficCars.push(car);
  }
 }

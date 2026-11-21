@@ -1,6 +1,12 @@
 {
-  "catalogVersion": 1,
-  "units": { "power": "PS", "torque": "Nm", "mass": "kg", "speed": "km/h", "acceleration": "s" },
+  "catalogVersion": 2,
+  "units": {
+    "power": "PS",
+    "torque": "Nm",
+    "mass": "kg",
+    "speed": "km/h",
+    "acceleration": "s"
+  },
   "sourcePolicy": "Use manufacturer-published figures. Keep model year and market variant attached to each record. Do not invent unavailable values.",
   "vehicles": [
     {
@@ -66,6 +72,48 @@
       "topSpeedQualifier": "manufacturer states over 350 km/h",
       "notes": "725 Nm is the combustion-engine torque figure, not a combined hybrid-system torque figure. Manufacturer lists combined output as 1015 PS.",
       "source": "https://www.lamborghini.com/de-en/modelle/revuelto-modelle/revuelto"
+    },
+    {
+      "id": "bmw-m3-competition-touring-2025",
+      "make": "BMW",
+      "model": "M3 Competition Touring mit M xDrive",
+      "modelYear": 2025,
+      "class": "performance-estate",
+      "engine": "3.0-litre twin-turbo inline-six petrol",
+      "displacementCm3": 2993,
+      "powerPs": 530,
+      "powerKw": 390,
+      "torqueNm": 650,
+      "transmission": "8-speed automatic",
+      "drivetrain": "AWD",
+      "zeroTo100KmhSeconds": 3.6,
+      "topSpeedKmh": 250,
+      "curbWeightKg": 1950,
+      "lengthMm": 4801,
+      "widthMm": 1903,
+      "heightMm": 1446,
+      "wheelbaseMm": 2857,
+      "fuelTankLitres": 59,
+      "notes": "Figures refer to the M3 Competition Touring with M xDrive. Manufacturer lists 250 km/h standard top speed.",
+      "source": "https://www.bmw.de/de/neufahrzeuge/m/bmw-3er-m-modelle/bmw-m3-touring-technische-daten.html"
+    },
+    {
+      "id": "porsche-911-carrera-gts-2025",
+      "make": "Porsche",
+      "model": "911 Carrera GTS",
+      "modelYear": 2025,
+      "class": "hybrid-sports-car",
+      "engine": "3.6-litre flat-six T-Hybrid",
+      "displacementCm3": 3591,
+      "powerPs": 541,
+      "powerKw": 398,
+      "systemTorqueNm": 610,
+      "transmission": "8-speed PDK",
+      "drivetrain": "RWD",
+      "zeroTo100KmhSeconds": 3,
+      "topSpeedKmh": 312,
+      "notes": "System output and system torque for the T-Hybrid model; 0–100 km/h figure is with Sport Chrono package.",
+      "source": "https://www.porsche.com/germany/models/911/carrera-models/911-carrera-gts/"
     }
   ]
 }

@@ -38,10 +38,10 @@ function applyQuality(){
 }
 qualitySelect?.addEventListener('change',()=>{autoResolutionScale=1;localStorage.setItem('flQuality',qualitySelect.value);applyQuality();});
 fpsSelect?.addEventListener('change',()=>{maxFps=fpsSelect.value==='unlimited'?0:Number(fpsSelect.value);localStorage.setItem('flFps',fpsSelect.value);});
-mouseSelect?.addEventListener('change',()=>{mouseSensitivity=Number(mouseSelect.value)||1;});
-fovSelect?.addEventListener('change',()=>{cameraFov=Number(fovSelect.value)||68;if(camera){camera.fov=cameraFov;camera.updateProjectionMatrix();}});
+mouseSelect?.addEventListener('change',()=>{mouseSensitivity=Number(mouseSelect.value)||1;localStorage.setItem('flMouse',mouseSelect.value);});
+fovSelect?.addEventListener('change',()=>{cameraFov=Number(fovSelect.value)||68;localStorage.setItem('flFov',fovSelect.value);if(camera){camera.fov=cameraFov;camera.updateProjectionMatrix();}});
 const cameraSelect=document.querySelector('#cameraSelect');
-cameraSelect?.addEventListener('change',()=>{cameraMode=cameraSelect.value||'follow';status.textContent='KAMERA: '+({follow:'VERFOLGER',close:'NAH',hood:'MOTORHAUBE',ego:'EGO-PERSPEKTIVE'}[cameraMode]||'VERFOLGER');});
+cameraSelect?.addEventListener('change',()=>{cameraMode=cameraSelect.value||'follow';localStorage.setItem('flCamera',cameraMode);status.textContent='KAMERA: '+({follow:'VERFOLGER',close:'NAH',hood:'MOTORHAUBE',ego:'EGO-PERSPEKTIVE'}[cameraMode]||'VERFOLGER');});
 let renderer,scene,camera,raf,started=false,yaw=0,pitch=0,locked=false;
 const keys={};
 const keyboardKeys={};
@@ -1256,6 +1256,9 @@ function begin(){
   if(started)return;started=true;placeholder?.remove();
   if(qualitySelect){const saved=localStorage.getItem('flQuality');qualitySelect.value=saved&&qualitySettings[saved]?saved:(saved==='ultra'?'minimum':(lowEndDevice?'minimum':'medium'));}
   if(fpsSelect){const savedFps=localStorage.getItem('flFps');fpsSelect.value=savedFps|| (lowEndDevice?'30':'60');maxFps=fpsSelect.value==='unlimited'?0:Number(fpsSelect.value);}
+  if(mouseSelect){mouseSelect.value=localStorage.getItem('flMouse')||'1';mouseSensitivity=Number(mouseSelect.value)||1;}
+  if(fovSelect){fovSelect.value=localStorage.getItem('flFov')||'68';cameraFov=Number(fovSelect.value)||68;}
+  if(cameraSelect){cameraSelect.value=localStorage.getItem('flCamera')||'follow';cameraMode=cameraSelect.value||'follow';}
   status.textContent=lowEndDevice?'SPARMODUS AKTIV · ÄLTERE HARDWARE':'STADT GELADEN · KLICKE INS SPIEL';
   try{
     renderer=new THREE.WebGLRenderer({antialias:!lowEndDevice,powerPreference:lowEndDevice?'low-power':'high-performance'});

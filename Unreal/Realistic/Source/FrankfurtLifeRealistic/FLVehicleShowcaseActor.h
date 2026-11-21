@@ -18,7 +18,7 @@ private:
     UPROPERTY() USceneComponent* SceneRoot;
     UPROPERTY() UStaticMesh* CubeMesh;
     UPROPERTY() UStaticMesh* CylinderMesh;
-    void AddPart(UStaticMesh* Mesh, const FVector& Location, const FVector& Scale, const FRotator& Rotation = FRotator::ZeroRotator);
+    void AddPart(UStaticMesh* Mesh, const FVector& Location, const FVector& Scale, const FLinearColor& Tint, const FRotator& Rotation = FRotator::ZeroRotator);
     void BuildSedan();
     void BuildVan();
     void BuildPoliceCar();

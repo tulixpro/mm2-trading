@@ -19,7 +19,7 @@ void AFLRealisticGameMode::StartPlay()
         Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
         World->SpawnActor<AFLRealisticCityBlock>(
             AFLRealisticCityBlock::StaticClass(),
-            FVector(4200.0f, 4200.0f, 0.0f),
+            FVector::ZeroVector,
             FRotator::ZeroRotator,
             Params);
     }

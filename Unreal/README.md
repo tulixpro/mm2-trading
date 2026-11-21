@@ -12,7 +12,8 @@ Two native Unreal Engine projects are maintained alongside the existing Three.js
 - Native C++ first-person character and keyboard/mouse movement
 - Dedicated GameMode
 - Runtime-generated greybox district: nine city blocks, road grid, sidewalk strips, facade/window rhythm, shopfront placeholders, streetlights and simple tree shapes
-- Primitive-mesh vehicle silhouettes: sedan, van and police-car display props placed along the roads (not drivable)
+- Primitive-mesh vehicle silhouettes: sedan, van and police-car display props placed along the roads, with tinted body/glass, basic bumpers, grille, mirrors, wheel hubs and police lightbar (not drivable)
+- Runtime color variation for facade blocks, windows, asphalt, curbs and road markings using dynamic material parameters where supported
 - Lumen, virtual shadow maps, Nanite project support, anti-aliasing and texture-streaming configuration
 - Sky-atmosphere and volumetric-fog project support
 
@@ -22,7 +23,7 @@ The district currently uses Unreal's basic primitive meshes. It is a **greybox/b
 
 ## Honest project status
 
-This is an early development prototype, not a finished open-world game. There is no authored Frankfurt landmark set, finished landscape, drivable vehicle physics, traffic AI, NPC AI, jobs, missions, interiors, multiplayer, voice chat, save system, final UI, audio package or installer. The current sedan/van/police-car shapes are static visual blockout props built from engine primitives; they are not production vehicle assets. The Unreal C++ project has **not** been compiled or launched in this environment. Compatibility with UE 5.8 and the Visual Studio toolchain must be confirmed locally.
+This is an early development prototype, not a finished open-world game. There is no authored Frankfurt landmark set, finished landscape, drivable vehicle physics, traffic AI, NPC AI, jobs, missions, interiors, multiplayer, voice chat, save system, final UI, audio package or installer. The current sedan/van/police-car shapes are static visual blockout props built from engine primitives; they are not production vehicle assets. Color tinting relies on the engine basic-shape material exposing a Color or BaseColor vector parameter and needs visual confirmation in-editor. The Unreal C++ project has **not** been compiled or launched in this environment. Compatibility with UE 5.8 and the Visual Studio toolchain must be confirmed locally.
 
 ## Open and build
 

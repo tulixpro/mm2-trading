@@ -3,6 +3,9 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Components/InputComponent.h"
+#include "Engine/World.h"
+#include "Engine/EngineTypes.h"
+#include "FLVehicleShowcaseActor.h"
 
 AFLRealisticCharacter::AFLRealisticCharacter()
 {
@@ -31,6 +34,7 @@ void AFLRealisticCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInp
     PlayerInputComponent->BindAxis("LookUp", this, &APawn::AddControllerPitchInput);
     PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
     PlayerInputComponent->BindAction("Jump", IE_Released, this, &ACharacter::StopJumping);
+    PlayerInputComponent->BindAction("Interact", IE_Pressed, this, &AFLRealisticCharacter::Interact);
 }
 
 void AFLRealisticCharacter::MoveForward(float Value)
@@ -43,4 +47,18 @@ void AFLRealisticCharacter::MoveRight(float Value)
 {
     if (Controller && FMath::Abs(Value) > KINDA_SMALL_NUMBER)
         AddMovementInput(FRotationMatrix(Controller->GetControlRotation()).GetUnitAxis(EAxis::Y), Value);
+}
+
+void AFLRealisticCharacter::Interact()
+{
+    if (!FollowCamera || !GetController()) return;
+    const FVector Start = FollowCamera->GetComponentLocation();
+    const FVector End = Start + FollowCamera->GetForwardVector() * 450.0f;
+    FHitResult Hit;
+    FCollisionQueryParams Params(SCENE_QUERY_STAT(VehicleInteract), false, this);
+    if (GetWorld()->LineTraceSingleByChannel(Hit, Start, End, ECC_Visibility, Params))
+    {
+        if (AFLVehicleShowcaseActor* Vehicle = Cast<AFLVehicleShowcaseActor>(Hit.GetActor()))
+            Vehicle->EnterVehicle(this);
+    }
 }

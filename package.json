@@ -1,13 +1,14 @@
 {
   "name": "frankfurt-life",
-  "version": "0.4.8",
-  "description": "Frankfurt Life - improved NPCs, map fixes and cinematic shop scene",
+  "version": "0.4.9",
+  "description": "Frankfurt Life - low-end laptop and Android touch support",
   "main": "electron/main.cjs",
   "author": "Frankfurt Life Community",
   "license": "UNLICENSED",
   "scripts": {
     "start": "electron .",
-    "dist": "electron-builder --win nsis portable --publish never"
+    "dist": "electron-builder --win nsis portable --publish never",
+    "dist:legacy": "electron-builder --config electron-builder-legacy.yml --win nsis portable --publish never"
   },
   "devDependencies": {
     "electron": "^33.2.1",

@@ -1078,7 +1078,7 @@ function toggleVehicle(){
 function buildPerformanceHud(){
   perfHud=document.createElement('div');perfHud.id='performanceHud';
   perfHud.style.cssText='position:absolute;right:14px;top:14px;z-index:9;padding:7px 10px;border:1px solid #ffffff35;border-radius:7px;background:#081321dd;color:#d9f4ff;font:700 11px/1.45 system-ui;letter-spacing:.3px;pointer-events:none;white-space:pre-line';
-  perfHud.textContent='FPS: --\\nGPU-Skalierung: 100%';viewport.appendChild(perfHud);
+  perfHud.textContent='FPS: --\nGPU-Skalierung: 100%';viewport.appendChild(perfHud);
 }
 function loop(now=0){
   raf=requestAnimationFrame(loop);
@@ -1092,7 +1092,7 @@ function loop(now=0){
     if(avgMs>46&&autoResolutionScale>.34){autoResolutionScale=Math.max(.34,autoResolutionScale*.86);applyQuality();}
   }
   perfHudTimer+=dt;
-  if(perfHud&&perfHudTimer>.5){perfHudTimer=0;const avg=perfFrames.length?perfFrames.reduce((a,b)=>a+b,0)/perfFrames.length:0;const fps=avg>0?Math.round(1000/avg):0;perfHud.textContent='FPS: '+(fps||'--')+'\\nGPU-Skalierung: '+Math.round(autoResolutionScale*100)+'%';}
+  if(perfHud&&perfHudTimer>.5){perfHudTimer=0;const avg=perfFrames.length?perfFrames.reduce((a,b)=>a+b,0)/perfFrames.length:0;const fps=avg>0?Math.round(1000/avg):0;perfHud.textContent='FPS: '+(fps||'--')+'\nGPU-Skalierung: '+Math.round(autoResolutionScale*100)+'%';}
   move();updateWorld(dt);renderer.render(scene,camera);
 }
 function begin(){

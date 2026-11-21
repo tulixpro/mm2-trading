@@ -56,7 +56,7 @@ const inventory={Kaffee:0,Snack:0,Stadtplan:0,Brot:0,Brezel:0,Croissant:0,Kuchen
 let miniMapCanvas=null,miniMapCtx=null,tuningLevel=0,paintLevel=0,mouseSensitivity=1,cameraFov=68;
 let appetite=65;
 let invertCameraY=localStorage.getItem('flInvertY')==='on';
-let cameraMode='follow',cutscene=null,cutsceneOverlay=null,cutsceneElapsed=0;
+let cameraMode='follow',cutscene=null,cutsceneOverlay=null,cutsceneElapsed=0,introTutorial=null;
 let shopPanel=null,currentShop=null;
 const clock=new THREE.Clock();
 let missionHud=null,jobStops=[],jobStopIndex=0;
@@ -591,6 +591,44 @@ function buildCutsceneUI(){
  cutsceneOverlay.innerHTML='<div class="cinema-top"></div><div class="cinema-bottom"><div class="cinema-kicker">FRANKFURT LIFE · AUFTRAG</div><div id="cinemaTitle">EIN NEUER TAG IN FRANKFURT</div><p id="cinemaCaption">Dein nächster Auftrag beginnt.</p></div><button id="skipCutscene">ÜBERSPRINGEN ⏭</button><div class="cinema-count" id="cinemaCount">SZENE 1 / 3</div>';
  viewport.appendChild(cutsceneOverlay);cutsceneOverlay.querySelector('#skipCutscene').addEventListener('click',finishCutscene);
 }
+function buildIntroTutorialUI(){
+ introTutorial=document.createElement('section');introTutorial.id='introTutorial';introTutorial.className='tutorial-overlay hidden';
+ introTutorial.innerHTML='<div class="tutorial-bars top"></div><div class="tutorial-scene-tag">FRANKFURT LIFE · DAS ERSTE MAL IN FRANKFURT</div><div class="tutorial-content"><div class="tutorial-eyebrow" id="tutorialEyebrow">WILLKOMMEN</div><h1 id="tutorialTitle">DEINE STADT. DEIN ALLTAG.</h1><p id="tutorialText">Frankfurt wartet auf dich. Lerne kurz die wichtigsten Dinge kennen, bevor du losziehst.</p><div class="tutorial-progress" id="tutorialProgress"><i class="active"></i><i></i><i></i><i></i></div><div class="tutorial-actions"><button id="tutorialSkip">TUTORIAL ÜBERSPRINGEN</button><button id="tutorialNext">WEITER <span>→</span></button></div></div><div class="tutorial-bars bottom"></div><div class="tutorial-scene-count" id="tutorialSceneCount">INTRO · 01 / 04</div>';
+ viewport.appendChild(introTutorial);
+ introTutorial.querySelector('#tutorialNext').addEventListener('click',nextIntroTutorial);
+ introTutorial.querySelector('#tutorialSkip').addEventListener('click',finishIntroTutorial);
+}
+const introTutorialScenes=[
+ {tag:'KAPITEL 01 · WILLKOMMEN',title:'DEINE STADT. DEIN ALLTAG.',text:'Du bist neu in Frankfurt. Erkunde Viertel, entdecke Geschäfte und lerne die Stadt Schritt für Schritt kennen.'},
+ {tag:'KAPITEL 02 · BEWEGUNG',title:'GEH LOS UND ERKUNDE.',text:'Bewege dich mit WASD oder den Pfeiltasten. Mit der Maus schaust du dich um. Drücke F, wenn du in dein bereitgestelltes Fahrzeug ein- oder aussteigen möchtest.'},
+ {tag:'KAPITEL 03 · DEIN WEG',title:'JOBS. AUTOS. NEUE ZIELE.',text:'Mit J öffnest du die Jobzentrale. Wähle einen Beruf, nimm einen Auftrag an und folge dem Zielmarker. Mit C wechselst du die Kameraperspektive.'},
+ {tag:'KAPITEL 04 · DEIN SMARTPHONE',title:'ALLES IN DEINER HAND.',text:'Mit F1 öffnest du dein Smartphone. Dort findest du Karte, Garage, Bank, ÖPNV und Taxi. Mit Q öffnest du das Quick-Access-Rad. Viel Spaß in Frankfurt!'}
+];
+function showIntroTutorialScene(index){
+ if(!introTutorial)return;
+ const sceneData=introTutorialScenes[index];
+ introTutorial.querySelector('#tutorialEyebrow').textContent=sceneData.tag;
+ introTutorial.querySelector('#tutorialTitle').textContent=sceneData.title;
+ introTutorial.querySelector('#tutorialText').textContent=sceneData.text;
+ introTutorial.querySelector('#tutorialSceneCount').textContent='INTRO · 0'+(index+1)+' / 04';
+ introTutorial.querySelectorAll('.tutorial-progress i').forEach((el,n)=>el.classList.toggle('active',n<=index));
+ const next=introTutorial.querySelector('#tutorialNext');next.innerHTML=index===introTutorialScenes.length-1?'STADT BETRETEN <span>→</span>':'WEITER <span>→</span>';
+ const content=introTutorial.querySelector('.tutorial-content');content.classList.remove('tutorial-scene-change');void content.offsetWidth;content.classList.add('tutorial-scene-change');
+}
+function startIntroTutorial(){
+ if(localStorage.getItem('flIntroTutorialDone')==='yes'||!introTutorial)return;
+ introTutorial.classList.remove('hidden');document.exitPointerLock?.();showIntroTutorialScene(0);
+}
+function nextIntroTutorial(){
+ const next=Number(introTutorial.dataset.scene||0)+1;
+ if(next>=introTutorialScenes.length){finishIntroTutorial();return;}
+ introTutorial.dataset.scene=String(next);showIntroTutorialScene(next);
+}
+function finishIntroTutorial(){
+ if(!introTutorial)return;
+ localStorage.setItem('flIntroTutorialDone','yes');introTutorial.dataset.scene='0';introTutorial.classList.add('hidden');
+ status.textContent='WILLKOMMEN IN FRANKFURT · VIEL SPASS!';
+}
 function startCutscene(jobName){if(!cutsceneOverlay||!camera||!jobCar)return;cutscene={target:jobCar.position.clone(),jobName};cutsceneElapsed=0;cutsceneOverlay.classList.remove('hidden');document.exitPointerLock?.();cutsceneOverlay.querySelector('#cinemaTitle').textContent='EIN NEUER AUFTRAG';cutsceneOverlay.querySelector('#cinemaCaption').textContent='Frankfurt schläft nie. Heute bist du unterwegs: '+jobName+'.';cutsceneOverlay.querySelector('#cinemaCount').textContent='SZENE 1 / 3 · STADTÜBERBLICK';}
 function finishCutscene(){if(!cutscene)return;cutscene=null;cutsceneOverlay?.classList.add('hidden');if(jobCar){camera.position.set(jobCar.position.x+4,3.1,jobCar.position.z+7);yaw=jobCar.rotation.y-Math.PI;}status.textContent='MISSION BEREIT · STEIGE MIT F INS AUTO';}
 function updateCutscene(dt){if(!cutscene||!camera)return;cutsceneElapsed+=dt;const t=cutsceneElapsed,car=cutscene.target;if(t<1.5){const k=t/1.5;camera.position.set(car.x+22*(1-k)+5*k,13*(1-k)+4*k,car.z+22*(1-k)+10*k);camera.lookAt(car.x,1,car.z);cutsceneOverlay.querySelector('#cinemaCount').textContent='SZENE 1 / 3 · STADTÜBERBLICK';}else if(t<3){const k=(t-1.5)/1.5;camera.position.set(car.x+5,4,car.z+10-5*k);camera.lookAt(car.x,1,car.z);cutsceneOverlay.querySelector('#cinemaCount').textContent='SZENE 2 / 3 · DEIN FAHRZEUG';cutsceneOverlay.querySelector('#cinemaCaption').textContent='Dein Fahrzeug steht bereit. Mach dich auf den Weg.';}else if(t<4.3){camera.position.set(car.x+2,2.4,car.z+5);camera.lookAt(car.x,1,car.z);cutsceneOverlay.querySelector('#cinemaCount').textContent='SZENE 3 / 3 · AUF DIE STRASSE';}else finishCutscene();}
@@ -599,6 +637,7 @@ function buildInGameJobs(){
  jobPanel.innerHTML='<div class="ingame-jobs-head"><b>FRANKFURT LIFE / JOBZENTRALE</b><button id="closeJobs" aria-label="Schließen">×</button></div><h3>Wähle deinen Beruf</h3><p class="ingame-jobs-hint">Dein Auftrag und das passende Dienstfahrzeug starten direkt in der 3D-Stadt.</p><div id="ingameJobChoices"></div><div id="ingameJobDetail">Wähle einen Job aus.</div><button id="startJob" class="ingame-start" disabled>AUFTRAG ANNEHMEN</button><small>J oder ESC · Menü schließen</small>';
  viewport.appendChild(jobPanel);
  buildCutsceneUI();
+ buildIntroTutorialUI();
  careerHud=document.createElement('div');careerHud.id='careerHud';careerHud.style.cssText='position:absolute;top:14px;right:14px;z-index:8;padding:10px 14px;border:1px solid #ffffff30;border-radius:10px;background:#101b2ddd;color:#fff;font:700 13px/1.6 system-ui;pointer-events:none;';careerHud.innerHTML='KONTO: 0 €<br>AUFTRÄGE: 0<br>★ RUF: 1/5';viewport.appendChild(careerHud);
  missionHud=document.createElement('div');missionHud.id='missionHud';missionHud.className='mission-hud hidden';viewport.appendChild(missionHud);
  damageHud=document.createElement('div');damageHud.id='damageHud';damageHud.className='damage-hud hidden';viewport.appendChild(damageHud);
@@ -1400,7 +1439,7 @@ function begin(){
     renderer.shadowMap.type=THREE.PCFSoftShadowMap;
     renderer.shadowMap.enabled=false;
     sunLight=null;hemiLight=null;
-    makeCity();buildBreakableProps();buildInGameJobs();buildShopInteraction();buildPhone();document.querySelector("#openSettings")?.addEventListener("click",()=>{if(phonePanel?.classList.contains("hidden"))phonePanel.classList.remove("hidden");showPhoneHome();openPhoneApp("settings");document.exitPointerLock?.();});buildDealerPanel();buildMiniMap();buildGamepadStatus();flBuildStatus();applyQuality();viewport.appendChild(renderer.domElement);buildPerformanceHud();flLoadGame();flApplyWeather();resize();loop();
+    makeCity();buildBreakableProps();buildInGameJobs();buildShopInteraction();buildPhone();document.querySelector("#openSettings")?.addEventListener("click",()=>{if(phonePanel?.classList.contains("hidden"))phonePanel.classList.remove("hidden");showPhoneHome();openPhoneApp("settings");document.exitPointerLock?.();});buildDealerPanel();buildMiniMap();buildGamepadStatus();flBuildStatus();applyQuality();viewport.appendChild(renderer.domElement);buildPerformanceHud();flLoadGame();flApplyWeather();resize();loop();startIntroTutorial();
     renderer.domElement.tabIndex=0;
     renderer.domElement.addEventListener('click',()=>{renderer.domElement.focus();if(!phonePanel||phonePanel.classList.contains('hidden')){try{const result=renderer.domElement.requestPointerLock?.();if(result?.catch)result.catch(()=>{status.textContent='MAUSZIEHEN ZUM UMSEHEN';});}catch(_){status.textContent='MAUSZIEHEN ZUM UMSEHEN';}}});
     renderer.domElement.addEventListener('pointerdown',e=>{if(e.button!==0||locked)return;lookDrag=true;lastPointerX=e.clientX;lastPointerY=e.clientY;});

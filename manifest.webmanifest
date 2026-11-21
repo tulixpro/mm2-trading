@@ -1,0 +1,15 @@
+{
+  "name": "Frankfurt Life",
+  "short_name": "Frankfurt Life",
+  "description": "Erkunde Frankfurt Life auf PC und Android.",
+  "lang": "de",
+  "start_url": "./game.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "landscape",
+  "background_color": "#080d18",
+  "theme_color": "#080d18",
+  "icons": [
+    {"src": "assets/frankfurt-life-mark.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any"}
+  ]
+}

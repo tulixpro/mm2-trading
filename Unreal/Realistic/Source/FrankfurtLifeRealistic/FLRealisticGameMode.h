@@ -10,4 +10,5 @@ class FRANKFURTLIFEREALISTIC_API AFLRealisticGameMode : public AGameModeBase
     GENERATED_BODY()
 public:
     AFLRealisticGameMode();
+    virtual void StartPlay() override;
 };

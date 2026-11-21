@@ -1,8 +1,8 @@
 const { app, BrowserWindow, shell } = require('electron');
 const path = require('node:path');
 function createWindow(){
- const win=new BrowserWindow({width:1360,height:850,minWidth:900,minHeight:600,backgroundColor:'#101827',autoHideMenuBar:true,webPreferences:{contextIsolation:true,nodeIntegration:false,sandbox:true}});
- win.loadFile(path.join(__dirname,'..','game.html'),{query:{edition:'classic'}});
+ const win=new BrowserWindow({width:1360,height:850,minWidth:900,minHeight:600,backgroundColor:'#171b20',autoHideMenuBar:true,webPreferences:{contextIsolation:true,nodeIntegration:false,sandbox:true}});
+ win.loadFile(path.join(__dirname,'..','game.html'),{query:{edition:'sanandreas'}});
  win.webContents.setWindowOpenHandler(({url})=>{if(url.startsWith('https://'))shell.openExternal(url);return {action:'deny'};});
 }
 app.whenReady().then(()=>{createWindow();app.on('activate',()=>{if(BrowserWindow.getAllWindows().length===0)createWindow();});});

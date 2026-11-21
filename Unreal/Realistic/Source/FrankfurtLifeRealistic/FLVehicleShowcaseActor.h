@@ -3,6 +3,7 @@
 #include "GameFramework/Pawn.h"
 #include "FLVehicleShowcaseActor.generated.h"
 class UBoxComponent;
+class USceneComponent;
 class UCameraComponent;
 class UFloatingPawnMovement;
 class UStaticMesh;
@@ -22,7 +23,8 @@ protected:
     virtual void BeginPlay() override;
     virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
 private:
-    UPROPERTY() UBoxComponent* SceneRoot;
+    UPROPERTY() UBoxComponent* CollisionRoot;
+    UPROPERTY() USceneComponent* SceneRoot;
     UPROPERTY() UCameraComponent* DriverCamera;
     UPROPERTY() UFloatingPawnMovement* VehicleMovement;
     UPROPERTY() UStaticMesh* CubeMesh;

@@ -107,3 +107,11 @@ Hinweis: Das ist ein stilisiertes Low-Poly-Schadensmodell, keine realistische Ka
 - Mit dem Auto an die Zapfsäulen fahren, anhalten und **E** drücken, um bis zu 25 % Benzin zu tanken.
 - Jede Tankfüllung kostet 2,20 € pro Prozent; Geld, Tankfüllung und Kontostand werden direkt aktualisiert und gespeichert.
 - Tanken funktioniert nur im Auto und im Stillstand; bei zu wenig Geld oder vollem Tank erscheint eine Meldung.
+
+
+## Version 0.3.4 – Überarbeitete Fahrzeugmodelle
+- Mehr Karosserie-Details und Fensterrahmen an allen Fahrzeugklassen.
+- Limousine und Sportback erhalten eigene Front-/Heckdetails.
+- Coupé bekommt ein ausgearbeitetes Heck, Transporter zusätzliche Seiten- und Laderaumdetails.
+- Supersportwagen erhält zusätzliche Lufteinlässe und Diffusor-Details.
+- Ergänzte Radlauf-Akzente für einen plastischeren Look.

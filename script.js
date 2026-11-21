@@ -64,6 +64,30 @@ function building(x,z,w,d,h,color){
   }
   g.position.set(x,0,z);scene.add(g);
 }
+function residentialBuilding(x,z,w,d,h,color){
+ const g=new THREE.Group();
+ const wall=new THREE.MeshStandardMaterial({color,roughness:.88});
+ const trim=new THREE.MeshStandardMaterial({color:0xe1d8c8,roughness:.8});
+ const glass=new THREE.MeshStandardMaterial({color:0x83b8cf,roughness:.25,metalness:.12,emissive:0x152b38,emissiveIntensity:.18});
+ const body=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),wall);body.position.y=h/2;g.add(body);
+ const roof=new THREE.Mesh(new THREE.BoxGeometry(w+0.35,.35,d+0.35),new THREE.MeshStandardMaterial({color:0x384653}));roof.position.y=h+.16;g.add(roof);
+ for(let y=2.2;y<h-1;y+=2.65){
+  for(let xx=-w/2+1;xx<w/2-.7;xx+=1.65){
+   const win=new THREE.Mesh(new THREE.BoxGeometry(.72,1.05,.08),glass);win.position.set(xx,y,d/2+.06);g.add(win);
+   const frame=new THREE.Mesh(new THREE.BoxGeometry(.82,.09,.16),trim);frame.position.set(xx,y-.58,d/2+.1);g.add(frame);
+   const balcony=new THREE.Group();
+   const floor=new THREE.Mesh(new THREE.BoxGeometry(1.15,.09,.62),trim);floor.position.set(xx,y-.72,d/2+.34);balcony.add(floor);
+   const rail=new THREE.Mesh(new THREE.BoxGeometry(1.12,.48,.06),new THREE.MeshStandardMaterial({color:0x657681,metalness:.35}));rail.position.set(xx,y-.47,d/2+.62);balcony.add(rail);
+   g.add(balcony);
+  }
+ }
+ const door=new THREE.Mesh(new THREE.BoxGeometry(1.15,2.1,.1),new THREE.MeshStandardMaterial({color:0x263a4b}));door.position.set(0,1.05,d/2+.08);g.add(door);
+ const canopy=new THREE.Mesh(new THREE.BoxGeometry(2.1,.18,.9),trim);canopy.position.set(0,2.2,d/2+.38);g.add(canopy);
+ const signCanvas=document.createElement('canvas');signCanvas.width=512;signCanvas.height=100;
+ const ctx=signCanvas.getContext('2d');ctx.fillStyle='#23394a';ctx.fillRect(0,0,512,100);ctx.fillStyle='#fff';ctx.font='bold 34px Arial';ctx.textAlign='center';ctx.fillText('WOHNEN',256,64);
+ const sign=new THREE.Mesh(new THREE.BoxGeometry(2.8,.55,.1),new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(signCanvas)}));sign.position.set(0,3,d/2+.1);g.add(sign);
+ g.position.set(x,0,z);scene.add(g);
+}
 function createShop(x,z,side,name,subtitle,color){
  const g=new THREE.Group();
  const wallMat=new THREE.MeshStandardMaterial({color:0xddd8cc,roughness:.86});
@@ -277,7 +301,7 @@ function toggleShop(){
 let phonePanel=null;
 function buildPhone(){
  phonePanel=document.createElement('section');phonePanel.id='phonePanel';phonePanel.className='phone-panel hidden';
- phonePanel.innerHTML='<div class="phone-top"><span>● FRANKFURT MOBILE</span><button id="phoneClose" aria-label="Handy schließen">×</button></div><div class="phone-time" id="phoneTime">12:00</div><div class="phone-date">FRANKFURT AM MAIN</div><div class="phone-grid"><button data-app="map"><b>🗺️</b><span>Karte</span></button><button data-app="jobs"><b>💼</b><span>Jobs</span></button><button data-app="bank"><b>🏦</b><span>Bank</span></button><button data-app="inventory"><b>🎒</b><span>Inventar</span></button><button data-app="stats"><b>📊</b><span>Statistik</span></button><button data-app="help"><b>⚙️</b><span>Hilfe</span></button></div><div id="phoneContent" class="phone-content">Wähle eine App aus.</div><div class="phone-bottom"><span>F1 · Handy schließen</span></div>';
+ phonePanel.innerHTML='<div class="phone-top"><span>● FRANKFURT MOBILE</span><button id="phoneClose" aria-label="Handy schließen">×</button></div><div class="phone-time" id="phoneTime">12:00</div><div class="phone-date">FRANKFURT AM MAIN</div><div class="phone-grid"><button data-app="map"><b>🗺️</b><span>Karte</span></button><button data-app="jobs"><b>💼</b><span>Jobs</span></button><button data-app="bank"><b>🏦</b><span>Bank</span></button><button data-app="inventory"><b>🎒</b><span>Inventar</span></button><button data-app="stats"><b>📊</b><span>Statistik</span></button><button data-app="housing"><b>🏠</b><span>Wohnen</span></button><button data-app="transit"><b>🚋</b><span>ÖPNV</span></button><button data-app="news"><b>📰</b><span>News</span></button><button data-app="camera"><b>📷</b><span>Kamera</span></button><button data-app="services"><b>🛠️</b><span>Service</span></button><button data-app="settings"><b>⚙️</b><span>Einstellungen</span></button><button data-app="help"><b>❔</b><span>Hilfe</span></button></div><div id="phoneContent" class="phone-content">Wähle eine App aus.</div><div class="phone-bottom"><span>F1 · Handy schließen</span></div>';
  viewport.appendChild(phonePanel);
  phonePanel.querySelector('#phoneClose').addEventListener('click',()=>phonePanel.classList.add('hidden'));
  phonePanel.querySelectorAll('[data-app]').forEach(btn=>btn.addEventListener('click',()=>openPhoneApp(btn.dataset.app)));
@@ -292,6 +316,12 @@ function openPhoneApp(app){
   bank:'<h3>Bankkonto</h3><p class="phone-balance">'+careerMoney.toLocaleString('de-DE')+' €</p><p>Abgeschlossene Aufträge: '+completedJobs+'</p><p>Dein Kontostand wird durch Jobs erhöht und Einkäufe verringert.</p>',
   inventory:'<h3>Inventar</h3><p>Kaffee: '+inventory.Kaffee+'</p><p>Snacks: '+inventory.Snack+'</p><p>Stadtpläne: '+inventory.Stadtplan+'</p><p>Gegenstände insgesamt: '+total+'</p>',
   stats:'<h3>Spielstatistik</h3><p>Erledigte Aufträge: '+completedJobs+'</p><p>Kontostand: '+careerMoney.toLocaleString('de-DE')+' €</p><p>Gekaufte Gegenstände: '+total+'</p>',
+  housing:'<h3>Wohnen</h3><p>Wohnviertel: Nordend, Innenstadt und Mainufer.</p><p>Wohnhäuser in der Stadt: 12 Mehrfamilienhäuser.</p><p>Wohnungsangebote und Einrichten kommen später.</p>',
+  transit:'<h3>ÖPNV</h3><p>Linienübersicht</p><p>U-Bahn: U1 · U2 · U3 · U8</p><p>S-Bahn: S1 · S2 · S8 · S9</p><p>Nächste Haltestelle: Innenstadt</p>',
+  news:'<h3>Frankfurt News</h3><p>Stadtleben: Die Fußgängerzone ist heute gut besucht.</p><p>Verkehr: Auf den Hauptstraßen rollt der Verkehr.</p><p>Freizeit: Neue Geschäfte im Viertel entdecken.</p>',
+  camera:'<h3>Kamera</h3><p>Fotomodus-Prototyp</p><p>Nutze die freie Maussteuerung, um dich umzusehen. Ein Screenshot-Modus folgt später.</p>',
+  services:'<h3>Stadtservice</h3><p>Notruf: 112 (Info)</p><p>Abschleppdienst: Noch nicht verfügbar.</p><p>Fundbüro: Noch nicht verfügbar.</p>',
+  settings:'<h3>Einstellungen</h3><p>Grafikqualität und FPS stellst du oben im Spiel ein.</p><p>Steuerung: WASD · Maus · Shift · F · J · E · L</p>',
   help:'<h3>Steuerung</h3><p>WASD – bewegen</p><p>Maus – umsehen</p><p>J – Jobs · E – Geschäfte</p><p>F – Fahrzeug · L – Taschenlampe</p><p>F1 – Handy · ESC – Menüs schließen</p>'
  };
  content.innerHTML=pages[app]||'';
@@ -397,6 +427,13 @@ function makeCity(){
   for(let z=-105;z<35;z+=18){
     const left=leftShops.get(z);if(left)createShop(-15,z,-1,...left);else building(-15,z,8,12,12+Math.random()*22,0x6c7885);
     const rz=z-7,right=rightShops.get(rz);if(right)createShop(15,rz,1,...right);else building(15,rz,8,12,15+Math.random()*25,0x77828c);
+  }
+  // Wohnviertel mit Mehrfamilienhäusern, Balkonen und Hauseingängen
+  const homeColors=[0xc5b9a5,0xb8c2c5,0xd1c3ae,0x9daeb4,0xc8b6a6,0xb4b9aa];
+  for(let i=0;i<6;i++){
+    const z=-96+i*25;
+    residentialBuilding(-26.5,z,8.5,11,15+(i%3)*3,homeColors[i%homeColors.length]);
+    residentialBuilding(45.5,z-7,8.5,11,17+((i+1)%3)*3,homeColors[(i+2)%homeColors.length]);
   }
   for(let i=0;i<7;i++)building(-42+i*14,-72,8,9,25+Math.random()*38,0x43576a);
   for(let z=-95;z<25;z+=14)for(const x of [-11,11])tree(x,z);

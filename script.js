@@ -274,6 +274,36 @@ function toggleShop(){
  shopPanel.querySelector('#shopMessage').textContent='Du bist bei '+shop.name+'.';
  shopPanel.classList.remove('hidden');document.exitPointerLock?.();
 }
+let phonePanel=null;
+function buildPhone(){
+ phonePanel=document.createElement('section');phonePanel.id='phonePanel';phonePanel.className='phone-panel hidden';
+ phonePanel.innerHTML='<div class="phone-top"><span>● FRANKFURT MOBILE</span><button id="phoneClose" aria-label="Handy schließen">×</button></div><div class="phone-time" id="phoneTime">12:00</div><div class="phone-date">FRANKFURT AM MAIN</div><div class="phone-grid"><button data-app="map"><b>🗺️</b><span>Karte</span></button><button data-app="jobs"><b>💼</b><span>Jobs</span></button><button data-app="bank"><b>🏦</b><span>Bank</span></button><button data-app="inventory"><b>🎒</b><span>Inventar</span></button><button data-app="stats"><b>📊</b><span>Statistik</span></button><button data-app="help"><b>⚙️</b><span>Hilfe</span></button></div><div id="phoneContent" class="phone-content">Wähle eine App aus.</div><div class="phone-bottom"><span>F1 · Handy schließen</span></div>';
+ viewport.appendChild(phonePanel);
+ phonePanel.querySelector('#phoneClose').addEventListener('click',()=>phonePanel.classList.add('hidden'));
+ phonePanel.querySelectorAll('[data-app]').forEach(btn=>btn.addEventListener('click',()=>openPhoneApp(btn.dataset.app)));
+}
+function openPhoneApp(app){
+ const content=phonePanel.querySelector('#phoneContent');
+ const pos=camera?Math.round(camera.position.x)+' / '+Math.round(camera.position.z):'–';
+ const total=Object.values(inventory).reduce((a,b)=>a+b,0);
+ const pages={
+  map:'<h3>Stadtkarte</h3><p>Deine aktuelle Position: <b>'+pos+'</b></p><p>Orientiere dich an der Fußgängerzone, dem Stadtplatz und den Geschäften.</p>',
+  jobs:'<h3>Jobzentrale</h3><p>Starte Aufträge und verdiene Geld.</p><button class="phone-action" data-action="jobs">JOBZENTRALE ÖFFNEN</button>',
+  bank:'<h3>Bankkonto</h3><p class="phone-balance">'+careerMoney.toLocaleString('de-DE')+' €</p><p>Abgeschlossene Aufträge: '+completedJobs+'</p><p>Dein Kontostand wird durch Jobs erhöht und Einkäufe verringert.</p>',
+  inventory:'<h3>Inventar</h3><p>Kaffee: '+inventory.Kaffee+'</p><p>Snacks: '+inventory.Snack+'</p><p>Stadtpläne: '+inventory.Stadtplan+'</p><p>Gegenstände insgesamt: '+total+'</p>',
+  stats:'<h3>Spielstatistik</h3><p>Erledigte Aufträge: '+completedJobs+'</p><p>Kontostand: '+careerMoney.toLocaleString('de-DE')+' €</p><p>Gekaufte Gegenstände: '+total+'</p>',
+  help:'<h3>Steuerung</h3><p>WASD – bewegen</p><p>Maus – umsehen</p><p>J – Jobs · E – Geschäfte</p><p>F – Fahrzeug · L – Taschenlampe</p><p>F1 – Handy · ESC – Menüs schließen</p>'
+ };
+ content.innerHTML=pages[app]||'';
+ content.querySelector('[data-action="jobs"]')?.addEventListener('click',()=>{phonePanel.classList.add('hidden');toggleJobs();});
+}
+function togglePhone(){
+ if(!started||!phonePanel)return;
+ phonePanel.classList.toggle('hidden');
+ if(!phonePanel.classList.contains('hidden')){
+  openPhoneApp('map');document.exitPointerLock?.();
+ }
+}
 function createTraffic(){
  const trafficSpecs=[
   [0xb9c5d0,'hatch'],[0x253e59,'sedan'],[0xc6a83a,'hatch'],[0xeeeeea,'van'],[0x7b3034,'sportback'],
@@ -482,7 +512,7 @@ function begin(){
     renderer.shadowMap.type=THREE.PCFSoftShadowMap;
     renderer.shadowMap.enabled=false;
     sunLight=null;hemiLight=null;
-    makeCity();buildInGameJobs();buildShopInteraction();applyQuality();viewport.appendChild(renderer.domElement);resize();loop();
+    makeCity();buildInGameJobs();buildShopInteraction();buildPhone();applyQuality();viewport.appendChild(renderer.domElement);resize();loop();
     renderer.domElement.addEventListener('click',()=>renderer.domElement.requestPointerLock?.());
     document.addEventListener('pointerlockchange',()=>{
       locked=document.pointerLockElement===renderer.domElement;
@@ -500,6 +530,6 @@ function begin(){
 startButton?.addEventListener('click',begin);
 // In der eigenständigen Windows-Spielansicht direkt in die 3D-Stadt starten.
 if(document.body.classList.contains('game-app')) begin();
-document.addEventListener('keydown',e=>{keys[e.code]=true;if(e.code==='KeyE'&&!e.repeat)toggleShop();if(e.code==='KeyF'&&!e.repeat)toggleVehicle();if(e.code==='KeyJ'&&!e.repeat)toggleJobs();if(e.code==='KeyL'&&!e.repeat)toggleFlashlight();if(e.code==='Escape'&&jobPanel&&!jobPanel.classList.contains('hidden'))jobPanel.classList.add('hidden');if(e.code==='Escape'&&shopPanel&&!shopPanel.classList.contains('hidden'))shopPanel.classList.add('hidden');if(['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code))e.preventDefault();});
+document.addEventListener('keydown',e=>{if(e.code==='F1'){e.preventDefault();if(!e.repeat)togglePhone();return;}keys[e.code]=true;if(e.code==='KeyE'&&!e.repeat)toggleShop();if(e.code==='KeyF'&&!e.repeat)toggleVehicle();if(e.code==='KeyJ'&&!e.repeat)toggleJobs();if(e.code==='KeyL'&&!e.repeat)toggleFlashlight();if(e.code==='Escape'&&jobPanel&&!jobPanel.classList.contains('hidden'))jobPanel.classList.add('hidden');if(e.code==='Escape'&&shopPanel&&!shopPanel.classList.contains('hidden'))shopPanel.classList.add('hidden');if(e.code==='Escape'&&phonePanel&&!phonePanel.classList.contains('hidden'))phonePanel.classList.add('hidden');if(['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code))e.preventDefault();});
 document.addEventListener('keyup',e=>keys[e.code]=false);
 window.addEventListener('resize',resize);

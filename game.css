@@ -39,3 +39,5 @@
 /* Damage feedback and destructible street props */
 .damage-hud{position:absolute;z-index:7;right:16px;bottom:68px;min-width:190px;padding:12px 14px;border:1px solid #ffb15b88;border-radius:12px;background:#101923eF;color:#fff;pointer-events:none;animation:mission-pop .2s ease}
 .damage-hud.hidden{display:none}.damage-hud b{display:block;color:#ffc17b;font-size:10px;letter-spacing:1.5px}.damage-hud span{display:block;font-size:12px;margin:5px 0 9px}.damage-bars{display:flex;gap:5px}.damage-bars i{height:6px;flex:1;border-radius:4px;background:#48d6b0}.damage-bars i.lost{background:#ef795d}
+
+#gameViewport canvas{display:block;touch-action:none;cursor:crosshair}#gameViewport{touch-action:none;user-select:none}

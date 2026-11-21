@@ -1,4 +1,10 @@
 #include "FLVehicleShowcaseActor.h"
+#include "FLRealisticCharacter.h"
+#include "Components/BoxComponent.h"
+#include "Camera/CameraComponent.h"
+#include "GameFramework/FloatingPawnMovement.h"
+#include "GameFramework/PlayerController.h"
+#include "Components/InputComponent.h"
 #include "Components/SceneComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "Materials/MaterialInstanceDynamic.h"
@@ -7,8 +13,21 @@
 AFLVehicleShowcaseActor::AFLVehicleShowcaseActor()
 {
     PrimaryActorTick.bCanEverTick = false;
-    SceneRoot = CreateDefaultSubobject<USceneComponent>(TEXT("SceneRoot"));
+    SceneRoot = CreateDefaultSubobject<UBoxComponent>(TEXT("VehicleCollision"));
     RootComponent = SceneRoot;
+    SceneRoot->SetBoxExtent(FVector(230.0f, 105.0f, 85.0f));
+    SceneRoot->SetCollisionProfileName(TEXT("Pawn"));
+    SceneRoot->SetSimulatePhysics(false);
+    DriverCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("DriverCamera"));
+    DriverCamera->SetupAttachment(SceneRoot);
+    DriverCamera->SetRelativeLocation(FVector(35.0f, 0.0f, 150.0f));
+    DriverCamera->bUsePawnControlRotation = true;
+    VehicleMovement = CreateDefaultSubobject<UFloatingPawnMovement>(TEXT("VehicleMovement"));
+    VehicleMovement->UpdatedComponent = SceneRoot;
+    VehicleMovement->MaxSpeed = 2400.0f;
+    VehicleMovement->Acceleration = 1800.0f;
+    VehicleMovement->Deceleration = 2200.0f;
+    AutoPossessAI = EAutoPossessAI::Disabled;
     static ConstructorHelpers::FObjectFinder<UStaticMesh> Cube(TEXT("/Engine/BasicShapes/Cube.Cube"));
     static ConstructorHelpers::FObjectFinder<UStaticMesh> Cylinder(TEXT("/Engine/BasicShapes/Cylinder.Cylinder"));
     if (Cube.Succeeded()) CubeMesh = Cube.Object;
@@ -94,4 +113,42 @@ void AFLVehicleShowcaseActor::BuildPoliceCar()
     AddPart(CubeMesh, FVector(-8,0,171), FVector(0.48f,0.18f,0.07f), FLinearColor(0.72f,0.76f,0.78f,1.0f));
     AddPart(CubeMesh, FVector(-8,-25,183), FVector(0.12f,0.12f,0.08f), FLinearColor(0.025f,0.08f,0.55f,1.0f));
     AddPart(CubeMesh, FVector(-8,25,183), FVector(0.12f,0.12f,0.08f), FLinearColor(0.7f,0.015f,0.02f,1.0f));
+}
+
+void AFLVehicleShowcaseActor::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
+{
+    Super::SetupPlayerInputComponent(PlayerInputComponent);
+    PlayerInputComponent->BindAxis("MoveForward", this, &AFLVehicleShowcaseActor::DriveForward);
+    PlayerInputComponent->BindAxis("MoveRight", this, &AFLVehicleShowcaseActor::Steer);
+    PlayerInputComponent->BindAxis("Turn", this, &APawn::AddControllerYawInput);
+    PlayerInputComponent->BindAction("Interact", IE_Pressed, this, &AFLVehicleShowcaseActor::ExitVehicle);
+}
+
+void AFLVehicleShowcaseActor::DriveForward(float Value)
+{
+    if (FMath::Abs(Value) > KINDA_SMALL_NUMBER)
+        AddMovementInput(GetActorForwardVector(), Value);
+}
+
+void AFLVehicleShowcaseActor::Steer(float Value)
+{
+    if (Controller && FMath::Abs(Value) > KINDA_SMALL_NUMBER)
+        AddControllerYawInput(Value * 1.8f);
+}
+
+void AFLVehicleShowcaseActor::EnterVehicle(AFLRealisticCharacter* Character)
+{
+    if (!Character || !Character->GetController()) return;
+    PreviousDriver = Character;
+    Character->GetController()->Possess(this);
+}
+
+void AFLVehicleShowcaseActor::ExitVehicle()
+{
+    APlayerController* PC = Cast<APlayerController>(GetController());
+    if (!PC || !PreviousDriver) return;
+    AFLRealisticCharacter* Character = PreviousDriver;
+    PreviousDriver = nullptr;
+    Character->SetActorLocation(GetActorLocation() - GetActorRightVector() * 280.0f + FVector(0,0,20.0f));
+    PC->Possess(Character);
 }

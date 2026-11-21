@@ -2,6 +2,7 @@
 #include "FLRealisticCharacter.h"
 #include "FLRealisticCityBlock.h"
 #include "FLRealisticHUD.h"
+#include "FLVehicleShowcaseActor.h"
 #include "Engine/World.h"
 
 AFLRealisticGameMode::AFLRealisticGameMode()
@@ -24,5 +25,26 @@ void AFLRealisticGameMode::StartPlay()
             FVector::ZeroVector,
             FRotator::ZeroRotator,
             Params);
+
+        const FVector VehicleSpots[] = {
+            FVector(-850, -1450, 0),
+            FVector(850, -1450, 0),
+            FVector(-1450, 850, 0),
+            FVector(1450, 850, 0),
+            FVector(0, 1450, 0)
+        };
+        const float VehicleYaw[] = { 0.0f, 180.0f, 90.0f, -90.0f, 180.0f };
+        for (int32 Index = 0; Index < 5; ++Index)
+        {
+            const FTransform VehicleTransform(FRotator(0.0f, VehicleYaw[Index], 0.0f), VehicleSpots[Index]);
+            AFLVehicleShowcaseActor* Vehicle = World->SpawnActorDeferred<AFLVehicleShowcaseActor>(
+                AFLVehicleShowcaseActor::StaticClass(), VehicleTransform, nullptr, nullptr,
+                ESpawnActorCollisionHandlingMethod::AlwaysSpawn);
+            if (Vehicle)
+            {
+                Vehicle->VehicleStyle = (Index == 2) ? 1 : ((Index == 4) ? 2 : 0);
+                Vehicle->FinishSpawning(VehicleTransform);
+            }
+        }
     }
 }

@@ -459,6 +459,13 @@ function makeCar(x,z,color,police=false,model='sedan'){
     van:{length:5.1,width:2.0,height:.9,cabin:2.05,roof:1.8,hood:1.05}
   }[model]||{length:4.5,width:1.9,height:.65,cabin:1.55,roof:1.35,hood:1.5};
   const L=profile.length,W=profile.width;
+  const vehiclePerformance={
+    hatch:{top:175,power:.82},sedan:{top:215,power:1.0},
+    sportback:{top:245,power:1.12},coupe:{top:265,power:1.2},
+    super:{top:335,power:1.55},van:{top:155,power:.72}
+  }[model]||{top:190,power:.95};
+  car.userData.maxSpeedKmh=vehiclePerformance.top;
+  car.userData.enginePower=vehiclePerformance.power;
   const lower=new THREE.Mesh(new THREE.BoxGeometry(W,.48,L),paint);lower.position.y=.58;car.add(lower);
   const hood=new THREE.Mesh(new THREE.BoxGeometry(W*.96,.2,profile.hood),paint);hood.position.set(0,.83,L*.34);car.add(hood);
   const rear=new THREE.Mesh(new THREE.BoxGeometry(W*.94,.22,Math.max(.65,L-profile.hood-1.7)),paint);rear.position.set(0,.79,-L*.34);car.add(rear);
@@ -548,6 +555,45 @@ function makeCar(x,z,color,police=false,model='sedan'){
   const hoodDent=new THREE.Mesh(new THREE.SphereGeometry(.55,12,8),new THREE.MeshStandardMaterial({color:0x20252b,roughness:.95}));hoodDent.scale.set(1,.08,.55);hoodDent.position.set(0,.94,L*.32);hoodDent.visible=false;car.add(hoodDent);
   const smoke=new THREE.Mesh(new THREE.SphereGeometry(.32,8,6),new THREE.MeshBasicMaterial({color:0x5d6268,transparent:true,opacity:.5}));smoke.position.set(0,1.8,-L*.28);smoke.visible=false;car.add(smoke);
   car.userData.damageParts={paint,bumper,crack,frontBumper,rearBumper,hoodDent,smoke,scratches,sideDents,headlights,originalColor:paint.color.getHex()};
+  // Zusätzliche Rad- und Karosseriedetails für eine deutlich ausgearbeitete Silhouette.
+  const rubber=new THREE.MeshStandardMaterial({color:0x090c10,roughness:.96});
+  const rimDark=new THREE.MeshStandardMaterial({color:0x26313b,metalness:.72,roughness:.3});
+  const brakeMetal=new THREE.MeshStandardMaterial({color:0x89939c,metalness:.86,roughness:.28});
+  for(const side of [-1,1]){
+    for(const z of [-L*.32,L*.32]){
+      const wheelCenter=new THREE.Vector3(side*W*.51,.42,z);
+      const rimRing=new THREE.Mesh(new THREE.TorusGeometry(.245,.025,8,24),chrome);
+      rimRing.rotation.y=Math.PI/2;rimRing.position.copy(wheelCenter);car.add(rimRing);
+      const hub=new THREE.Mesh(new THREE.CylinderGeometry(.075,.075,.215,12),rimDark);
+      hub.rotation.z=Math.PI/2;hub.position.copy(wheelCenter);car.add(hub);
+      for(let spoke=0;spoke<5;spoke++){
+        const angle=spoke*Math.PI*2/5;
+        const spokeMesh=new THREE.Mesh(new THREE.BoxGeometry(.045,.27,.045),brakeMetal);
+        spokeMesh.position.set(wheelCenter.x,wheelCenter.y+Math.sin(angle)*.105,wheelCenter.z+Math.cos(angle)*.105);
+        spokeMesh.rotation.x=angle;spokeMesh.rotation.y=Math.PI/2;car.add(spokeMesh);
+      }
+      const caliper=new THREE.Mesh(new THREE.BoxGeometry(.08,.2,.13),new THREE.MeshStandardMaterial({color:model==='super'?0xc32e35:0x8b3333,metalness:.35,roughness:.5}));
+      caliper.position.set(wheelCenter.x+side*.12,wheelCenter.y+.12,wheelCenter.z-.13);car.add(caliper);
+    }
+    const mirrorStem=new THREE.Mesh(new THREE.BoxGeometry(.09,.06,.2),black);
+    mirrorStem.position.set(side*W*.49,1.04,.49);car.add(mirrorStem);
+    const indicator=new THREE.Mesh(new THREE.BoxGeometry(.035,.045,.22),new THREE.MeshBasicMaterial({color:0xffb52e}));
+    indicator.position.set(side*W*.505,.86,L*.18);car.add(indicator);
+    const lowerSill=new THREE.Mesh(new THREE.BoxGeometry(.11,.12,L*.62),trim);
+    lowerSill.position.set(side*W*.49,.35,0);car.add(lowerSill);
+  }
+  const frontIntake=new THREE.Mesh(new THREE.BoxGeometry(W*.62,.13,.045),trim);
+  frontIntake.position.set(0,.48,L*.525);car.add(frontIntake);
+  for(const side of [-1,1]){
+    const intakeFin=new THREE.Mesh(new THREE.BoxGeometry(.045,.11,.05),chrome);
+    intakeFin.position.set(side*W*.22,.49,L*.53);car.add(intakeFin);
+  }
+  const rearDiffuser=new THREE.Mesh(new THREE.BoxGeometry(W*.7,.12,.22),trim);
+  rearDiffuser.position.set(0,.34,-L*.52);car.add(rearDiffuser);
+  for(const side of [-1,1]){
+    const exhaustTip=new THREE.Mesh(new THREE.CylinderGeometry(.07,.07,.12,12),chrome);
+    exhaustTip.rotation.x=Math.PI/2;exhaustTip.position.set(side*W*.31,.37,-L*.55);car.add(exhaustTip);
+  }
   if(model==='super'){
     const splitter=new THREE.Mesh(new THREE.BoxGeometry(W*1.03,.08,.35),black);splitter.position.set(0,.36,L*.53);car.add(splitter);
     const wing=new THREE.Mesh(new THREE.BoxGeometry(W*.78,.07,.25),black);wing.position.set(0,1.03,-L*.48);car.add(wing);
@@ -636,6 +682,7 @@ const jobs=[
 let jobPanel,careerHud,jobActive=false,jobCar=null,jobDestination=null;
 let driving=false,carSpeed=0,carSlip=0,carYawRate=0,careerMoney=0,completedJobs=0;
 let damageLevel=0,damageHud=null,damageFlash=0,cameraLookOffset=0,damageCooldown=0,flSavedDamage=0;
+let speedometerHud=null,speedometerLastGear=1;
 const emergencyVehicles=[];
 const breakableProps=[];let lookDrag=false,lastPointerX=0,lastPointerY=0;
 function buildCutsceneUI(){
@@ -1437,10 +1484,11 @@ function move(dt=1/60){
     const weatherGrip=flWeather==='Regen'?.68:flWeather==='Nebel'?.88:flWeather==='Bewölkt'?.94:1;
     const damageGrip=damageLevel>=4?.72:damageLevel===3?.84:damageLevel===2?.93:1;
     const tireGrip=weatherGrip*damageGrip;
-    const maxForward=(.47+tuningLevel*.035)*(damageLevel>=4?.62:damageLevel===3?.78:1),maxReverse=.16;
+    const vehiclePower=jobCar.userData.enginePower||1;
+    const maxForward=((jobCar.userData.maxSpeedKmh?(.47*jobCar.userData.maxSpeedKmh/240):.47)+tuningLevel*.012)*vehiclePower*(damageLevel>=4?.62:damageLevel===3?.78:1),maxReverse=.16;
     if(accelerating&&flFuel>0){
       if(carSpeed<0)carSpeed=Math.min(0,carSpeed+.022*frameScale);
-      else carSpeed=Math.min(maxForward,carSpeed+(.0038+Math.max(0,1-carSpeed/maxForward)*.0035)*frameScale);
+      else carSpeed=Math.min(maxForward,carSpeed+(.0038*vehiclePower+Math.max(0,1-carSpeed/maxForward)*.0035*vehiclePower)*frameScale);
     }else if(braking){
       // Betriebsbremse: stärker als Motorbremse, mit sanftem Übergang zum Stillstand.
       if(carSpeed>0)carSpeed=Math.max(0,carSpeed-(.014+.012*tireGrip)*frameScale);
@@ -1512,6 +1560,7 @@ function move(dt=1/60){
     camera.position.x=Math.max(-178,Math.min(178,camera.position.x));    camera.position.z=Math.max(-298,Math.min(360,camera.position.z));
     camera.position.y=2.1;
   }
+  updateSpeedometer();
   camera.rotation.order='YXZ';camera.rotation.set(pitch,yaw,0);
   coords.textContent=(driving?'FAHRZEUG ':'POSITION ')+Math.round(camera.position.x)+' / '+Math.round(camera.position.z)+(jobActive&&jobDestination?' · ZIEL '+Math.round((driving?jobCar.position:camera.position).distanceTo(jobDestination))+' M':'');
 }
@@ -1535,16 +1584,46 @@ function toggleFlashlight(){
   status.textContent=flashlightOn?'TASCHENLAMPE AN · L ZUM AUSSCHALTEN':'TASCHENLAMPE AUS · L ZUM EINSCHALTEN';
 }
 function cycleCamera(){cameraMode=cameraMode==='follow'?'close':cameraMode==='close'?'hood':cameraMode==='hood'?'ego':'follow';status.textContent='KAMERA: '+({follow:'VERFOLGER',close:'NAH',hood:'MOTORHAUBE',ego:'EGO-PERSPEKTIVE'}[cameraMode]);}
+function buildSpeedometerHud(){
+  if(speedometerHud)return;
+  speedometerHud=document.createElement('section');
+  speedometerHud.id='speedometerHud';speedometerHud.className='speedometer-hud hidden';
+  speedometerHud.innerHTML='<div class="speedo-top"><span>FRANKFURT MOTORSPORT</span><b id="speedoGear">D</b></div><div class="speedo-main"><strong id="speedoSpeed">0</strong><span>KM/H</span></div><div class="speedo-rpm"><div class="speedo-rpm-label"><span>DREHZAHL</span><b id="speedoRpm">850 RPM</b></div><div class="speedo-rpm-track"><i id="speedoRpmBar"></i></div></div><div class="speedo-bottom"><span id="speedoVehicle">FAHRZEUG</span><span id="speedoFuel">TANK 100%</span></div>';
+  viewport.appendChild(speedometerHud);
+}
+function updateSpeedometer(){
+  if(!speedometerHud||speedometerHud.classList.contains('hidden')||!driving||!jobCar)return;
+  const maxKmh=jobCar.userData.maxSpeedKmh||190;
+  const kmh=Math.min(maxKmh,Math.round(Math.abs(carSpeed)/Math.max(.01,jobCar.userData.maxForwardSpeed||(.47*maxKmh/240))*maxKmh));
+  const ratio=Math.min(1,kmh/maxKmh);
+  const gear=carSpeed<-.015?'R':kmh<2?'N':Math.min(8,Math.max(1,Math.ceil(kmh/maxKmh*8)));
+  const rpm=Math.round(850+ratio*6200+Math.sin(clock.elapsedTime*18)*Math.min(180,ratio*180));
+  const speedEl=speedometerHud.querySelector('#speedoSpeed');
+  const gearEl=speedometerHud.querySelector('#speedoGear');
+  const rpmEl=speedometerHud.querySelector('#speedoRpm');
+  const rpmBar=speedometerHud.querySelector('#speedoRpmBar');
+  const vehicleEl=speedometerHud.querySelector('#speedoVehicle');
+  const fuelEl=speedometerHud.querySelector('#speedoFuel');
+  if(speedEl)speedEl.textContent=String(kmh).padStart(3,'0');
+  if(gearEl)gearEl.textContent=gear;
+  if(rpmEl)rpmEl.textContent=rpm.toLocaleString('de-DE')+' RPM';
+  if(rpmBar)rpmBar.style.width=Math.min(100,(rpm/7500)*100)+'%';
+  if(vehicleEl)vehicleEl.textContent=jobCar.userData.maxSpeedKmh+' KM/H · '+(jobCar.userData.traffic?'VERKEHR':'FAHRZEUG');
+  if(fuelEl)fuelEl.textContent='TANK '+Math.round(flFuel)+'%';
+}
 function toggleVehicle(){
   if(activeBoat){tryStartBoat();return;}
   if(planeFlying){planeFlying=false;planeSpeed=0;status.textContent='FLUG BEENDET · ZURÜCK AM FLUGHAFEN';if(takeoverHud)takeoverHud.classList.add('hidden');camera.position.set(airportPlane.position.x+5,2.1,airportPlane.position.z+5);return;}
   if(!jobCar){status.textContent='WÄHLE ZUERST EINEN JOB MIT J';return;}
+  buildSpeedometerHud();
   if(!driving){
     if(camera.position.distanceTo(jobCar.position)>9){status.textContent='GEHE NÄHER AN DEIN DIENSTFAHRZEUG';return;}
     driving=true;carSpeed=0;carSlip=0;carYawRate=0;cameraLookOffset=0;yaw=jobCar.rotation.y-Math.PI;
+    speedometerHud.classList.remove('hidden');
     status.textContent='IM FAHRZEUG · WASD / STICK FAHREN · F / X AUSSTEIGEN';
   }else{
     driving=false;carSpeed=0;carSlip=0;carYawRate=0;cameraLookOffset=0;
+    speedometerHud.classList.add('hidden');
     camera.position.set(jobCar.position.x+3,2.1,jobCar.position.z+3);
     status.textContent='AUSGESTIEGEN · F / X ZUM EINSTEIGEN';
   }

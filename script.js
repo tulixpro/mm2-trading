@@ -122,6 +122,7 @@ const jobs=[
  {name:'Stadtwerke',vehicle:'service',desc:'Fahre zu einer gemeldeten Störung.'}
 ];
 let jobPanel,jobActive=false,jobCar=null,jobDestination=null;
+let driving=false,carSpeed=0;
 function buildInGameJobs(){
  jobPanel=document.createElement('div');jobPanel.id='inGameJobs';jobPanel.className='ingame-jobs hidden';
  jobPanel.innerHTML='<div class="ingame-jobs-head"><b>FRANKFURT LIFE / JOBZENTRALE</b><button id="closeJobs" aria-label="Schließen">×</button></div><h3>Wähle deinen Beruf</h3><p class="ingame-jobs-hint">Dein Auftrag und das passende Dienstfahrzeug starten direkt in der 3D-Stadt.</p><div id="ingameJobChoices"></div><div id="ingameJobDetail">Wähle einen Job aus.</div><button id="startJob" class="ingame-start" disabled>AUFTRAG ANNEHMEN</button><small>J oder ESC · Menü schließen</small>';
@@ -204,17 +205,46 @@ function updateWorld(dt){
   }
 }
 function move(){
-  const speed=keys.ShiftLeft||keys.ShiftRight?.2:.12;
-  const forward=new THREE.Vector3(-Math.sin(yaw),0,-Math.cos(yaw));
-  const right=new THREE.Vector3(Math.cos(yaw),0,-Math.sin(yaw));
-  if(keys.KeyW||keys.ArrowUp)camera.position.addScaledVector(forward,speed);
-  if(keys.KeyS||keys.ArrowDown)camera.position.addScaledVector(forward,-speed);
-  if(keys.KeyA||keys.ArrowLeft)camera.position.addScaledVector(right,-speed);
-  if(keys.KeyD||keys.ArrowRight)camera.position.addScaledVector(right,speed);
-  camera.position.x=Math.max(-48,Math.min(48,camera.position.x));
-  camera.position.z=Math.max(-115,Math.min(45,camera.position.z));
-  camera.position.y=2.1;camera.rotation.order='YXZ';camera.rotation.set(pitch,yaw,0);
-  coords.textContent='POSITION '+Math.round(camera.position.x)+' / '+Math.round(camera.position.z)+(jobActive&&jobDestination?' · ZIEL '+Math.round(camera.position.distanceTo(jobDestination))+' M':'');
+  if(driving&&jobCar){
+    const accelerating=keys.KeyW||keys.ArrowUp, braking=keys.KeyS||keys.ArrowDown;
+    if(accelerating)carSpeed=Math.min(0.42,carSpeed+0.012);
+    else if(braking)carSpeed=Math.max(-0.18,carSpeed-0.014);
+    else carSpeed*=0.975;
+    const steer=(keys.KeyA||keys.ArrowLeft?1:0)-(keys.KeyD||keys.ArrowRight?1:0);
+    jobCar.rotation.y+=steer*Math.min(.035,Math.abs(carSpeed)*.11);
+    const forward=new THREE.Vector3(Math.sin(jobCar.rotation.y),0,Math.cos(jobCar.rotation.y));
+    jobCar.position.addScaledVector(forward,carSpeed);
+    jobCar.position.x=Math.max(-48,Math.min(48,jobCar.position.x));
+    jobCar.position.z=Math.max(-115,Math.min(45,jobCar.position.z));
+    yaw=jobCar.rotation.y-Math.PI;
+    camera.position.copy(jobCar.position).addScaledVector(forward,-6);
+    camera.position.y=3.2;
+  }else{
+    const speed=(keys.ShiftLeft||keys.ShiftRight)?.2:.12;
+    const forward=new THREE.Vector3(-Math.sin(yaw),0,-Math.cos(yaw));
+    const right=new THREE.Vector3(Math.cos(yaw),0,-Math.sin(yaw));
+    if(keys.KeyW||keys.ArrowUp)camera.position.addScaledVector(forward,speed);
+    if(keys.KeyS||keys.ArrowDown)camera.position.addScaledVector(forward,-speed);
+    if(keys.KeyA||keys.ArrowLeft)camera.position.addScaledVector(right,-speed);
+    if(keys.KeyD||keys.ArrowRight)camera.position.addScaledVector(right,speed);
+    camera.position.x=Math.max(-48,Math.min(48,camera.position.x));
+    camera.position.z=Math.max(-115,Math.min(45,camera.position.z));
+    camera.position.y=2.1;
+  }
+  camera.rotation.order='YXZ';camera.rotation.set(pitch,yaw,0);
+  coords.textContent=(driving?'FAHRZEUG ':'POSITION ')+Math.round(camera.position.x)+' / '+Math.round(camera.position.z)+(jobActive&&jobDestination?' · ZIEL '+Math.round((driving?jobCar.position:camera.position).distanceTo(jobDestination))+' M':'');
+}
+function toggleVehicle(){
+  if(!jobCar){status.textContent='WÄHLE ZUERST EINEN JOB MIT J';return;}
+  if(!driving){
+    if(camera.position.distanceTo(jobCar.position)>9){status.textContent='GEHE NÄHER AN DEIN DIENSTFAHRZEUG';return;}
+    driving=true;carSpeed=0;yaw=jobCar.rotation.y-Math.PI;
+    status.textContent='IM FAHRZEUG · WASD FAHREN · F AUSSTEIGEN';
+  }else{
+    driving=false;carSpeed=0;
+    camera.position.set(jobCar.position.x+3,2.1,jobCar.position.z+3);
+    status.textContent='AUSGESTIEGEN · F ZUM EINSTEIGEN';
+  }
 }
 function loop(now=0){
   raf=requestAnimationFrame(loop);
@@ -247,6 +277,6 @@ function begin(){
   }
 }
 startButton?.addEventListener('click',begin);
-document.addEventListener('keydown',e=>{keys[e.code]=true;if(e.code==='KeyJ'&&!e.repeat)toggleJobs();if(e.code==='Escape'&&jobPanel&&!jobPanel.classList.contains('hidden'))jobPanel.classList.add('hidden');if(['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code))e.preventDefault();});
+document.addEventListener('keydown',e=>{keys[e.code]=true;if(e.code==='KeyF'&&!e.repeat)toggleVehicle();if(e.code==='KeyJ'&&!e.repeat)toggleJobs();if(e.code==='Escape'&&jobPanel&&!jobPanel.classList.contains('hidden'))jobPanel.classList.add('hidden');if(['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code))e.preventDefault();});
 document.addEventListener('keyup',e=>keys[e.code]=false);
 window.addEventListener('resize',resize);

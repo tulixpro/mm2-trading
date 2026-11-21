@@ -1,6 +1,7 @@
 #include "FLRealisticCityBlock.h"
 #include "Components/SceneComponent.h"
 #include "Components/StaticMeshComponent.h"
+#include "Materials/MaterialInstanceDynamic.h"
 #include "UObject/ConstructorHelpers.h"
 
 AFLRealisticCityBlock::AFLRealisticCityBlock()
@@ -23,13 +24,22 @@ void AFLRealisticCityBlock::BeginPlay()
     BuildDistrict();
 }
 
-void AFLRealisticCityBlock::AddBox(const FVector& Location, const FVector& Scale)
+void AFLRealisticCityBlock::AddBox(const FVector& Location, const FVector& Scale, const FLinearColor& Tint)
 {
     if (!CubeMesh) return;
     UStaticMeshComponent* Part = NewObject<UStaticMeshComponent>(this);
     Part->SetStaticMesh(CubeMesh);
     Part->SetRelativeLocation(Location);
     Part->SetRelativeScale3D(Scale);
+    if (UMaterialInterface* BaseMaterial = Part->GetMaterial(0))
+    {
+        if (UMaterialInstanceDynamic* DynamicMaterial = UMaterialInstanceDynamic::Create(BaseMaterial, this))
+        {
+            DynamicMaterial->SetVectorParameterValue(TEXT("Color"), Tint);
+            DynamicMaterial->SetVectorParameterValue(TEXT("BaseColor"), Tint);
+            Part->SetMaterial(0, DynamicMaterial);
+        }
+    }
     Part->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
     Part->SetMobility(EComponentMobility::Movable);
     Part->SetupAttachment(SceneRoot);
@@ -77,9 +87,17 @@ void AFLRealisticCityBlock::AddStreetLight(const FVector& Location)
 
 void AFLRealisticCityBlock::AddBuilding(const FVector& Center, float Width, float Depth, float Height, int32 Seed)
 {
-    // Greybox building mass with repeated inset-like facade panels.
-    AddBox(Center + FVector(0, 0, Height * 0.5f), FVector(Width * 0.01f, Depth * 0.01f, Height * 0.01f));
-    AddBox(Center + FVector(0, 0, Height + 18), FVector(Width * 0.01f + 0.18f, Depth * 0.01f + 0.18f, 0.18f));
+    // Color-varied facade blockout; replace with authored PBR facade assets for production.
+    const FLinearColor FacadePalette[] = {
+        FLinearColor(0.58f,0.52f,0.43f,1.0f),
+        FLinearColor(0.68f,0.65f,0.58f,1.0f),
+        FLinearColor(0.43f,0.48f,0.50f,1.0f),
+        FLinearColor(0.55f,0.39f,0.31f,1.0f)
+    };
+    const FLinearColor Facade = FacadePalette[Seed % 4];
+    const FLinearColor Window(0.045f,0.14f,0.19f,1.0f);
+    AddBox(Center + FVector(0, 0, Height * 0.5f), FVector(Width * 0.01f, Depth * 0.01f, Height * 0.01f), Facade);
+    AddBox(Center + FVector(0, 0, Height + 18), FVector(Width * 0.01f + 0.18f, Depth * 0.01f + 0.18f, 0.18f), FLinearColor(0.24f,0.25f,0.26f,1.0f));
 
     const int32 Floors = FMath::Max(2, FMath::FloorToInt(Height / 190.0f));
     const int32 Columns = FMath::Max(2, FMath::FloorToInt(Width / 150.0f));
@@ -90,8 +108,8 @@ void AFLRealisticCityBlock::AddBuilding(const FVector& Center, float Width, floa
         {
             const float X = -Width * 0.5f + 75.0f + Col * (Width / Columns);
             const float Y = -Depth * 0.5f - 5.0f;
-            AddBox(Center + FVector(X, Y, Z), FVector(0.48f, 0.07f, 0.58f));
-            AddBox(Center + FVector(X, Depth * 0.5f + 5.0f, Z), FVector(0.48f, 0.07f, 0.58f));
+            AddBox(Center + FVector(X, Y, Z), FVector(0.48f, 0.07f, 0.58f), Window);
+            AddBox(Center + FVector(X, Depth * 0.5f + 5.0f, Z), FVector(0.48f, 0.07f, 0.58f), Window);
         }
     }
 
@@ -99,31 +117,31 @@ void AFLRealisticCityBlock::AddBuilding(const FVector& Center, float Width, floa
     for (int32 Shop = 0; Shop < 3; ++Shop)
     {
         const float X = -Width * 0.5f + (Shop + 0.5f) * (Width / 3.0f);
-        AddBox(Center + FVector(X, -Depth * 0.5f - 7.0f, 65.0f), FVector(0.72f, 0.09f, 0.62f));
+        AddBox(Center + FVector(X, -Depth * 0.5f - 7.0f, 65.0f), FVector(0.72f, 0.09f, 0.62f), FLinearColor(0.12f,0.18f,0.20f,1.0f));
     }
 }
 
 void AFLRealisticCityBlock::BuildDistrict()
 {
     // Procedural greybox only: replace primitive meshes with authored PBR assets in the art pass.
-    AddBox(FVector(0, 0, -35), FVector(42, 42, 0.35f));
+    AddBox(FVector(0, 0, -35), FVector(42, 42, 0.35f), FLinearColor(0.30f,0.31f,0.30f,1.0f));
 
     // Main roads, curb strips and simple dashed lane markings.
     for (int32 I = -1; I <= 1; ++I)
     {
         const float Axis = I * 2600.0f;
-        AddBox(FVector(Axis, 0, -12), FVector(4.5f, 42, 0.12f));
-        AddBox(FVector(0, Axis, -12), FVector(42, 4.5f, 0.12f));
-        AddBox(FVector(Axis + 570, 0, 8), FVector(1.2f, 42, 0.08f));
-        AddBox(FVector(Axis - 570, 0, 8), FVector(1.2f, 42, 0.08f));
-        AddBox(FVector(0, Axis + 570, 8), FVector(42, 1.2f, 0.08f));
-        AddBox(FVector(0, Axis - 570, 8), FVector(42, 1.2f, 0.08f));
+        AddBox(FVector(Axis, 0, -12), FVector(4.5f, 42, 0.12f), FLinearColor(0.075f,0.082f,0.09f,1.0f));
+        AddBox(FVector(0, Axis, -12), FVector(42, 4.5f, 0.12f), FLinearColor(0.075f,0.082f,0.09f,1.0f));
+        AddBox(FVector(Axis + 570, 0, 8), FVector(1.2f, 42, 0.08f), FLinearColor(0.58f,0.58f,0.54f,1.0f));
+        AddBox(FVector(Axis - 570, 0, 8), FVector(1.2f, 42, 0.08f), FLinearColor(0.58f,0.58f,0.54f,1.0f));
+        AddBox(FVector(0, Axis + 570, 8), FVector(42, 1.2f, 0.08f), FLinearColor(0.58f,0.58f,0.54f,1.0f));
+        AddBox(FVector(0, Axis - 570, 8), FVector(42, 1.2f, 0.08f), FLinearColor(0.58f,0.58f,0.54f,1.0f));
 
         for (int32 Mark = -7; Mark <= 7; ++Mark)
         {
             const float Offset = Mark * 330.0f;
-            AddBox(FVector(Axis + 0, Offset, 3), FVector(0.07f, 0.85f, 0.025f));
-            AddBox(FVector(Offset, Axis + 0, 3), FVector(0.85f, 0.07f, 0.025f));
+            AddBox(FVector(Axis + 0, Offset, 3), FVector(0.07f, 0.85f, 0.025f), FLinearColor(0.88f,0.86f,0.76f,1.0f));
+            AddBox(FVector(Offset, Axis + 0, 3), FVector(0.85f, 0.07f, 0.025f), FLinearColor(0.88f,0.86f,0.76f,1.0f));
         }
 
         for (int32 Side = -1; Side <= 1; Side += 2)

@@ -1,6 +1,6 @@
 const editionParam=new URLSearchParams(location.search).get('edition');
 const classicEdition=editionParam==='sanandreas'||editionParam==='classic';
-if(classicEdition){document.body.classList.add('classic-edition');document.title='Frankfurt Life San Andreas – Retro-3D';}
+if(classicEdition){document.body.classList.add('classic-edition');document.title='Frankfurt Life San Andreas – Retro-3D';}else{document.body.classList.add('modern-edition');document.title='Frankfurt Life 3D – Moderne Edition';}
 const THREE = await import('./node_modules/three/build/three.module.js').catch(()=>import('https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js'));
 
 let deferredInstallPrompt=null;
@@ -1157,13 +1157,13 @@ function tryStartBoat(){
 }
 
 function makeCity(){
-  scene=new THREE.Scene();scene.background=new THREE.Color(0x91b1c8);scene.fog=new THREE.Fog(0x91b1c8,95,liteMode?175:260);
+  const skyColor=classicEdition?0xb99a70:0x91b1c8;scene=new THREE.Scene();scene.background=new THREE.Color(skyColor);scene.fog=new THREE.Fog(skyColor,classicEdition?72:95,classicEdition?135:(liteMode?175:260));
   camera=new THREE.PerspectiveCamera(cameraFov,viewport.clientWidth/viewport.clientHeight,.1,620);camera.position.set(0,2.1,14);
   flashlight=new THREE.SpotLight(0xddeeff,0,48,Math.PI/7,.42,1.35);
   flashlight.position.set(0,0,0);flashlightTarget=new THREE.Object3D();flashlightTarget.position.set(0,0,-1);
   camera.add(flashlight,flashlightTarget);flashlight.target=flashlightTarget;
-  hemiLight=new THREE.HemisphereLight(0xd7ecff,0x4a5260,2);scene.add(hemiLight);
-  sunLight=new THREE.DirectionalLight(0xffe0b4,1.5);sunLight.position.set(-25,45,25);sunLight.castShadow=false;scene.add(sunLight);
+  hemiLight=new THREE.HemisphereLight(classicEdition?0xffd69a:0xd7ecff,classicEdition?0x66513a:0x4a5260,classicEdition?1.65:2);scene.add(hemiLight);
+  sunLight=new THREE.DirectionalLight(classicEdition?0xffc078:0xffe0b4,classicEdition?1.25:1.5);sunLight.position.set(-25,45,25);sunLight.castShadow=false;scene.add(sunLight);
   const ground=new THREE.Mesh(new THREE.PlaneGeometry(900,700),new THREE.MeshLambertMaterial({color:0x58636b}));ground.rotation.x=-Math.PI/2;ground.position.set(0,-.12,-80);scene.add(ground);
   const road=new THREE.Mesh(new THREE.PlaneGeometry(18,520),new THREE.MeshLambertMaterial({color:0x202a35}));road.rotation.x=-Math.PI/2;road.position.set(0,0,-45);scene.add(road);
   for(let z=-300;z<225;z+=12){const line=new THREE.Mesh(new THREE.PlaneGeometry(.18,5),new THREE.MeshBasicMaterial({color:0xe5dfc5}));line.rotation.x=-Math.PI/2;line.position.set(0,.015,z);scene.add(line);}

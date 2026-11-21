@@ -11,10 +11,14 @@ const mouseSelect=document.querySelector('#mouseSelect');
 const fovSelect=document.querySelector('#fovSelect');
 let maxFps=60,lastFrame=0;
 let perfHud=null,perfFrames=[],perfLastCheck=0,autoResolutionScale=1,perfHudTimer=0;
-const lowEndDevice=(navigator.hardwareConcurrency||4)<=2||(navigator.deviceMemory||8)<=4;
+const legacyMode=new URLSearchParams(location.search).get('legacy')==='1';
+const lowEndDevice=legacyMode||(navigator.hardwareConcurrency||4)<=4||(navigator.deviceMemory||8)<=6;
+const liteMode=lowEndDevice;
 let performanceFrame=0;
 const qualitySettings={
- minimum:{pixelRatio:.28,shadows:false,fog:52,exposure:.78,ambient:1.25,label:'MINIMAL'},
+ minimum:{pixelRatio:.22,shadows:false,fog:38,exposure:.78,ambient:1.15,label:'ULTRA-SPARMODUS'},
+ legacy:{pixelRatio:.32,shadows:false,fog:58,exposure:.82,ambient:1.25,label:'LAPTOP-SPARMODUS'},
+
  low:{pixelRatio:.45,shadows:false,fog:88,exposure:.86,ambient:1.5,label:'NIEDRIG'},
  medium:{pixelRatio:.72,shadows:false,fog:145,exposure:1,ambient:1.85,label:'MITTEL'},
  high:{pixelRatio:1,shadows:true,fog:205,exposure:1.08,ambient:2.05,label:'HOCH'},
@@ -859,7 +863,7 @@ function createPedestrianDistrict(){
    cap.position.set(x,.82,z);scene.add(cap);
   }
  }
- for(let i=0;i<14;i++){
+ for(let i=0;i<(liteMode?5:14);i++){
   const x=25+(i%4)*4.2,z=-108+Math.floor(i/4)*36+(i%3)*3;
   makePedestrian(x,z,24+i);
  }
@@ -1134,7 +1138,8 @@ function makeCity(){
   for(let z=-300;z<225;z+=12){const line=new THREE.Mesh(new THREE.PlaneGeometry(.18,5),new THREE.MeshBasicMaterial({color:0xe5dfc5}));line.rotation.x=-Math.PI/2;line.position.set(0,.015,z);scene.add(line);}
   const sidewalkMat=new THREE.MeshLambertMaterial({color:0x92999b});
   for(const x of [-9.2,9.2]){const s=new THREE.Mesh(new THREE.BoxGeometry(3.5,.25,520),sidewalkMat);s.position.set(x,.08,-45);scene.add(s);}
-  buildStreetInfrastructure();buildTransitStops();buildAirportAndBuses();buildCoastAndBoats();buildRoadSigns();
+  if(!liteMode){buildStreetInfrastructure();buildTransitStops();buildRoadSigns();}
+  buildAirportAndBuses();buildCoastAndBoats();
   const leftShops=new Map([[-87,['SUPERMARKT','MARKT · FRISCHE WAREN',0x3c966c]],[ -51,['BÄCKEREI','BROT · KAFFEE · KUCHEN',0xc58b43]],[ -15,['MODEHAUS','MODE FÜR JEDEN TAG',0x8a638e]],[21,['ELEKTRO','TECHNIK & ZUBEHÖR',0x397ca5]]]);
   const rightShops=new Map([[-94,['CAFÉ AM MAIN','KAFFEE · SNACKS',0x9b6547]],[ -58,['AUTOWELT','FAHRZEUGE & SERVICE',0x397a91]],[ -22,['SPORTTREFF','SPORT · OUTDOOR',0x62884f]],[14,['KIOSK 24','ZEITUNGEN · GETRÄNKE',0xb68a39]]]);
   for(let z=-105;z<35;z+=18){
@@ -1160,7 +1165,7 @@ function makeCity(){
   for(let z=-105;z<35;z+=20)for(const x of [-10.4,10.4])streetLamp(x,z);
   makeCar(4,-8,0x1c354d,false,'sportback');
   makeCar(-3,-35,0xffffff,true,'sedan');
-  buildEmergencyServices();buildFrankfurtLandmarks();
+  if(!liteMode){buildEmergencyServices();buildFrankfurtLandmarks();}
   buildDealership();
   createTraffic();
   // Erweiterte Stadt: zusätzliche Wohn- und Geschäftsquartiere, Nebenstraßen und Plätze.
@@ -1174,7 +1179,7 @@ function makeCity(){
       pavement.position.set(sx,.06,-45);scene.add(pavement);
     }
   }
-  for(let z=-190;z<=95;z+=38){
+  for(let z=-190;z<=95;z+=(liteMode?76:38)){
     const cross=new THREE.Mesh(new THREE.PlaneGeometry(360,9),sideRoadMat);
     cross.rotation.x=-Math.PI/2;cross.position.set(0,.012,z);scene.add(cross);
     for(const x of [-166,-136,-96,-66,-30,30,66,96,136,166]){
@@ -1188,12 +1193,12 @@ function makeCity(){
     }
     for(const x of [-55,-20,20,55])tree(x,z+5);
   }
-  for(let z=-286;z<220;z+=26){
+  for(let z=-286;z<220;z+=(liteMode?52:26)){
     for(const x of [-170,-145,-103,-61,61,103,145,170])streetLamp(x,z);
   }
   // Neue Außenbezirke: zusätzliche Straßen, Wohnblocks und kleine Gewerbequartiere.
   const outerPalette=[0xb8b7aa,0x82949d,0xc5b69f,0x71838b,0x9eaaa4,0xc2c8c5];
-  for(let z=-266;z<=210;z+=38){
+  for(let z=-266;z<=210;z+=(liteMode?76:38)){
    for(const x of [-150,-120,120,150]){
     const height=17+((Math.abs(Math.floor(z/38))+Math.abs(Math.floor(x/30)))%5)*6;
     if(Math.abs(x)===150)residentialBuilding(x,z+10,13,15,height,outerPalette[(Math.abs(Math.floor(z/38))+Math.floor(Math.abs(x)/30))%outerPalette.length]);
@@ -1207,7 +1212,7 @@ function makeCity(){
   createShop(-145,165,-1,'SÜDQUARTIER KIOSK','GETRÄNKE · SNACKS',0xb68a39);
   createShop(145,165,1,'CITY SPORT','SPORT · OUTDOOR',0x62884f);
   createPedestrianDistrict();
-  for(let i=0;i<24;i++){
+  for(let i=0;i<(liteMode?7:24);i++){
     const side=i%2===0?-1:1;
     makePedestrian(side*(9.1+(i%4)*.38),-108+(i*9.7)%128,i);
   }
@@ -1507,6 +1512,13 @@ function toggleVehicle(){
     status.textContent='AUSGESTIEGEN · F / X ZUM EINSTEIGEN';
   }
 }
+function buildMobileControls(){
+ if(!('ontouchstart' in window)&&!navigator.maxTouchPoints)return;
+ const panel=document.createElement('div');panel.id='mobileControls';panel.innerHTML='<div class="mobile-pad"><button data-key="KeyW">▲</button><div><button data-key="KeyA">◀</button><button data-key="KeyS">▼</button><button data-key="KeyD">▶</button></div></div><div class="mobile-actions"><button data-key="ShiftLeft">SPRINT</button><button data-action="interact">E</button><button data-action="vehicle">F</button><button data-action="jobs">J</button><button data-action="phone">☎</button></div><div class="mobile-look">ZUM UMSCHAUEN HIER WISCHEN</div>';
+ viewport.appendChild(panel);
+ panel.querySelectorAll('[data-key]').forEach(btn=>{const code=btn.dataset.key;const on=e=>{e.preventDefault();keys[code]=true;keyboardKeys[code]=true;};const off=e=>{e.preventDefault();keys[code]=false;keyboardKeys[code]=false;};btn.addEventListener('pointerdown',on);['pointerup','pointercancel','pointerleave'].forEach(ev=>btn.addEventListener(ev,off));});
+ panel.querySelectorAll('[data-action]').forEach(btn=>btn.addEventListener('pointerdown',e=>{e.preventDefault();const a=btn.dataset.action;if(a==='interact')toggleShopOrDealer();if(a==='vehicle'){if(!tryStartBoat()&&!tryStartFlight())toggleVehicle();}if(a==='jobs')toggleJobs();if(a==='phone')togglePhone();}));
+}
 function buildPerformanceHud(){
   perfHud=document.createElement('div');perfHud.id='performanceHud';
   perfHud.style.cssText='position:absolute;right:14px;top:14px;z-index:9;padding:7px 10px;border:1px solid #ffffff35;border-radius:7px;background:#081321dd;color:#d9f4ff;font:700 11px/1.45 system-ui;letter-spacing:.3px;pointer-events:none;white-space:pre-line';
@@ -1534,16 +1546,16 @@ function begin(){
   if(mouseSelect){mouseSelect.value=localStorage.getItem('flMouse')||'1';mouseSensitivity=Number(mouseSelect.value)||1;}
   if(fovSelect){fovSelect.value=localStorage.getItem('flFov')||'68';cameraFov=Number(fovSelect.value)||68;}
   if(cameraSelect){cameraSelect.value=localStorage.getItem('flCamera')||'follow';cameraMode=cameraSelect.value||'follow';}
-  status.textContent=lowEndDevice?'SPARMODUS AKTIV · ÄLTERE HARDWARE':'STADT GELADEN · KLICKE INS SPIEL';
+  status.textContent=lowEndDevice?'LAPTOP-SPARMODUS AKTIV · REDUZIERTE STADTDETAILS':'STADT GELADEN · KLICKE INS SPIEL';
   try{
-    renderer=new THREE.WebGLRenderer({antialias:!lowEndDevice,powerPreference:lowEndDevice?'low-power':'high-performance'});
+    renderer=new THREE.WebGLRenderer({antialias:!lowEndDevice,powerPreference:lowEndDevice?'low-power':'high-performance',stencil:false,depth:true});
     renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,1));
     renderer.outputColorSpace=THREE.SRGBColorSpace;
     renderer.toneMapping=THREE.ACESFilmicToneMapping;
     renderer.shadowMap.type=THREE.PCFSoftShadowMap;
     renderer.shadowMap.enabled=false;
     sunLight=null;hemiLight=null;
-    makeCity();buildBreakableProps();buildInGameJobs();buildShopInteraction();buildPhone();document.querySelector("#openSettings")?.addEventListener("click",()=>{if(phonePanel?.classList.contains("hidden"))phonePanel.classList.remove("hidden");showPhoneHome();openPhoneApp("settings");document.exitPointerLock?.();});buildDealerPanel();buildMiniMap();buildGamepadStatus();flBuildStatus();applyQuality();viewport.appendChild(renderer.domElement);buildPerformanceHud();flLoadGame();flApplyWeather();resize();loop();startIntroTutorial();
+    makeCity();buildBreakableProps();buildInGameJobs();buildShopInteraction();buildPhone();document.querySelector("#openSettings")?.addEventListener("click",()=>{if(phonePanel?.classList.contains("hidden"))phonePanel.classList.remove("hidden");showPhoneHome();openPhoneApp("settings");document.exitPointerLock?.();});buildDealerPanel();buildMiniMap();buildGamepadStatus();flBuildStatus();applyQuality();viewport.appendChild(renderer.domElement);buildPerformanceHud();buildMobileControls();flLoadGame();flApplyWeather();resize();loop();startIntroTutorial();
     renderer.domElement.tabIndex=0;
     renderer.domElement.addEventListener('click',()=>{renderer.domElement.focus();if(!phonePanel||phonePanel.classList.contains('hidden')){try{const result=renderer.domElement.requestPointerLock?.();if(result?.catch)result.catch(()=>{status.textContent='MAUSZIEHEN ZUM UMSEHEN';});}catch(_){status.textContent='MAUSZIEHEN ZUM UMSEHEN';}}});
     renderer.domElement.addEventListener('pointerdown',e=>{if(e.button!==0||locked)return;lookDrag=true;lastPointerX=e.clientX;lastPointerY=e.clientY;});

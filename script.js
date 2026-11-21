@@ -16,7 +16,7 @@ const mouseSelect=document.querySelector('#mouseSelect');
 const fovSelect=document.querySelector('#fovSelect');
 let maxFps=60,lastFrame=0;
 let perfHud=null,perfFrames=[],perfLastCheck=0,autoResolutionScale=1,perfHudTimer=0;
-const legacyMode=new URLSearchParams(location.search).get('legacy')==='1';
+const legacyMode=classicEdition||new URLSearchParams(location.search).get('legacy')==='1';
 const lowEndDevice=legacyMode||(navigator.hardwareConcurrency||8)<=2||(navigator.deviceMemory||8)<=4;
 const liteMode=lowEndDevice;
 let performanceFrame=0;
@@ -34,15 +34,15 @@ let sunLight=null,hemiLight=null,flashlight=null,flashlightTarget=null,flashligh
 function applyQuality(){
  if(!renderer||!scene)return;
  const mode=qualitySelect?.value||'medium',q=qualitySettings[mode]||qualitySettings.medium;
- renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,q.pixelRatio*autoResolutionScale));
- renderer.shadowMap.enabled=q.shadows;
- renderer.toneMappingExposure=q.exposure;
- if(scene.fog)scene.fog.far=q.fog;
- if(sunLight){sunLight.intensity=mode==='minimum'?1.0:mode==='legacy'?1.15:mode==='low'?1.25:mode==='medium'?1.55:mode==='high'?1.9:2.05;sunLight.castShadow=q.shadows;sunLight.shadow.mapSize.set(1024,1024);sunLight.shadow.camera.left=-65;sunLight.shadow.camera.right=65;sunLight.shadow.camera.top=65;sunLight.shadow.camera.bottom=-65;sunLight.shadow.camera.near=1;sunLight.shadow.camera.far=140;sunLight.shadow.camera.updateProjectionMatrix();}
+ renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,(classicEdition?Math.min(q.pixelRatio,.72):q.pixelRatio)*autoResolutionScale));
+ renderer.shadowMap.enabled=classicEdition?false:q.shadows;
+ renderer.toneMappingExposure=classicEdition?.92:q.exposure;
+ if(scene.fog)scene.fog.far=classicEdition?125:q.fog;
+ if(sunLight){sunLight.intensity=classicEdition?1.2:mode==='minimum'?1.0:mode==='legacy'?1.15:mode==='low'?1.25:mode==='medium'?1.55:mode==='high'?1.9:2.05;sunLight.castShadow=q.shadows;sunLight.shadow.mapSize.set(1024,1024);sunLight.shadow.camera.left=-65;sunLight.shadow.camera.right=65;sunLight.shadow.camera.top=65;sunLight.shadow.camera.bottom=-65;sunLight.shadow.camera.near=1;sunLight.shadow.camera.far=140;sunLight.shadow.camera.updateProjectionMatrix();}
  if(hemiLight)hemiLight.intensity=q.ambient;
  scene.traverse(obj=>{if(obj.isMesh){obj.castShadow=q.shadows;obj.receiveShadow=q.shadows;}});
  const hint=document.querySelector('#graphicsHint')||document.querySelector('#qualityStatus');
- if(hint)hint.textContent='Grafik: '+q.label+' · '+(q.shadows?'Schatten AN':'Schatten AUS');
+ if(hint)hint.textContent=classicEdition?'CLASSIC RETRO-3D · REDUZIERTE DETAILS':'Grafik: '+q.label+' · '+(q.shadows?'Schatten AN':'Schatten AUS');
  if(viewport)viewport.dataset.graphics=mode;
  resize();
 }
@@ -1578,8 +1578,8 @@ function begin(){
   if(cameraSelect){cameraSelect.value=localStorage.getItem('flCamera')||'follow';cameraMode=cameraSelect.value||'follow';}
   status.textContent=lowEndDevice?'OLD-SCHOOL-MODUS · STADT BLEIBT GUT ERKENNBAR':'STADT GELADEN · KLICKE INS SPIEL';
   try{
-    renderer=new THREE.WebGLRenderer({antialias:!lowEndDevice,powerPreference:lowEndDevice?'low-power':'high-performance',stencil:false,depth:true});
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,1));
+    renderer=new THREE.WebGLRenderer({antialias:classicEdition?false:!lowEndDevice,powerPreference:lowEndDevice?'low-power':'high-performance',stencil:false,depth:true});
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,classicEdition?.72:1));
     renderer.outputColorSpace=THREE.SRGBColorSpace;
     renderer.toneMapping=THREE.ACESFilmicToneMapping;
     renderer.shadowMap.type=THREE.PCFSoftShadowMap;

@@ -1124,17 +1124,33 @@ function buildGamepadStatus(){
  gamepadStatus.textContent='CONTROLLER: SUCHE…';viewport.appendChild(gamepadStatus);
 }
 
-function move(){
+function move(dt=1/60){
   if(driving&&jobCar){
+    // Fahrphysik mit zeitbasierter Beschleunigung, Bremsweg, Rückwärtsgang und Tempo-Lenkung.
+    const frameScale=Math.min(3,Math.max(.25,dt*60));
     const accelerating=keys.KeyW||keys.ArrowUp, braking=keys.KeyS||keys.ArrowDown;
-    if(accelerating&&flFuel>0)carSpeed=Math.min(0.42+tuningLevel*.055,carSpeed+0.012+tuningLevel*.002);
-    else if(braking)carSpeed=Math.max(-0.18,carSpeed-0.014);
-    else carSpeed*=0.975;
+    const handbrake=!!keys.Space;
+    const maxForward=.47+tuningLevel*.035,maxReverse=.16;
+    if(accelerating&&flFuel>0){
+      if(carSpeed<0)carSpeed=Math.min(0,carSpeed+.019*frameScale);
+      else carSpeed=Math.min(maxForward,carSpeed+(.0048+Math.max(0,1-carSpeed/maxForward)*.0032)*frameScale);
+    }else if(braking){
+      if(carSpeed>0)carSpeed=Math.max(0,carSpeed-.018*frameScale);
+      else carSpeed=Math.max(-maxReverse,carSpeed-.0042*frameScale);
+    }else{
+      // Rollwiderstand: das Fahrzeug verliert Geschwindigkeit langsam statt abrupt.
+      carSpeed*=Math.pow(.992,frameScale);
+      if(Math.abs(carSpeed)<.0015)carSpeed=0;
+    }
+    if(handbrake)carSpeed*=Math.pow(.88,frameScale);
     const steer=(keys.KeyA||keys.ArrowLeft?1:0)-(keys.KeyD||keys.ArrowRight?1:0);
-    jobCar.rotation.y+=steer*Math.min(.035,Math.abs(carSpeed)*.11);
+    const speedRatio=Math.min(1,Math.abs(carSpeed)/maxForward);
+    const steeringResponse=(.003+speedRatio*.014)*(carSpeed<0?-1:1);
+    // Bei hohem Tempo wird die Lenkung sanfter; Handbremse erlaubt engere Kurven.
+    jobCar.rotation.y+=steer*steeringResponse*frameScale*(handbrake?1.45:1);
     const forward=new THREE.Vector3(Math.sin(jobCar.rotation.y),0,Math.cos(jobCar.rotation.y));
-    jobCar.position.addScaledVector(forward,carSpeed);
-    updateBreakableCollisions(.016);
+    jobCar.position.addScaledVector(forward,carSpeed*frameScale);
+    updateBreakableCollisions(dt);
     if(jobActive&&jobDestination&&jobCar.position.distanceTo(jobDestination)<4){
       jobStopIndex++;
       if(jobStopIndex<jobStops.length){
@@ -1217,7 +1233,7 @@ function loop(now=0){
   }
   perfHudTimer+=dt;
   if(perfHud&&perfHudTimer>.5){perfHudTimer=0;const avg=perfFrames.length?perfFrames.reduce((a,b)=>a+b,0)/perfFrames.length:0;const fps=avg>0?Math.round(1000/avg):0;perfHud.textContent='FPS: '+(fps||'--')+'\nRender-Skalierung: '+Math.round(autoResolutionScale*100)+'%';}
-  move();updateWorld(dt);renderer.render(scene,camera);
+  move(dt);updateWorld(dt);renderer.render(scene,camera);
 }
 function begin(){
   if(started)return;started=true;placeholder?.remove();

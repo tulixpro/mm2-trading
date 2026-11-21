@@ -21,6 +21,7 @@ on:
       - 'electron/**'
       - 'electron-builder-action.yml'
       - 'electron-builder-classic.yml'
+      - 'Unreal/Realistic/ArtSource/vehicle_specs.json'
       - '.github/workflows/windows-build.yml'
 
 jobs:

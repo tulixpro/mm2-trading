@@ -612,16 +612,16 @@ function damagePlayerCar(){
  damageFlash=.28;
 }
 function updateBreakableCollisions(dt){
- if(!driving||!jobCar||Math.abs(carSpeed)<.075)return;
- for(const prop of breakableProps){
-  if(!prop.active)continue;
-  const dx=jobCar.position.x-prop.group.position.x,dz=jobCar.position.z-prop.group.position.z;
-  const dist=Math.hypot(dx,dz);
-  if(dist<prop.radius+1.45){
-   prop.active=false;prop.velocity=Math.max(.14,Math.abs(carSpeed)*1.4);
-   prop.group.userData.falling=true;prop.group.userData.fallDir=Math.atan2(dx,dz);
-   damagePlayerCar();carSpeed*=.72;
-   status.textContent='KOLLISION · FAHRZEUG BESCHÄDIGT';
+ if(driving&&jobCar&&Math.abs(carSpeed)>=.075){
+  for(const prop of breakableProps){
+   if(!prop.active)continue;
+   const dx=jobCar.position.x-prop.group.position.x,dz=jobCar.position.z-prop.group.position.z;
+   if(Math.hypot(dx,dz)<prop.radius+1.45){
+    prop.active=false;prop.velocity=Math.max(.14,Math.abs(carSpeed)*1.4);
+    prop.group.userData.falling=true;prop.group.userData.fallDir=Math.atan2(dx,dz);
+    damagePlayerCar();carSpeed*=.72;
+    status.textContent='KOLLISION · FAHRZEUG BESCHÄDIGT';
+   }
   }
  }
  for(const prop of breakableProps){
@@ -643,7 +643,7 @@ function move(){
     jobCar.rotation.y+=steer*Math.min(.035,Math.abs(carSpeed)*.11);
     const forward=new THREE.Vector3(Math.sin(jobCar.rotation.y),0,Math.cos(jobCar.rotation.y));
     jobCar.position.addScaledVector(forward,carSpeed);
-    updateBreakableCollisions(Math.min(clock.getDelta(),.05));
+    updateBreakableCollisions(.016);
     if(jobActive&&jobDestination&&jobCar.position.distanceTo(jobDestination)<4){
       jobStopIndex++;
       if(jobStopIndex<jobStops.length){

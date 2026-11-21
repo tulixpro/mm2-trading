@@ -25,7 +25,8 @@
       "index.html",
       "style.css",
       "script.js",
-      "electron/**/*"
+      "electron/**/*",
+      "assets/**/*"
     ],
     "win": {
       "target": [

@@ -10,7 +10,10 @@ const fpsSelect=document.querySelector('#fpsSelect');
 const mouseSelect=document.querySelector('#mouseSelect');
 const fovSelect=document.querySelector('#fovSelect');
 let maxFps=60,lastFrame=0;
+const lowEndDevice=(navigator.hardwareConcurrency||4)<=2||(navigator.deviceMemory||8)<=4;
+let performanceFrame=0;
 const qualitySettings={
+ ultra:{pixelRatio:.48,shadows:false,fog:88,exposure:.92,ambient:1.45,label:'SPARMODUS'},
  low:{pixelRatio:.65,shadows:false,fog:125,exposure:.82,ambient:1.65,label:'NIEDRIG'},
  medium:{pixelRatio:.9,shadows:false,fog:165,exposure:1,ambient:2,label:'MITTEL'},
  high:{pixelRatio:1.25,shadows:true,fog:215,exposure:1.12,ambient:2.15,label:'HOCH'}
@@ -18,7 +21,7 @@ const qualitySettings={
 let sunLight=null,hemiLight=null,flashlight=null,flashlightTarget=null,flashlightOn=false;
 function applyQuality(){
  if(!renderer||!scene)return;
- const mode=qualitySelect?.value||'medium',q=qualitySettings[mode];
+ const mode=qualitySelect?.value||'medium',q=qualitySettings[mode]||qualitySettings.medium;
  renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,q.pixelRatio));
  renderer.shadowMap.enabled=q.shadows;
  renderer.toneMappingExposure=q.exposure;
@@ -31,8 +34,8 @@ function applyQuality(){
  if(viewport)viewport.dataset.graphics=mode;
  resize();
 }
-qualitySelect?.addEventListener('change',applyQuality);
-fpsSelect?.addEventListener('change',()=>{maxFps=fpsSelect.value==='unlimited'?0:Number(fpsSelect.value);});
+qualitySelect?.addEventListener('change',()=>{localStorage.setItem('flQuality',qualitySelect.value);applyQuality();});
+fpsSelect?.addEventListener('change',()=>{maxFps=fpsSelect.value==='unlimited'?0:Number(fpsSelect.value);localStorage.setItem('flFps',fpsSelect.value);});
 mouseSelect?.addEventListener('change',()=>{mouseSensitivity=Number(mouseSelect.value)||1;});
 fovSelect?.addEventListener('change',()=>{cameraFov=Number(fovSelect.value)||68;if(camera){camera.fov=cameraFov;camera.updateProjectionMatrix();}});
 const cameraSelect=document.querySelector('#cameraSelect');
@@ -99,7 +102,7 @@ function openPhoneApp(app){
  news:'<div class="phone-page-head">Stadt-News</div><div class="phone-stat">Neue Jobs in der Innenstadt</div><div class="phone-stat">Frankfurt Motors eröffnet</div><p>Bleib auf dem Laufenden.</p>',
  camera:'<div class="phone-page-head">Kamera</div><p>Fotomodus – richte die Kamera in der Stadt aus und mach einen Screenshot mit Windows.</p>',
  services:'<div class="phone-page-head">Stadtservice</div><div class="phone-stat">Mängel melden <b>Online</b></div><div class="phone-stat">Fundbüro <b>Offen</b></div>',
- settings:'<div class="phone-page-head">Einstellungen</div><div class="phone-setting"><label for="phoneQuality">Grafikqualität</label><select id="phoneQuality"><option value="low">Niedrig</option><option value="medium">Mittel</option><option value="high">Hoch</option></select></div><div class="phone-setting"><label for="phoneFps">Bildrate</label><select id="phoneFps"><option value="30">30 FPS</option><option value="60">60 FPS</option><option value="unlimited">Unbegrenzt</option></select></div><div class="phone-setting"><label for="phoneMouse">Maus-Empfindlichkeit</label><select id="phoneMouse"><option value="0.65">Langsam</option><option value="1">Normal</option><option value="1.5">Schnell</option></select></div><div class="phone-setting"><label for="phoneFov">Sichtfeld</label><select id="phoneFov"><option value="60">60°</option><option value="68">68°</option><option value="78">78°</option><option value="88">88°</option></select></div><div class="phone-setting"><label for="phoneCamera">Kameraperspektive</label><select id="phoneCamera"><option value="follow">Verfolger</option><option value="close">Nah</option><option value="hood">Motorhaube</option></select></div><div class="phone-setting"><label for="phoneMapVisible">GPS-Minimap</label><select id="phoneMapVisible"><option value="on">Anzeigen</option><option value="off">Ausblenden</option></select></div><div class="phone-setting"><label for="phoneBrightness">Bildschirmhelligkeit</label><select id="phoneBrightness"><option value="0.8">Dunkler</option><option value="1" selected>Normal</option><option value="1.15">Hell</option><option value="1.3">Sehr hell</option></select></div><div class="phone-setting"><label for="phoneInvertY">Kamera Y-Achse</label><select id="phoneInvertY"><option value="off">Normal</option><option value="on">Invertiert</option></select></div><div class="phone-setting"><label for="phoneMapSize">Minimap-Größe</label><select id="phoneMapSize"><option value="small">Klein</option><option value="medium">Mittel</option><option value="large">Groß</option></select></div><div class="phone-setting"><label for="phoneCoordsVisible">Koordinaten anzeigen</label><select id="phoneCoordsVisible"><option value="on">Anzeigen</option><option value="off">Ausblenden</option></select></div><p>Die Änderungen werden direkt übernommen und gespeichert.</p>',
+ settings:'<div class="phone-page-head">Einstellungen</div><div class="phone-setting"><label for="phoneQuality">Grafikqualität</label><select id="phoneQuality"><option value="ultra">Sparmodus (alte Laptops)</option><option value="low">Niedrig</option><option value="medium">Mittel</option><option value="high">Hoch</option></select></div><div class="phone-setting"><label for="phoneFps">Bildrate</label><select id="phoneFps"><option value="30">30 FPS</option><option value="60">60 FPS</option><option value="unlimited">Unbegrenzt</option></select></div><div class="phone-setting"><label for="phoneMouse">Maus-Empfindlichkeit</label><select id="phoneMouse"><option value="0.65">Langsam</option><option value="1">Normal</option><option value="1.5">Schnell</option></select></div><div class="phone-setting"><label for="phoneFov">Sichtfeld</label><select id="phoneFov"><option value="60">60°</option><option value="68">68°</option><option value="78">78°</option><option value="88">88°</option></select></div><div class="phone-setting"><label for="phoneCamera">Kameraperspektive</label><select id="phoneCamera"><option value="follow">Verfolger</option><option value="close">Nah</option><option value="hood">Motorhaube</option></select></div><div class="phone-setting"><label for="phoneMapVisible">GPS-Minimap</label><select id="phoneMapVisible"><option value="on">Anzeigen</option><option value="off">Ausblenden</option></select></div><div class="phone-setting"><label for="phoneBrightness">Bildschirmhelligkeit</label><select id="phoneBrightness"><option value="0.8">Dunkler</option><option value="1" selected>Normal</option><option value="1.15">Hell</option><option value="1.3">Sehr hell</option></select></div><div class="phone-setting"><label for="phoneInvertY">Kamera Y-Achse</label><select id="phoneInvertY"><option value="off">Normal</option><option value="on">Invertiert</option></select></div><div class="phone-setting"><label for="phoneMapSize">Minimap-Größe</label><select id="phoneMapSize"><option value="small">Klein</option><option value="medium">Mittel</option><option value="large">Groß</option></select></div><div class="phone-setting"><label for="phoneCoordsVisible">Koordinaten anzeigen</label><select id="phoneCoordsVisible"><option value="on">Anzeigen</option><option value="off">Ausblenden</option></select></div><p>Die Änderungen werden direkt übernommen und gespeichert.</p>',
  help:'<div class="phone-page-head">Hilfe & Steuerung</div><p>WASD bewegen · Maus umsehen · Shift sprinten · J Missionen · F Auto · C Kamera wechseln · E Interaktion · F1 Handy.</p>'
  };
  page.innerHTML='<button class="phone-back" data-action="home">‹ Apps</button>'+(pages[app]||'');
@@ -800,7 +803,7 @@ function resize(){
 function updateWorld(dt){
   const t=clock.elapsedTime;
   for(const signal of trafficSignals){const phase=(t+signal.phase*1.7)%8;const active=phase<5?0:phase<6.2?1:2;signal.lamps.forEach((lamp,i)=>lamp.material.emissiveIntensity=i===active?.9:.04);}
-  drawMiniMap();
+  if((performanceFrame++%4)===0)drawMiniMap();
   for(const car of trafficCars){
     const traffic=car.userData.traffic;
     car.position.z+=traffic.direction*traffic.speed*dt*60;
@@ -1016,9 +1019,11 @@ function loop(now=0){
 }
 function begin(){
   if(started)return;started=true;placeholder?.remove();
-  status.textContent='STADT GELADEN · KLICKE INS SPIEL';
+  if(qualitySelect){const saved=localStorage.getItem('flQuality');qualitySelect.value=saved&&qualitySettings[saved]?saved:(lowEndDevice?'ultra':'medium');}
+  if(fpsSelect){const savedFps=localStorage.getItem('flFps');fpsSelect.value=savedFps|| (lowEndDevice?'30':'60');maxFps=fpsSelect.value==='unlimited'?0:Number(fpsSelect.value);}
+  status.textContent=lowEndDevice?'SPARMODUS AKTIV · ÄLTERE HARDWARE':'STADT GELADEN · KLICKE INS SPIEL';
   try{
-    renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});
+    renderer=new THREE.WebGLRenderer({antialias:!lowEndDevice,powerPreference:lowEndDevice?'low-power':'high-performance'});
     renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,1));
     renderer.outputColorSpace=THREE.SRGBColorSpace;
     renderer.toneMapping=THREE.ACESFilmicToneMapping;

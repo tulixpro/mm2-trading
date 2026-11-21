@@ -67,3 +67,15 @@ Die ursprüngliche Version bleibt auf `main`; diese Neugestaltung liegt auf `fra
 - Neue Handy-Apps für Speichern und Charakter-Anpassung.
 
 Hinweis: Diese Systeme sind spielbare Prototypen. Wettereffekte sind zunächst über Beleuchtung und Sichtweite umgesetzt; ÖPNV-Fahrten wechseln in dieser Version zwischen Haltepunkten statt einer vollständig simulierten Bus-/Straßenbahnfahrt. Innenräume, echte Radiosender, Multiplayer und eine vollständige Charakter-Modellierung bleiben weitere Ausbaustufen.
+
+
+## Version 0.3.0 – Tagesziele & ÖPNV-Ausbau
+- Tagesziele: pro Kalendertag einen Auftrag erledigen und eine ÖPNV-Fahrt machen; danach 250 € Bonus abholen.
+- Tagesfortschritt und Bonusstatus werden mit dem Spielstand gespeichert und am neuen Kalendertag zurückgesetzt.
+- Sichtbare Haltestellen mit Dach, Sitzbank, Glasflächen und Haltestellenschild in vier Stadtteilen.
+- Der Windows-Workflow baut Installer und portable EXE automatisch.
+
+## Teststatus
+- GitHub Actions Windows-Build für Version 0.2.9 erfolgreich (Installer und portable Ausgabe erstellt).
+- Version 0.3.0 wird nach dem Commit erneut durch den Windows-Build geprüft.
+- Ein echter Laufzeittest auf einer GT 555M ist nicht möglich, solange das Spiel nicht auf dem betreffenden Laptop ausgeführt wird.

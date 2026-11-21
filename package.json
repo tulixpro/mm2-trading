@@ -1,6 +1,6 @@
 {
   "name": "frankfurt-life",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "Frankfurt Life - 3D city exploration prototype",
   "main": "electron/main.cjs",
   "author": "Frankfurt Life Community",

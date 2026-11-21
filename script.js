@@ -61,6 +61,33 @@ function building(x,z,w,d,h,color){
   }
   g.position.set(x,0,z);scene.add(g);
 }
+function createShop(x,z,side,name,subtitle,color){
+ const g=new THREE.Group();
+ const wallMat=new THREE.MeshStandardMaterial({color:0xddd8cc,roughness:.86});
+ const trimMat=new THREE.MeshStandardMaterial({color:0x273746,metalness:.25,roughness:.55});
+ const glassMat=new THREE.MeshStandardMaterial({color:0x8fc5d8,roughness:.18,metalness:.25,transparent:true,opacity:.72});
+ const body=new THREE.Mesh(new THREE.BoxGeometry(8,8,10),wallMat);body.position.y=4;g.add(body);
+ const frontX=side>0?-4.08:4.08;
+ const glass=new THREE.Mesh(new THREE.BoxGeometry(.09,2.65,7.4),glassMat);glass.position.set(frontX,2.35,0);g.add(glass);
+ const door=new THREE.Mesh(new THREE.BoxGeometry(.14,2.8,1.35),new THREE.MeshStandardMaterial({color:0x243747,roughness:.25,metalness:.2}));door.position.set(frontX*1.015,1.45,3.15);g.add(door);
+ const doorPane=new THREE.Mesh(new THREE.BoxGeometry(.16,1.75,.82),glassMat);doorPane.position.set(frontX*1.03,1.72,3.15);g.add(doorPane);
+ const frame=new THREE.Mesh(new THREE.BoxGeometry(.2,.22,8.1),trimMat);frame.position.set(frontX*1.02,3.82,0);g.add(frame);
+ const awning=new THREE.Mesh(new THREE.BoxGeometry(1.05,.22,8.4),new THREE.MeshStandardMaterial({color,roughness:.65}));awning.position.set(frontX-side*.48,3.35,0);g.add(awning);
+ const signCanvas=document.createElement('canvas');signCanvas.width=1024;signCanvas.height=180;
+ const ctx=signCanvas.getContext('2d');ctx.fillStyle='#172536';ctx.fillRect(0,0,1024,180);
+ ctx.fillStyle='#ffffff';ctx.font='bold 76px Arial';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(name,512,78);
+ ctx.fillStyle='#c5d8e7';ctx.font='30px Arial';ctx.fillText(subtitle,512,142);
+ const signTexture=new THREE.CanvasTexture(signCanvas);signTexture.colorSpace=THREE.SRGBColorSpace;
+ const sign=new THREE.Mesh(new THREE.BoxGeometry(.18,.95,8.2),new THREE.MeshStandardMaterial({map:signTexture,roughness:.65}));
+ sign.position.set(frontX*1.04,5.1,0);g.add(sign);
+ const interiorMat=new THREE.MeshStandardMaterial({color:color,roughness:.7});
+ for(let i=0;i<4;i++){
+  const shelf=new THREE.Mesh(new THREE.BoxGeometry(.5,.85,1.05),interiorMat);
+  shelf.position.set(-side*2.8,.65,-2.7+i*1.8);g.add(shelf);
+ }
+ const base=new THREE.Mesh(new THREE.BoxGeometry(8.3,.24,10.3),trimMat);base.position.y=.12;g.add(base);
+ g.position.set(x,0,z);scene.add(g);
+}
 function streetLamp(x,z){
  const pole=new THREE.Mesh(new THREE.CylinderGeometry(.07,.11,5.2,7),new THREE.MeshStandardMaterial({color:0x27323b,metalness:.55,roughness:.5}));
  pole.position.set(x,2.6,z);scene.add(pole);
@@ -232,7 +259,12 @@ function makeCity(){
   for(let z=-120;z<55;z+=12){const line=new THREE.Mesh(new THREE.PlaneGeometry(.18,5),new THREE.MeshBasicMaterial({color:0xe5dfc5}));line.rotation.x=-Math.PI/2;line.position.set(0,.015,z);scene.add(line);}
   const sidewalkMat=new THREE.MeshLambertMaterial({color:0x92999b});
   for(const x of [-9.2,9.2]){const s=new THREE.Mesh(new THREE.BoxGeometry(3,.25,190),sidewalkMat);s.position.set(x,.08,-35);scene.add(s);}
-  for(let z=-105;z<35;z+=18){building(-15,z,8,12,12+Math.random()*22,0x6c7885);building(15,z-7,8,12,15+Math.random()*25,0x77828c);}
+  const leftShops=new Map([[-87,['SUPERMARKT','MARKT · FRISCHE WAREN',0x3c966c]],[ -51,['BÄCKEREI','BROT · KAFFEE · KUCHEN',0xc58b43]],[ -15,['MODEHAUS','MODE FÜR JEDEN TAG',0x8a638e]],[21,['ELEKTRO','TECHNIK & ZUBEHÖR',0x397ca5]]]);
+  const rightShops=new Map([[-94,['CAFÉ AM MAIN','KAFFEE · SNACKS',0x9b6547]],[ -58,['AUTOWELT','FAHRZEUGE & SERVICE',0x397a91]],[ -22,['SPORTTREFF','SPORT · OUTDOOR',0x62884f]],[14,['KIOSK 24','ZEITUNGEN · GETRÄNKE',0xb68a39]]]);
+  for(let z=-105;z<35;z+=18){
+    const left=leftShops.get(z);if(left)createShop(-15,z,-1,...left);else building(-15,z,8,12,12+Math.random()*22,0x6c7885);
+    const rz=z-7,right=rightShops.get(rz);if(right)createShop(15,rz,1,...right);else building(15,rz,8,12,15+Math.random()*25,0x77828c);
+  }
   for(let i=0;i<7;i++)building(-42+i*14,-72,8,9,25+Math.random()*38,0x43576a);
   for(let z=-95;z<25;z+=14)for(const x of [-11,11])tree(x,z);
   for(let z=-105;z<35;z+=20)for(const x of [-10.4,10.4])streetLamp(x,z);

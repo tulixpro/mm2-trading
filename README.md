@@ -225,3 +225,15 @@ Hinweis: Boote und Wasser sind einfache 3D-Prototypen ohne realistische Wasserph
 - Schließen des Shop-Menüs setzt den aktuellen Shop korrekt zurück.
 
 Hinweis: NPCs bleiben stilisierte Low-Poly-Figuren. Die Shop-Sequenz ist eine kurze UI-Cutscene und keine voll animierte Raubsimulation.
+
+
+## Version 0.4.9 – Performance, Legacy-Laptop und Android
+- Neues Laptop-Sparprofil: stark reduzierte Render-Auflösung, kurze Sichtweite, keine Echtzeit-Schatten und vereinfachte Gebäude.
+- Im Sparprofil werden dekorative Stadtobjekte, Verkehr, Fußgänger und Haltestellen reduziert, damit ältere integrierte Grafikeinheiten weniger Arbeit haben.
+- Automatische Render-Skalierung greift früher und kann die Pixelauflösung weiter absenken.
+- Separate Windows-Legacy-Ausgabe mit eigenem Startprogramm und reduzierter Stadtdarstellung.
+- Android-Unterstützung als installierbare Web-App (PWA) mit Touch-Steuerkreuz und Aktionsbuttons.
+- Die Android-Version wird über Chrome geöffnet und über „Zum Startbildschirm hinzufügen“ installiert; sie ist kein nativer Play-Store-APK.
+- Der Browser-/PWA-Build benötigt beim ersten Start eine Internetverbindung für Three.js.
+
+Hinweis zum Teststatus: Der Windows-Build kann automatisiert gebaut werden; das beweist noch nicht, dass das Spiel auf jedem älteren Laptop startet oder dort eine bestimmte FPS-Zahl erreicht. Ein echter Test auf dem betroffenen Gerät ist weiterhin nötig.

@@ -241,7 +241,7 @@ function buildInGameJobs(){
   if(jobCar){scene.remove(jobCar);if(jobCar.userData.jobMarker)scene.remove(jobCar.userData.jobMarker);}
   jobCar=makeCar(camera.position.x+3,camera.position.z-5,vehicle.color,false,vehicle.model);
   jobCar.rotation.y=yaw;
-  jobDestination=new THREE.Vector3(Math.max(-30,Math.min(30,camera.position.x+18)),0,Math.max(-100,Math.min(25,camera.position.z-35)));
+  jobDestination=new THREE.Vector3(Math.max(-105,Math.min(105,camera.position.x+24)),0,Math.max(-205,Math.min(105,camera.position.z-45)));
   const marker=new THREE.Mesh(new THREE.CylinderGeometry(1.2,1.2,.15,24),new THREE.MeshBasicMaterial({color:0x36d9c4}));
   marker.position.copy(jobDestination);marker.position.y=.12;scene.add(marker);
   jobCar.userData.jobMarker=marker;
@@ -297,42 +297,6 @@ function toggleShop(){
  }
  shopPanel.querySelector('#shopMessage').textContent='Du bist bei '+shop.name+'.';
  shopPanel.classList.remove('hidden');document.exitPointerLock?.();
-}
-let phonePanel=null;
-function buildPhone(){
- phonePanel=document.createElement('section');phonePanel.id='phonePanel';phonePanel.className='phone-panel hidden';
- phonePanel.innerHTML='<div class="phone-top"><span>● FRANKFURT MOBILE</span><button id="phoneClose" aria-label="Handy schließen">×</button></div><div class="phone-time" id="phoneTime">12:00</div><div class="phone-date">FRANKFURT AM MAIN</div><div class="phone-grid"><button data-app="map"><b>🗺️</b><span>Karte</span></button><button data-app="jobs"><b>💼</b><span>Jobs</span></button><button data-app="bank"><b>🏦</b><span>Bank</span></button><button data-app="inventory"><b>🎒</b><span>Inventar</span></button><button data-app="stats"><b>📊</b><span>Statistik</span></button><button data-app="housing"><b>🏠</b><span>Wohnen</span></button><button data-app="transit"><b>🚋</b><span>ÖPNV</span></button><button data-app="news"><b>📰</b><span>News</span></button><button data-app="camera"><b>📷</b><span>Kamera</span></button><button data-app="services"><b>🛠️</b><span>Service</span></button><button data-app="settings"><b>⚙️</b><span>Einstellungen</span></button><button data-app="help"><b>❔</b><span>Hilfe</span></button></div><div id="phoneContent" class="phone-content">Wähle eine App aus.</div><div class="phone-bottom"><span>F1 · Handy schließen</span></div>';
- viewport.appendChild(phonePanel);
- phonePanel.querySelector('#phoneClose').addEventListener('click',()=>phonePanel.classList.add('hidden'));
- phonePanel.querySelectorAll('[data-app]').forEach(btn=>btn.addEventListener('click',()=>openPhoneApp(btn.dataset.app)));
-}
-function openPhoneApp(app){
- const content=phonePanel.querySelector('#phoneContent');
- const pos=camera?Math.round(camera.position.x)+' / '+Math.round(camera.position.z):'–';
- const total=Object.values(inventory).reduce((a,b)=>a+b,0);
- const pages={
-  map:'<h3>Stadtkarte</h3><p>Deine aktuelle Position: <b>'+pos+'</b></p><p>Orientiere dich an der Fußgängerzone, dem Stadtplatz und den Geschäften.</p>',
-  jobs:'<h3>Jobzentrale</h3><p>Starte Aufträge und verdiene Geld.</p><button class="phone-action" data-action="jobs">JOBZENTRALE ÖFFNEN</button>',
-  bank:'<h3>Bankkonto</h3><p class="phone-balance">'+careerMoney.toLocaleString('de-DE')+' €</p><p>Abgeschlossene Aufträge: '+completedJobs+'</p><p>Dein Kontostand wird durch Jobs erhöht und Einkäufe verringert.</p>',
-  inventory:'<h3>Inventar</h3><p>Kaffee: '+inventory.Kaffee+'</p><p>Snacks: '+inventory.Snack+'</p><p>Stadtpläne: '+inventory.Stadtplan+'</p><p>Gegenstände insgesamt: '+total+'</p>',
-  stats:'<h3>Spielstatistik</h3><p>Erledigte Aufträge: '+completedJobs+'</p><p>Kontostand: '+careerMoney.toLocaleString('de-DE')+' €</p><p>Gekaufte Gegenstände: '+total+'</p>',
-  housing:'<h3>Wohnen</h3><p>Wohnviertel: Nordend, Innenstadt und Mainufer.</p><p>Wohnhäuser in der Stadt: 12 Mehrfamilienhäuser.</p><p>Wohnungsangebote und Einrichten kommen später.</p>',
-  transit:'<h3>ÖPNV</h3><p>Linienübersicht</p><p>U-Bahn: U1 · U2 · U3 · U8</p><p>S-Bahn: S1 · S2 · S8 · S9</p><p>Nächste Haltestelle: Innenstadt</p>',
-  news:'<h3>Frankfurt News</h3><p>Stadtleben: Die Fußgängerzone ist heute gut besucht.</p><p>Verkehr: Auf den Hauptstraßen rollt der Verkehr.</p><p>Freizeit: Neue Geschäfte im Viertel entdecken.</p>',
-  camera:'<h3>Kamera</h3><p>Fotomodus-Prototyp</p><p>Nutze die freie Maussteuerung, um dich umzusehen. Ein Screenshot-Modus folgt später.</p>',
-  services:'<h3>Stadtservice</h3><p>Notruf: 112 (Info)</p><p>Abschleppdienst: Noch nicht verfügbar.</p><p>Fundbüro: Noch nicht verfügbar.</p>',
-  settings:'<h3>Einstellungen</h3><p>Grafikqualität und FPS stellst du oben im Spiel ein.</p><p>Steuerung: WASD · Maus · Shift · F · J · E · L</p>',
-  help:'<h3>Steuerung</h3><p>WASD – bewegen</p><p>Maus – umsehen</p><p>J – Jobs · E – Geschäfte</p><p>F – Fahrzeug · L – Taschenlampe</p><p>F1 – Handy · ESC – Menüs schließen</p>'
- };
- content.innerHTML=pages[app]||'';
- content.querySelector('[data-action="jobs"]')?.addEventListener('click',()=>{phonePanel.classList.add('hidden');toggleJobs();});
-}
-function togglePhone(){
- if(!started||!phonePanel)return;
- phonePanel.classList.toggle('hidden');
- if(!phonePanel.classList.contains('hidden')){
-  openPhoneApp('map');document.exitPointerLock?.();
- }
 }
 function createTraffic(){
  const trafficSpecs=[
@@ -410,18 +374,18 @@ function createPedestrianDistrict(){
  }
 }
 function makeCity(){
-  scene=new THREE.Scene();scene.background=new THREE.Color(0x91b1c8);scene.fog=new THREE.Fog(0x91b1c8,65,185);
-  camera=new THREE.PerspectiveCamera(72,viewport.clientWidth/viewport.clientHeight,.1,260);camera.position.set(0,2.1,14);
+  scene=new THREE.Scene();scene.background=new THREE.Color(0x91b1c8);scene.fog=new THREE.Fog(0x91b1c8,115,390);
+  camera=new THREE.PerspectiveCamera(68,viewport.clientWidth/viewport.clientHeight,.1,620);camera.position.set(0,2.1,14);
   flashlight=new THREE.SpotLight(0xddeeff,0,48,Math.PI/7,.42,1.35);
   flashlight.position.set(0,0,0);flashlightTarget=new THREE.Object3D();flashlightTarget.position.set(0,0,-1);
   camera.add(flashlight,flashlightTarget);flashlight.target=flashlightTarget;
   hemiLight=new THREE.HemisphereLight(0xd7ecff,0x4a5260,2);scene.add(hemiLight);
   sunLight=new THREE.DirectionalLight(0xffe0b4,1.5);sunLight.position.set(-25,45,25);sunLight.castShadow=false;scene.add(sunLight);
-  const ground=new THREE.Mesh(new THREE.PlaneGeometry(240,240),new THREE.MeshLambertMaterial({color:0x58636b}));ground.rotation.x=-Math.PI/2;ground.position.y=-.12;scene.add(ground);
-  const road=new THREE.Mesh(new THREE.PlaneGeometry(15,190),new THREE.MeshLambertMaterial({color:0x202a35}));road.rotation.x=-Math.PI/2;road.position.set(0,0,-35);scene.add(road);
-  for(let z=-120;z<55;z+=12){const line=new THREE.Mesh(new THREE.PlaneGeometry(.18,5),new THREE.MeshBasicMaterial({color:0xe5dfc5}));line.rotation.x=-Math.PI/2;line.position.set(0,.015,z);scene.add(line);}
+  const ground=new THREE.Mesh(new THREE.PlaneGeometry(560,560),new THREE.MeshLambertMaterial({color:0x58636b}));ground.rotation.x=-Math.PI/2;ground.position.y=-.12;scene.add(ground);
+  const road=new THREE.Mesh(new THREE.PlaneGeometry(18,360),new THREE.MeshLambertMaterial({color:0x202a35}));road.rotation.x=-Math.PI/2;road.position.set(0,0,-45);scene.add(road);
+  for(let z=-220;z<125;z+=12){const line=new THREE.Mesh(new THREE.PlaneGeometry(.18,5),new THREE.MeshBasicMaterial({color:0xe5dfc5}));line.rotation.x=-Math.PI/2;line.position.set(0,.015,z);scene.add(line);}
   const sidewalkMat=new THREE.MeshLambertMaterial({color:0x92999b});
-  for(const x of [-9.2,9.2]){const s=new THREE.Mesh(new THREE.BoxGeometry(3,.25,190),sidewalkMat);s.position.set(x,.08,-35);scene.add(s);}
+  for(const x of [-9.2,9.2]){const s=new THREE.Mesh(new THREE.BoxGeometry(3.5,.25,360),sidewalkMat);s.position.set(x,.08,-45);scene.add(s);}
   const leftShops=new Map([[-87,['SUPERMARKT','MARKT · FRISCHE WAREN',0x3c966c]],[ -51,['BÄCKEREI','BROT · KAFFEE · KUCHEN',0xc58b43]],[ -15,['MODEHAUS','MODE FÜR JEDEN TAG',0x8a638e]],[21,['ELEKTRO','TECHNIK & ZUBEHÖR',0x397ca5]]]);
   const rightShops=new Map([[-94,['CAFÉ AM MAIN','KAFFEE · SNACKS',0x9b6547]],[ -58,['AUTOWELT','FAHRZEUGE & SERVICE',0x397a91]],[ -22,['SPORTTREFF','SPORT · OUTDOOR',0x62884f]],[14,['KIOSK 24','ZEITUNGEN · GETRÄNKE',0xb68a39]]]);
   for(let z=-105;z<35;z+=18){
@@ -441,6 +405,34 @@ function makeCity(){
   makeCar(4,-8,0x1c354d,false,'sportback');
   makeCar(-3,-35,0xffffff,true,'sedan');
   createTraffic();
+  // Erweiterte Stadt: zusätzliche Wohn- und Geschäftsquartiere, Nebenstraßen und Plätze.
+  const sideRoadMat=new THREE.MeshStandardMaterial({color:0x29333d,roughness:.96});
+  const sideWalkMat=new THREE.MeshStandardMaterial({color:0x92999b,roughness:.9});
+  for(const x of [-82,-48,48,82]){
+    const avenue=new THREE.Mesh(new THREE.PlaneGeometry(11,340),sideRoadMat);
+    avenue.rotation.x=-Math.PI/2;avenue.position.set(x,.005,-45);scene.add(avenue);
+    for(const sx of [x-7.5,x+7.5]){
+      const pavement=new THREE.Mesh(new THREE.BoxGeometry(3,.2,340),sideWalkMat);
+      pavement.position.set(sx,.06,-45);scene.add(pavement);
+    }
+  }
+  for(let z=-190;z<=95;z+=38){
+    const cross=new THREE.Mesh(new THREE.PlaneGeometry(190,9),sideRoadMat);
+    cross.rotation.x=-Math.PI/2;cross.position.set(0,.012,z);scene.add(cross);
+    for(const x of [-96,-66,-30,30,66,96]){
+      const h=18+((Math.abs(Math.floor(z/38))+Math.abs(Math.floor(x/30)))%5)*7;
+      const palette=[0xb7b2a7,0x8c9da5,0xc2b59f,0x697c89,0xa6b0ad];
+      if(Math.abs(x)>40){
+        residentialBuilding(x,z+12,12,14,h,palette[(Math.floor(Math.abs(x)/30)+Math.floor(Math.abs(z)/38))%palette.length]);
+      }else{
+        building(x,z+12,12,14,h,palette[(Math.floor(Math.abs(x)/30)+Math.floor(Math.abs(z)/38))%palette.length]);
+      }
+    }
+    for(const x of [-55,-20,20,55])tree(x,z+5);
+  }
+  for(let z=-190;z<110;z+=26){
+    for(const x of [-103,-61,61,103])streetLamp(x,z);
+  }
   createPedestrianDistrict();
   for(let i=0;i<24;i++){
     const side=i%2===0?-1:1;
@@ -495,8 +487,8 @@ function move(){
     }
     // Der östliche Stadtplatz ist autofrei; Fahrzeuge bleiben auf den Straßen.
     if(jobCar.position.x>22&&jobCar.position.z>-118&&jobCar.position.z<48)jobCar.position.x=22;
-    jobCar.position.x=Math.max(-48,Math.min(48,jobCar.position.x));
-    jobCar.position.z=Math.max(-115,Math.min(45,jobCar.position.z));
+    jobCar.position.x=Math.max(-112,Math.min(112,jobCar.position.x));
+    jobCar.position.z=Math.max(-220,Math.min(120,jobCar.position.z));
     yaw=jobCar.rotation.y-Math.PI;
     camera.position.copy(jobCar.position).addScaledVector(forward,-6);
     camera.position.y=3.2;
@@ -508,8 +500,8 @@ function move(){
     if(keys.KeyS||keys.ArrowDown)camera.position.addScaledVector(forward,-speed);
     if(keys.KeyA||keys.ArrowLeft)camera.position.addScaledVector(right,-speed);
     if(keys.KeyD||keys.ArrowRight)camera.position.addScaledVector(right,speed);
-    camera.position.x=Math.max(-48,Math.min(48,camera.position.x));
-    camera.position.z=Math.max(-115,Math.min(45,camera.position.z));
+    camera.position.x=Math.max(-112,Math.min(112,camera.position.x));
+    camera.position.z=Math.max(-220,Math.min(120,camera.position.z));
     camera.position.y=2.1;
   }
   camera.rotation.order='YXZ';camera.rotation.set(pitch,yaw,0);
@@ -549,7 +541,7 @@ function begin(){
     renderer.shadowMap.type=THREE.PCFSoftShadowMap;
     renderer.shadowMap.enabled=false;
     sunLight=null;hemiLight=null;
-    makeCity();buildInGameJobs();buildShopInteraction();buildPhone();applyQuality();viewport.appendChild(renderer.domElement);resize();loop();
+    makeCity();buildInGameJobs();buildShopInteraction();applyQuality();viewport.appendChild(renderer.domElement);resize();loop();
     renderer.domElement.addEventListener('click',()=>renderer.domElement.requestPointerLock?.());
     document.addEventListener('pointerlockchange',()=>{
       locked=document.pointerLockElement===renderer.domElement;
@@ -567,6 +559,6 @@ function begin(){
 startButton?.addEventListener('click',begin);
 // In der eigenständigen Windows-Spielansicht direkt in die 3D-Stadt starten.
 if(document.body.classList.contains('game-app')) begin();
-document.addEventListener('keydown',e=>{if(e.code==='F1'){e.preventDefault();if(!e.repeat)togglePhone();return;}keys[e.code]=true;if(e.code==='KeyE'&&!e.repeat)toggleShop();if(e.code==='KeyF'&&!e.repeat)toggleVehicle();if(e.code==='KeyJ'&&!e.repeat)toggleJobs();if(e.code==='KeyL'&&!e.repeat)toggleFlashlight();if(e.code==='Escape'&&jobPanel&&!jobPanel.classList.contains('hidden'))jobPanel.classList.add('hidden');if(e.code==='Escape'&&shopPanel&&!shopPanel.classList.contains('hidden'))shopPanel.classList.add('hidden');if(e.code==='Escape'&&phonePanel&&!phonePanel.classList.contains('hidden'))phonePanel.classList.add('hidden');if(['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code))e.preventDefault();});
+document.addEventListener('keydown',e=>{keys[e.code]=true;if(e.code==='KeyE'&&!e.repeat)toggleShop();if(e.code==='KeyF'&&!e.repeat)toggleVehicle();if(e.code==='KeyJ'&&!e.repeat)toggleJobs();if(e.code==='KeyL'&&!e.repeat)toggleFlashlight();if(e.code==='Escape'&&jobPanel&&!jobPanel.classList.contains('hidden'))jobPanel.classList.add('hidden');if(e.code==='Escape'&&shopPanel&&!shopPanel.classList.contains('hidden'))shopPanel.classList.add('hidden');if(['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code))e.preventDefault();});
 document.addEventListener('keyup',e=>keys[e.code]=false);
 window.addEventListener('resize',resize);

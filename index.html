@@ -3,13 +3,14 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#080d18">
+<link rel="icon" type="image/svg+xml" href="assets/frankfurt-life-mark.svg">
 <meta name="description" content="Frankfurt Life – erkunde eine offene 3D-Stadt am Main.">
 <title>Frankfurt Life — Deine Stadt. Deine Welt.</title>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
 <header class="topbar">
-  <a class="brand" href="#"><span class="brand-mark">FL</span><span>FRANKFURT <b>LIFE</b></span></a>
+  <a class="brand" href="#"><img class="brand-mark" src="assets/frankfurt-life-mark.svg" alt=""><span>FRANKFURT <b>LIFE</b></span></a>
   <nav><a href="#game">Spiel testen</a><a href="#jobs">Jobs & Autos</a><a href="#features">Features</a><a href="#download">Download</a></nav>
   <a class="top-cta" href="#download">Spiel holen <span>↗</span></a>
 </header>
@@ -33,7 +34,7 @@
  <div class="section-heading"><div><div class="eyebrow">SPIELBARER PROTOTYP</div><h2>Steig in die <em>Stadt ein.</em></h2></div><span class="status"><i></i> 3D-DEMO</span></div>
  <div class="game-frame">
   <div class="game-topline"><span><b>FRANKFURT LIFE</b> / CITY BLOCK 01</span><span id="gameStatus">BEREIT ZUM START</span></div>
-  <div class="game-settings"><label>GRAFIK <select id="qualitySelect"><option value="low">Niedrig</option><option value="medium" selected>Mittel</option><option value="high">Hoch</option></select></label><label>FPS-LIMIT <select id="fpsSelect"><option value="30">30 FPS</option><option value="60" selected>60 FPS</option><option value="unlimited">Unbegrenzt</option></select></label><span id="graphicsHint">Für ältere Grafikkarten: Niedrig</span></div>
+  <div class="game-settings"><label>GRAFIK <select id="qualitySelect"><option value="minimum">Minimal</option><option value="low">Niedrig</option><option value="medium" selected>Mittel</option><option value="high">Hoch</option><option value="maximum">Maximal</option></select></label><label>FPS-LIMIT <select id="fpsSelect"><option value="30">30 FPS</option><option value="60" selected>60 FPS</option><option value="unlimited">Unbegrenzt</option></select></label><span id="graphicsHint">Für ältere Grafikkarten: Niedrig</span></div>
   <div id="gameViewport"><div class="game-placeholder"><div class="crosshair">＋</div><div class="placeholder-title">DEIN FRANKFURT<br><em>WARTET.</em></div><p>Erkunde den Stadtbereich mit 24 Fußgängern, 20 fahrenden Autos, Straßenlaternen und einem Polizei-Streifenwagen.</p><button id="startGame" class="button primary">Demo starten →</button><small>WASD bewegen · Maus umsehen · Shift schneller · J Jobs · F ein-/aussteigen · ESC pausieren</small></div></div>
   <div class="game-controls"><span><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> Bewegen</span><span><kbd>Maus</kbd> Umsehen</span><span><kbd>Shift</kbd> Schneller</span><span><kbd>ESC</kbd> Pause</span><span id="coords">SEKTOR 01</span></div>
  </div>
@@ -52,8 +53,8 @@
  <div class="download-copy"><div class="eyebrow">WINDOWS-VERSION</div><h2>Frankfurt Life<br><em>für Windows.</em></h2><p>Windows-x64-Build. Die 3D-Bibliothek wird lokal mit der App gebündelt.</p></div>
  <div class="download-options">
   <div class="download-card active"><div class="platform">BROWSER <span class="tag ready">PROTOTYP</span></div><h3>Web-Demo</h3><p>3D-Demo direkt im Browser – keine Installation nötig.</p><a href="#game" class="download-link">Demo öffnen <b>→</b></a></div>
-  <div class="download-card active"><div class="platform">WINDOWS 11 · x64 <span class="tag ready">BETA-DOWNLOAD</span></div><h3>Windows Installer (.exe)</h3><p>Installer der eigenständigen Windows-Spielversion (separater Spielbildschirm). Nach dem Download starten und installieren.</p><a class="download-link" href="https://github.com/tulixpro/mm2-trading/releases/download/beta/Frankfurt.Life.Setup.0.1.4.exe">Installer herunterladen <b>↓</b></a></div>
-  <div class="download-card"><div class="platform">WINDOWS 11 · x64 <span class="tag ready">BETA-DOWNLOAD</span></div><h3>Portable Version (.exe)</h3><p>Startet ohne Installationsassistent direkt aus dem Download-Ordner.</p><a class="download-link" href="https://github.com/tulixpro/mm2-trading/releases/download/beta/Frankfurt.Life.0.1.4.exe">Portable Version laden <b>↓</b></a></div>
+  <div class="download-card active"><div class="platform">WINDOWS 11 · x64 <span class="tag ready">BETA-DOWNLOAD</span></div><h3>Windows Installer (.exe)</h3><p>Installer der eigenständigen Windows-Spielversion (separater Spielbildschirm). Nach dem Download starten und installieren.</p><a class="download-link" href="https://github.com/tulixpro/mm2-trading/releases/download/beta/Frankfurt.Life.Setup.0.4.0.exe">Installer herunterladen <b>↓</b></a></div>
+  <div class="download-card"><div class="platform">WINDOWS 11 · x64 <span class="tag ready">BETA-DOWNLOAD</span></div><h3>Portable Version (.exe)</h3><p>Startet ohne Installationsassistent direkt aus dem Download-Ordner.</p><a class="download-link" href="https://github.com/tulixpro/mm2-trading/releases/download/beta/Frankfurt.Life.0.4.0.exe">Portable Version laden <b>↓</b></a></div>
  </div>
 </section>
 <section class="roadmap section-wrap"><div><div class="eyebrow">ENTWICKLUNGSPLAN</div><h2>Schritt für Schritt<br><em>zur großen Stadt.</em></h2></div><ol><li class="done"><span>01</span><div><b>3D-Stadtprototyp</b><small>Erkunden, Fußgänger und Streifenwagen</small></div><i>PROTOTYP</i></li><li class="done"><span>02</span><div><b>Windows-Build</b><small>Installer und portable Version erfolgreich erstellt</small></div><i>ERLEDIGT</i></li><li><span>03</span><div><b>Realistischere Stadt</b><small>Mehr Stadtteile, Modelle, Fahrzeuge und Animationen</small></div><i>GEPLANT</i></li><li><span>04</span><div><b>Online & Voice-Chat</b><small>Server, Datenschutz und sichere Kommunikation</small></div><i>SPÄTER</i></li></ol></section>

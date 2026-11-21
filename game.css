@@ -76,3 +76,36 @@
 /* Legacy laptop performance preset */
 
 .brand-mark{display:block;width:34px;height:34px;border:0;object-fit:contain;transform:none;border-radius:8px;box-shadow:0 0 18px #42c5df30}.open-settings{padding:6px 10px;border:1px solid #3c718d;border-radius:5px;background:#10283a;color:#bceeff;font-weight:700;font-size:10px;cursor:pointer;white-space:nowrap}.open-settings:hover{background:#19415a;color:#fff}@media(max-width:1050px){.hud{height:auto;min-height:64px;flex-wrap:wrap;padding:9px 14px}.settings{flex-wrap:wrap;justify-content:flex-end}.hud-center{order:3;width:100%;justify-content:center}.settings label{font-size:9px}.settings select{max-width:130px}}
+
+
+/* Frankfurt Life 0.4.3 – premium smartphone and quick-access wheel */
+.phone-overlay{perspective:1200px;background:radial-gradient(ellipse at center,#18344dcc,#020711eF);backdrop-filter:blur(13px) saturate(1.25)}
+.phone-device{border-color:#506477;background:linear-gradient(155deg,#203b55 0%,#0b1728 58%,#142b40 100%);box-shadow:0 36px 110px #000e,0 0 0 1px #b8eaff22,inset 0 0 0 1px #ffffff30;transform-origin:50% 85%;animation:phone-open-3d .42s cubic-bezier(.16,1,.3,1)}
+@keyframes phone-open-3d{from{opacity:0;transform:translateY(70px) rotateX(14deg) scale(.82);filter:blur(5px)}to{opacity:1;transform:translateY(0) rotateX(0) scale(1);filter:blur(0)}}
+.phone-status{font-weight:800;color:#d5efff}.phone-clock{font-variant-numeric:tabular-nums;text-shadow:0 4px 22px #5bdcff44}
+.phone-appgrid{padding:7px 2px 14px;gap:18px 10px}
+.phone-app b{position:relative;overflow:hidden;border-radius:16px;background:linear-gradient(145deg,#4789a9,#193650);box-shadow:0 9px 20px #0006,inset 0 1px 0 #ffffff55}
+.phone-app b:after{content:"";position:absolute;inset:0;background:linear-gradient(135deg,#ffffff30,transparent 48%);pointer-events:none}
+.phone-app:active b{transform:scale(.9);filter:brightness(1.25)}
+.phone-dock{background:#d8efff20;border-color:#d8efff38;box-shadow:inset 0 1px 0 #ffffff20,0 8px 24px #0004}
+.phone-home{cursor:pointer}.phone-exit{padding:5px 8px;border-radius:8px;background:#ffffff0b}
+.phone-page{background:linear-gradient(160deg,#10243aF5,#081421F5);border-color:#7bdcf326}
+.quick-wheel{position:absolute;z-index:24;inset:0;display:grid;place-items:center;background:#020914a8;backdrop-filter:blur(7px);animation:wheel-fade .16s ease}
+.quick-wheel.hidden{display:none}
+.quick-wheel:before{content:"";position:absolute;width:min(330px,82vw);aspect-ratio:1;border:1px solid #83eaff55;border-radius:50%;background:radial-gradient(circle,#173c55e8 0 24%,#0a1b2beF 25% 64%,#5bd8e90d 65%);box-shadow:0 0 55px #28b8d455,inset 0 0 35px #4bc8e522}
+.quick-wheel-core{position:absolute;z-index:1;display:flex;flex-direction:column;align-items:center;gap:5px;color:#e9f9ff;pointer-events:none}
+.quick-wheel-core b{font-size:12px;letter-spacing:2px}.quick-wheel-core small{font-size:8px;color:#8ed8e9;letter-spacing:1.5px}
+.quick-wheel button{position:absolute;z-index:2;width:94px;height:94px;border:1px solid #85e8ff70;border-radius:24px;background:linear-gradient(145deg,#24516b,#10283f);color:#effbff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;cursor:pointer;box-shadow:0 12px 28px #0008,inset 0 1px 0 #ffffff35;transition:transform .16s,background .16s}
+.quick-wheel button:hover{transform:scale(1.09);background:linear-gradient(145deg,#287b91,#17415a)}
+.quick-wheel button b{font-size:28px}.quick-wheel button span{font-size:10px;font-weight:800;letter-spacing:.5px}
+.quick-wheel button[data-quick="phone"]{transform:translateY(-116px)}
+.quick-wheel button[data-quick="map"]{transform:translateX(116px)}
+.quick-wheel button[data-quick="light"]{transform:translateY(116px)}
+.quick-wheel button[data-quick="camera"]{transform:translateX(-116px)}
+.quick-wheel button[data-quick="phone"]:hover{transform:translateY(-116px) scale(1.08)}
+.quick-wheel button[data-quick="map"]:hover{transform:translateX(116px) scale(1.08)}
+.quick-wheel button[data-quick="light"]:hover{transform:translateY(116px) scale(1.08)}
+.quick-wheel button[data-quick="camera"]:hover{transform:translateX(-116px) scale(1.08)}
+.quick-wheel .quick-wheel-close{width:34px;height:34px;border-radius:50%;font-size:20px;transform:translateY(0);background:#263f52}
+@keyframes wheel-fade{from{opacity:0;transform:scale(.94)}to{opacity:1;transform:scale(1)}}
+@media(max-width:420px){.quick-wheel button{width:78px;height:78px}.quick-wheel button[data-quick="phone"]{transform:translateY(-100px)}.quick-wheel button[data-quick="map"]{transform:translateX(100px)}.quick-wheel button[data-quick="light"]{transform:translateY(100px)}.quick-wheel button[data-quick="camera"]{transform:translateX(-100px)}}

@@ -1,0 +1,21 @@
+appId: de.frankfurtlife.legacy
+productName: Frankfurt Life Legacy
+directories:
+  output: dist-legacy
+files:
+  - game.html
+  - game.css
+  - index.html
+  - style.css
+  - script.js
+  - electron/**/*
+  - assets/**/*
+extraMetadata:
+  main: electron/main-legacy.cjs
+win:
+  target:
+    - nsis
+    - portable
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true

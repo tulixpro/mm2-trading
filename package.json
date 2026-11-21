@@ -1,7 +1,7 @@
 {
   "name": "frankfurt-life",
-  "version": "0.4.6",
-  "description": "Frankfurt Life - arcade flight missions and vehicle interactions",
+  "version": "0.4.7",
+  "description": "Frankfurt Life - coastal expansion, arcade boats and cinematic vehicle scenes",
   "main": "electron/main.cjs",
   "author": "Frankfurt Life Community",
   "license": "UNLICENSED",

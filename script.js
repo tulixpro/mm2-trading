@@ -614,6 +614,46 @@ function buildEmergencyServices(){
  makeEmergencyVehicle(75,49,'police');makeEmergencyVehicle(82,49,'police');makeEmergencyVehicle(90,49,'fire');
  const fireSign=new THREE.Mesh(new THREE.BoxGeometry(9,1.2,.18),new THREE.MeshStandardMaterial({color:0x183c5b}));fireSign.position.set(83,8,50.35);scene.add(fireSign);
 }
+
+const trafficSignals=[];
+function buildStreetInfrastructure(){
+ const stripeMat=new THREE.MeshStandardMaterial({color:0xf1eee2,roughness:.9});
+ const poleMat=new THREE.MeshStandardMaterial({color:0x26333c,metalness:.55,roughness:.45});
+ for(let z=-190;z<=95;z+=38){
+  // Fußgängerüberwege an den größeren Kreuzungen.
+  for(let x=-7.2;x<=7.2;x+=1.8){
+   const stripe=new THREE.Mesh(new THREE.PlaneGeometry(1.25,.58),stripeMat);
+   stripe.rotation.x=-Math.PI/2;stripe.position.set(x,.025,z+5.4);scene.add(stripe);
+  }
+  for(const side of [-1,1]){
+   const pole=new THREE.Mesh(new THREE.CylinderGeometry(.09,.12,4.1,10),poleMat);
+   pole.position.set(side*10.5,2.05,z+2.8);scene.add(pole);
+   const head=new THREE.Mesh(new THREE.BoxGeometry(.42,1.05,.35),new THREE.MeshStandardMaterial({color:0x18232b,metalness:.2}));
+   head.position.set(side*10.5,3.35,z+2.8);scene.add(head);
+   const lamps=[];
+   for(let n=0;n<3;n++){
+    const mat=new THREE.MeshStandardMaterial({color:0x252b30,emissive:[0xff3028,0xffb52e,0x42db75][n],emissiveIntensity:.05});
+    const bulb=new THREE.Mesh(new THREE.SphereGeometry(.115,12,10),mat);
+    bulb.position.set(side*10.5,3.68-n*.32,z+3.0);scene.add(bulb);lamps.push(bulb);
+   }
+   trafficSignals.push({lamps,phase:(z+190)/38+(side>0?1.4:0)});
+  }
+ }
+ // Zwei kleine Haltestellen mit Dach, Sitzbank und Linienanzeige.
+ for(const z of [-42,48]){
+  const shelter=new THREE.Group();
+  const metal=new THREE.MeshStandardMaterial({color:0x344b5b,metalness:.45,roughness:.4});
+  const glass=new THREE.MeshStandardMaterial({color:0x8bc9dc,transparent:true,opacity:.28,roughness:.2});
+  const roof=new THREE.Mesh(new THREE.BoxGeometry(4.4,.16,2.1),metal);roof.position.y=2.65;shelter.add(roof);
+  for(const x of [-2,2]){const post=new THREE.Mesh(new THREE.BoxGeometry(.12,2.6,.12),metal);post.position.set(x,1.3,-.85);shelter.add(post);}
+  const back=new THREE.Mesh(new THREE.BoxGeometry(4.2,2.25,.07),glass);back.position.set(0,1.4,-.85);shelter.add(back);
+  const bench=new THREE.Mesh(new THREE.BoxGeometry(2.6,.14,.48),new THREE.MeshStandardMaterial({color:0x647b86}));bench.position.set(0,.55,-.35);shelter.add(bench);
+  const sign=new THREE.Mesh(new THREE.BoxGeometry(.42,1.5,.12),metal);sign.position.set(2.45,1.7,.65);shelter.add(sign);
+  const marker=new THREE.Mesh(new THREE.BoxGeometry(.32,.32,.04),new THREE.MeshBasicMaterial({color:0x5ad6e6}));marker.position.set(2.45,2.25,.73);shelter.add(marker);
+  shelter.position.set(13.2,0,z);scene.add(shelter);
+ }
+}
+
 function makeCity(){
   scene=new THREE.Scene();scene.background=new THREE.Color(0x91b1c8);scene.fog=new THREE.Fog(0x91b1c8,115,390);
   camera=new THREE.PerspectiveCamera(cameraFov,viewport.clientWidth/viewport.clientHeight,.1,620);camera.position.set(0,2.1,14);
@@ -627,6 +667,7 @@ function makeCity(){
   for(let z=-220;z<125;z+=12){const line=new THREE.Mesh(new THREE.PlaneGeometry(.18,5),new THREE.MeshBasicMaterial({color:0xe5dfc5}));line.rotation.x=-Math.PI/2;line.position.set(0,.015,z);scene.add(line);}
   const sidewalkMat=new THREE.MeshLambertMaterial({color:0x92999b});
   for(const x of [-9.2,9.2]){const s=new THREE.Mesh(new THREE.BoxGeometry(3.5,.25,360),sidewalkMat);s.position.set(x,.08,-45);scene.add(s);}
+  buildStreetInfrastructure();
   const leftShops=new Map([[-87,['SUPERMARKT','MARKT · FRISCHE WAREN',0x3c966c]],[ -51,['BÄCKEREI','BROT · KAFFEE · KUCHEN',0xc58b43]],[ -15,['MODEHAUS','MODE FÜR JEDEN TAG',0x8a638e]],[21,['ELEKTRO','TECHNIK & ZUBEHÖR',0x397ca5]]]);
   const rightShops=new Map([[-94,['CAFÉ AM MAIN','KAFFEE · SNACKS',0x9b6547]],[ -58,['AUTOWELT','FAHRZEUGE & SERVICE',0x397a91]],[ -22,['SPORTTREFF','SPORT · OUTDOOR',0x62884f]],[14,['KIOSK 24','ZEITUNGEN · GETRÄNKE',0xb68a39]]]);
   for(let z=-105;z<35;z+=18){
@@ -694,6 +735,7 @@ function resize(){
 }
 function updateWorld(dt){
   const t=clock.elapsedTime;
+  for(const signal of trafficSignals){const phase=(t+signal.phase*1.7)%8;const active=phase<5?0:phase<6.2?1:2;signal.lamps.forEach((lamp,i)=>lamp.material.emissiveIntensity=i===active?.9:.04);}
   drawMiniMap();
   for(const car of trafficCars){
     const traffic=car.userData.traffic;

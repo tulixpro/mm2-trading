@@ -1,5 +1,6 @@
-const classicEdition=new URLSearchParams(location.search).get('edition')==='classic';
-if(classicEdition){document.body.classList.add('classic-edition');document.title='Frankfurt Life Classic – Retro-3D';}
+const editionParam=new URLSearchParams(location.search).get('edition');
+const classicEdition=editionParam==='sanandreas'||editionParam==='classic';
+if(classicEdition){document.body.classList.add('classic-edition');document.title='Frankfurt Life San Andreas – Retro-3D';}
 const THREE = await import('./node_modules/three/build/three.module.js').catch(()=>import('https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js'));
 
 let deferredInstallPrompt=null;
@@ -13,7 +14,7 @@ const viewport=document.querySelector('#gameViewport');
 const status=document.querySelector('#gameStatus');
 const coords=document.querySelector('#coords');
 const qualitySelect=document.querySelector('#qualitySelect');
-if(classicEdition&&qualitySelect){qualitySelect.value='legacy';qualitySelect.disabled=true;const label=qualitySelect.closest('label');if(label)label.firstChild.textContent='CLASSIC-GRAFIK ';}
+if(classicEdition&&qualitySelect){qualitySelect.value='legacy';qualitySelect.disabled=true;const label=qualitySelect.closest('label');if(label)label.firstChild.textContent='SAN-ANDREAS-GRAFIK ';}
 const fpsSelect=document.querySelector('#fpsSelect');
 const mouseSelect=document.querySelector('#mouseSelect');
 const fovSelect=document.querySelector('#fovSelect');
@@ -22,16 +23,16 @@ let perfHud=null,perfFrames=[],perfLastCheck=0,autoResolutionScale=1,perfHudTime
 const legacyMode=new URLSearchParams(location.search).get('legacy')==='1';
 const cpuCores=navigator.hardwareConcurrency||4;
 const memoryGb=navigator.deviceMemory||8;
-const lowEndDevice=legacyMode||cpuCores<=4||memoryGb<=8;
+const lowEndDevice=legacyMode||cpuCores<=2||memoryGb<=4;
 const liteMode=lowEndDevice;
 const performanceTier=lowEndDevice?'balanced':'full';
 let performanceFrame=0;
 const qualitySettings={
  minimum:{pixelRatio:.34,shadows:false,fog:92,exposure:.84,ambient:1.35,label:'ULTRA-SPARMODUS'},
- legacy:{pixelRatio:.42,shadows:false,fog:108,exposure:.9,ambient:1.5,label:'OLD-SCHOOL-MODUS'},
+ legacy:{pixelRatio:.58,shadows:false,fog:135,exposure:.94,ambient:1.55,label:'RETRO-3D'},
  low:{pixelRatio:.5,shadows:false,fog:118,exposure:.92,ambient:1.55,label:'NIEDRIG'},
- medium:{pixelRatio:.72,shadows:false,fog:155,exposure:1.02,ambient:1.8,label:'MITTEL'},
- high:{pixelRatio:.88,shadows:false,fog:205,exposure:1.06,ambient:2,label:'HOCH'},
+ medium:{pixelRatio:.84,shadows:false,fog:180,exposure:1.02,ambient:1.85,label:'MITTEL'},
+ high:{pixelRatio:.94,shadows:false,fog:220,exposure:1.06,ambient:2,label:'HOCH'},
  maximum:{pixelRatio:1,shadows:true,fog:235,exposure:1.1,ambient:2.1,label:'MAXIMAL'},
  advanced:{pixelRatio:.92,shadows:true,fog:220,exposure:1.08,ambient:2,label:'ERWEITERT'}
 };
@@ -39,7 +40,7 @@ let sunLight=null,hemiLight=null,flashlight=null,flashlightTarget=null,flashligh
 function applyQuality(){
  if(!renderer||!scene)return;
  const mode=qualitySelect?.value||'medium',q=qualitySettings[mode]||qualitySettings.medium;
- renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,(classicEdition?Math.min(q.pixelRatio,.72):q.pixelRatio)*autoResolutionScale));
+ renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,(classicEdition?Math.min(q.pixelRatio,.68):q.pixelRatio)*autoResolutionScale));
  renderer.shadowMap.enabled=classicEdition?false:q.shadows;
  renderer.toneMappingExposure=classicEdition?.92:q.exposure;
  if(scene.fog)scene.fog.far=classicEdition?125:q.fog;
@@ -47,7 +48,7 @@ function applyQuality(){
  if(hemiLight)hemiLight.intensity=q.ambient;
  scene.traverse(obj=>{if(obj.isMesh){obj.castShadow=q.shadows;obj.receiveShadow=q.shadows;}});
  const hint=document.querySelector('#graphicsHint')||document.querySelector('#qualityStatus');
- if(hint)hint.textContent=classicEdition?'CLASSIC RETRO-3D · REDUZIERTE DETAILS':'Grafik: '+q.label+' · '+(q.shadows?'Schatten AN':'Schatten AUS');
+ if(hint)hint.textContent=classicEdition?'SAN ANDREAS RETRO-3D · KLASSISCHER LOOK':'Grafik: '+q.label+' · '+(q.shadows?'Schatten AN':'Schatten AUS');
  if(viewport)viewport.dataset.graphics=mode;
  resize();
 }
@@ -1566,8 +1567,8 @@ function loop(now=0){
   lastFrame=now;const dt=Math.min(clock.getDelta(),.05);
   if(now-perfLastCheck>3000&&perfFrames.length>=20){
     perfLastCheck=now;const avgMs=perfFrames.reduce((a,b)=>a+b,0)/perfFrames.length;
-    if(avgMs>30&&autoResolutionScale>.42){autoResolutionScale=Math.max(.42,autoResolutionScale*.82);applyQuality();}
-    else if(avgMs<20&&autoResolutionScale<1){autoResolutionScale=Math.min(1,autoResolutionScale+.04);applyQuality();}
+    if(avgMs>32&&autoResolutionScale>.5){autoResolutionScale=Math.max(.5,autoResolutionScale*.9);applyQuality();}
+    else if(avgMs<19&&autoResolutionScale<1){autoResolutionScale=Math.min(1,autoResolutionScale+.05);applyQuality();}
   }
   if(gamePaused)return;
   perfHudTimer+=dt;
@@ -1584,7 +1585,7 @@ function begin(){
   status.textContent=lowEndDevice?'OLD-SCHOOL-MODUS · STADT BLEIBT GUT ERKENNBAR':'STADT GELADEN · KLICKE INS SPIEL';
   try{
     renderer=new THREE.WebGLRenderer({antialias:false,powerPreference:'high-performance',stencil:false,depth:true,preserveDrawingBuffer:false});
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,classicEdition?.62:lowEndDevice?.72:.9));
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,classicEdition?.66:lowEndDevice?.68:.92));
     renderer.outputColorSpace=THREE.SRGBColorSpace;
     renderer.toneMapping=THREE.ACESFilmicToneMapping;
     renderer.shadowMap.type=THREE.PCFSoftShadowMap;

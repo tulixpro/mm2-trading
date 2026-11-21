@@ -128,3 +128,12 @@
 @keyframes tutorial-rise{from{opacity:0;transform:translateY(22px);filter:blur(4px)}to{opacity:1;transform:translateY(0);filter:blur(0)}}
 @media(max-width:650px){.tutorial-content{width:90%;margin-bottom:16%;padding:18px 18px 16px}.tutorial-content h1{font-size:29px}.tutorial-scene-tag{top:10%;left:5%;font-size:8px}.tutorial-scene-count{bottom:9%;right:5%}.tutorial-actions button{font-size:9px;padding:10px}.tutorial-actions #tutorialNext{min-width:118px}}
 @media(prefers-reduced-motion:reduce){.tutorial-content,.tutorial-content.tutorial-scene-change{animation:none}.tutorial-actions button{transition:none}}
+
+
+/* Action Edition: stylisierte, nicht-grafische Action-Atmosphäre */
+body.action-edition{background:#080b12;color:#e9edf5}
+body.action-edition .hud{border-bottom-color:#b75b4a;background:linear-gradient(90deg,#10151e,#21151a)}
+body.action-edition .brand b{color:#e47a61}
+body.action-edition #gameViewport{background:radial-gradient(ellipse at 50% 30%,#27313c,#080b12 75%)}
+body.action-edition #gameViewport canvas{filter:contrast(1.12) saturate(.78)}
+body.action-edition .controls{border-top-color:#b75b4a}

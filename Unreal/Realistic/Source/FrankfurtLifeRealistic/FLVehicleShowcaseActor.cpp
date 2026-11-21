@@ -55,6 +55,22 @@ void AFLVehicleShowcaseActor::BuildSedan()
             AddPart(CylinderMesh, FVector(X,Y,42), FVector(0.40f,0.16f,0.40f), FLinearColor(0.018f,0.022f,0.028f,1.0f), FRotator(90,0,0));
     AddPart(CubeMesh, FVector(218,-48,80), FVector(0.08f,0.20f,0.12f), FLinearColor(0.92f,0.82f,0.58f,1.0f));
     AddPart(CubeMesh, FVector(218,48,80), FVector(0.08f,0.20f,0.12f), FLinearColor(0.92f,0.82f,0.58f,1.0f));
+    // Side glazing, front/rear glass, grille, mirrors and wheel hubs.
+    const FLinearColor Glass(0.025f,0.075f,0.095f,1.0f);
+    const FLinearColor Metal(0.34f,0.37f,0.39f,1.0f);
+    AddPart(CubeMesh, FVector(-18,-82,139), FVector(0.78f,0.025f,0.20f), Glass);
+    AddPart(CubeMesh, FVector(-18,82,139), FVector(0.78f,0.025f,0.20f), Glass);
+    AddPart(CubeMesh, FVector(92,-82,126), FVector(0.34f,0.025f,0.16f), Glass);
+    AddPart(CubeMesh, FVector(92,82,126), FVector(0.34f,0.025f,0.16f), Glass);
+    AddPart(CubeMesh, FVector(85,0,129), FVector(0.035f,0.64f,0.22f), Glass, FRotator(0,0,-10));
+    AddPart(CubeMesh, FVector(-108,0,129), FVector(0.035f,0.64f,0.22f), Glass, FRotator(0,0,10));
+    AddPart(CubeMesh, FVector(226,0,64), FVector(0.035f,0.42f,0.12f), Metal);
+    AddPart(CubeMesh, FVector(-225,0,64), FVector(0.035f,0.42f,0.12f), Metal);
+    AddPart(CubeMesh, FVector(20,-102,118), FVector(0.16f,0.12f,0.08f), Metal);
+    AddPart(CubeMesh, FVector(20,102,118), FVector(0.16f,0.12f,0.08f), Metal);
+    for (int32 X : {-145,145})
+        for (int32 Y : {-105,105})
+            AddPart(CylinderMesh, FVector(X,Y,42), FVector(0.19f,0.08f,0.19f), Metal, FRotator(90,0,0));
 }
 void AFLVehicleShowcaseActor::BuildVan()
 {
@@ -66,6 +82,11 @@ void AFLVehicleShowcaseActor::BuildVan()
             AddPart(CylinderMesh, FVector(X,Y,48), FVector(0.42f,0.17f,0.42f), FLinearColor(0.018f,0.022f,0.028f,1.0f), FRotator(90,0,0));
     AddPart(CubeMesh, FVector(230,-50,120), FVector(0.07f,0.18f,0.13f), FLinearColor(0.92f,0.82f,0.58f,1.0f));
     AddPart(CubeMesh, FVector(230,50,120), FVector(0.07f,0.18f,0.13f), FLinearColor(0.92f,0.82f,0.58f,1.0f));
+    const FLinearColor VanGlass(0.025f,0.075f,0.095f,1.0f);
+    AddPart(CubeMesh, FVector(205,0,155), FVector(0.035f,0.62f,0.24f), VanGlass, FRotator(0,0,-8));
+    AddPart(CubeMesh, FVector(-20,-99,155), FVector(0.82f,0.025f,0.28f), VanGlass);
+    AddPart(CubeMesh, FVector(-20,99,155), FVector(0.82f,0.025f,0.28f), VanGlass);
+    AddPart(CubeMesh, FVector(225,0,70), FVector(0.035f,0.48f,0.13f), FLinearColor(0.30f,0.32f,0.34f,1.0f));
 }
 void AFLVehicleShowcaseActor::BuildPoliceCar()
 {

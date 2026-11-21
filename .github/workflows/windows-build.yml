@@ -33,3 +33,4 @@ jobs:
           name: Frankfurt-Life-Windows-x64
           path: dist/*
           if-no-files-found: error
+          retention-days: 7

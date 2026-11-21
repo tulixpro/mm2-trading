@@ -542,7 +542,7 @@ const jobs=[
  {name:'Stadtwerke',vehicle:'service',desc:'Fahre zu einer gemeldeten Störung.'}
 ];
 let jobPanel,careerHud,jobActive=false,jobCar=null,jobDestination=null;
-let driving=false,carSpeed=0,carSlip=0,careerMoney=0,completedJobs=0;
+let driving=false,carSpeed=0,carSlip=0,carYawRate=0,careerMoney=0,completedJobs=0;
 let damageLevel=0,damageHud=null,damageFlash=0,cameraLookOffset=0,damageCooldown=0,flSavedDamage=0;
 const emergencyVehicles=[];
 const breakableProps=[];let lookDrag=false,lastPointerX=0,lastPointerY=0;
@@ -1041,19 +1041,20 @@ function refreshDamageHud(){
  damageHud.classList.remove('hidden');
  damageHud.innerHTML='<b>FAHRZEUGZUSTAND · '+(100-damageLevel*25)+' %</b><span>'+['Keine Schäden','Leichte Kratzer','Dellen & Lackschäden','Stark beschädigt','Reparatur erforderlich'][damageLevel]+'</span><div class="damage-bars">'+[0,1,2,3].map(i=>'<i class="'+(i<damageLevel?'lost':'')+'"></i>').join('')+'</div><small>Werkstatt: TUNINGWERK · Reparatur ab '+Math.max(120,damageLevel*260)+' €</small>';
 }
-function damagePlayerCar(){
- if(!jobCar)return;
- damageLevel=Math.min(4,damageLevel+1);flSavedDamage=damageLevel;
+function damagePlayerCar(impact=.24){
+ if(!jobCar||impact<.15)return;
+ const severity=impact>.43?2:1;
+ damageLevel=Math.min(4,damageLevel+severity);flSavedDamage=damageLevel;
  applyCarDamage(jobCar,damageLevel);refreshDamageHud();
- if(damageLevel>=3)carSpeed*=.82;
- flSaveGame();damageFlash=.28;
+ if(damageLevel>=3)carSpeed*=.72;
+ flSaveGame();damageFlash=Math.min(.55,.2+impact*.6);
 }
 function updateBreakableCollisions(dt){
  if(damageCooldown>0)damageCooldown=Math.max(0,damageCooldown-dt);
  if(driving&&jobCar&&Math.abs(carSpeed)>=.075){
   if(damageCooldown===0){
    const movingCars=[...trafficCars,...emergencyVehicles];
-   for(const other of movingCars){if(Math.hypot(jobCar.position.x-other.position.x,jobCar.position.z-other.position.z)<2.7){damagePlayerCar();damageCooldown=1.1;carSpeed*=.58;status.textContent='FAHRZEUGKOLLISION · SCHADEN';break;}}
+   for(const other of movingCars){if(Math.hypot(jobCar.position.x-other.position.x,jobCar.position.z-other.position.z)<2.7){const otherSpeed=other.userData?.traffic?.speed||.12;const impact=Math.abs(carSpeed)+otherSpeed*.012;damagePlayerCar(impact);damageCooldown=1.1;carSpeed*=impact>.38?.32:.58;carSlip*=.35;carYawRate+=(Math.random()-.5)*impact*.12;status.textContent=impact>.38?'STARKE KOLLISION · FAHRZEUG STARK BESCHÄDIGT':'FAHRZEUGKOLLISION · SCHADEN';break;}}
   }
   for(const prop of breakableProps){
    if(!prop.active)continue;
@@ -1061,7 +1062,7 @@ function updateBreakableCollisions(dt){
    if(Math.hypot(dx,dz)<prop.radius+1.45){
     prop.active=false;prop.velocity=Math.max(.14,Math.abs(carSpeed)*1.4);
     prop.group.userData.falling=true;prop.group.userData.fallDir=Math.atan2(dx,dz);
-    damagePlayerCar();carSpeed*=.72;
+    damagePlayerCar(Math.abs(carSpeed)*.9);carSpeed*=.72;carSlip*=.5;
     status.textContent='KOLLISION · FAHRZEUG BESCHÄDIGT';
    }
   }
@@ -1126,33 +1127,41 @@ function buildGamepadStatus(){
 
 function move(dt=1/60){
   if(driving&&jobCar){
-    // Fahrphysik mit zeitbasierter Beschleunigung, Bremsweg, Rückwärtsgang und Tempo-Lenkung.
+    // Vereinfachtes Fahrzeugmodell: Antrieb, Bremsen, Rollwiderstand und Haftung sind zeitbasiert.
     const frameScale=Math.min(3,Math.max(.25,dt*60));
     const accelerating=keys.KeyW||keys.ArrowUp, braking=keys.KeyS||keys.ArrowDown;
     const handbrake=!!keys.Space;
-    const maxForward=.47+tuningLevel*.035,maxReverse=.16;
+    const weatherGrip=flWeather==='Regen'?.68:flWeather==='Nebel'?.88:flWeather==='Bewölkt'?.94:1;
+    const damageGrip=damageLevel>=4?.72:damageLevel===3?.84:damageLevel===2?.93:1;
+    const tireGrip=weatherGrip*damageGrip;
+    const maxForward=(.47+tuningLevel*.035)*(damageLevel>=4?.62:damageLevel===3?.78:1),maxReverse=.16;
     if(accelerating&&flFuel>0){
-      if(carSpeed<0)carSpeed=Math.min(0,carSpeed+.019*frameScale);
-      else carSpeed=Math.min(maxForward,carSpeed+(.0048+Math.max(0,1-carSpeed/maxForward)*.0032)*frameScale);
+      if(carSpeed<0)carSpeed=Math.min(0,carSpeed+.022*frameScale);
+      else carSpeed=Math.min(maxForward,carSpeed+(.0038+Math.max(0,1-carSpeed/maxForward)*.0035)*frameScale);
     }else if(braking){
-      if(carSpeed>0)carSpeed=Math.max(0,carSpeed-.018*frameScale);
-      else carSpeed=Math.max(-maxReverse,carSpeed-.0042*frameScale);
+      // Betriebsbremse: stärker als Motorbremse, mit sanftem Übergang zum Stillstand.
+      if(carSpeed>0)carSpeed=Math.max(0,carSpeed-(.014+.012*tireGrip)*frameScale);
+      else carSpeed=Math.max(-maxReverse,carSpeed-.004*frameScale);
     }else{
-      // Rollwiderstand: das Fahrzeug verliert Geschwindigkeit langsam statt abrupt.
-      carSpeed*=Math.pow(.992,frameScale);
-      if(Math.abs(carSpeed)<.0015)carSpeed=0;
+      // Motor- und Rollwiderstand bauen Geschwindigkeit allmählich ab.
+      carSpeed*=Math.pow(.994,frameScale);
+      if(Math.abs(carSpeed)<.0012)carSpeed=0;
     }
-    if(handbrake)carSpeed*=Math.pow(.88,frameScale);
+    if(handbrake)carSpeed*=Math.pow(.91,frameScale);
     const steer=(keys.KeyA||keys.ArrowLeft?1:0)-(keys.KeyD||keys.ArrowRight?1:0);
-    const speedRatio=Math.min(1,Math.abs(carSpeed)/maxForward);
-    const steeringResponse=(.003+speedRatio*.014)*(carSpeed<0?-1:1);
-    // Seitlicher Reifenschlupf baut sich bei Tempo und starkem Lenken auf.
-    const grip=handbrake?.965:.91;
-    carSlip+=steer*speedRatio*(handbrake?.018:.006)*frameScale;
-    carSlip=Math.max(-.19,Math.min(.19,carSlip));
-    carSlip*=Math.pow(grip,frameScale);
-    // Die Karosserie dreht etwas stärker als die Bewegungsrichtung: kontrollierbares Driften.
-    jobCar.rotation.y+=steer*steeringResponse*frameScale*(handbrake?1.65:1);
+    const speedRatio=Math.min(1,Math.abs(carSpeed)/Math.max(.1,maxForward));
+    // Bei höherem Tempo wird die Lenkreaktion direkter, aber die Reifen können überfordern.
+    const steeringResponse=(.0018+speedRatio*.016)*Math.max(.55,tireGrip)*(carSpeed<0?-1:1);
+    const lateralGrip=handbrake?.965:(.78+(1-tireGrip)*.15);
+    const slipInput=handbrake?.026:.0075;
+    carSlip+=steer*speedRatio*slipInput*frameScale;
+    carSlip=Math.max(-.27,Math.min(.27,carSlip));
+    carSlip*=Math.pow(lateralGrip,frameScale);
+    // Nasse Fahrbahn und Handbremse lassen die Seitenführung länger wegrutschen.
+    const yawTarget=steer*steeringResponse*frameScale*(handbrake?1.55:1);
+    carYawRate+=(yawTarget-carYawRate)*Math.min(1,.22*frameScale);
+    carYawRate*=Math.pow(.84,frameScale);
+    jobCar.rotation.y+=carYawRate;
     const forward=new THREE.Vector3(Math.sin(jobCar.rotation.y),0,Math.cos(jobCar.rotation.y));
     const right=new THREE.Vector3(Math.cos(jobCar.rotation.y),0,-Math.sin(jobCar.rotation.y));
     jobCar.position.addScaledVector(forward,carSpeed*frameScale);
@@ -1214,10 +1223,10 @@ function toggleVehicle(){
   if(!jobCar){status.textContent='WÄHLE ZUERST EINEN JOB MIT J';return;}
   if(!driving){
     if(camera.position.distanceTo(jobCar.position)>9){status.textContent='GEHE NÄHER AN DEIN DIENSTFAHRZEUG';return;}
-    driving=true;carSpeed=0;carSlip=0;cameraLookOffset=0;yaw=jobCar.rotation.y-Math.PI;
+    driving=true;carSpeed=0;carSlip=0;carYawRate=0;cameraLookOffset=0;yaw=jobCar.rotation.y-Math.PI;
     status.textContent='IM FAHRZEUG · WASD / STICK FAHREN · F / X AUSSTEIGEN';
   }else{
-    driving=false;carSpeed=0;carSlip=0;cameraLookOffset=0;
+    driving=false;carSpeed=0;carSlip=0;carYawRate=0;cameraLookOffset=0;
     camera.position.set(jobCar.position.x+3,2.1,jobCar.position.z+3);
     status.textContent='AUSGESTIEGEN · F / X ZUM EINSTEIGEN';
   }

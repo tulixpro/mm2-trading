@@ -19,7 +19,9 @@ on:
       - 'script.js'
       - 'package.json'
       - 'electron/**'
-      - 'electron-builder-action.yml'\n      - 'electron-builder-classic.yml'\n      - 'classic-2d.html'
+      - 'electron-builder-action.yml'
+      - 'electron-builder-classic.yml'
+      - 'classic-2d.html'
       - '.github/workflows/windows-build.yml'
 
 jobs:
@@ -46,7 +48,12 @@ jobs:
         env:
           CSC_LINK: ${{ secrets.WINDOWS_CERTIFICATE }}
           CSC_KEY_PASSWORD: ${{ secrets.WINDOWS_CERTIFICATE_PASSWORD }}
-      - name: Build separate 2D Classic edition\n        run: npm run dist:classic\n        env:\n          CSC_LINK: ${{ secrets.WINDOWS_CERTIFICATE }}\n          CSC_KEY_PASSWORD: ${{ secrets.WINDOWS_CERTIFICATE_PASSWORD }}\n      - name: Build legacy laptop edition
+      - name: Build separate 2D Classic edition
+        run: npm run dist:classic
+        env:
+          CSC_LINK: ${{ secrets.WINDOWS_CERTIFICATE }}
+          CSC_KEY_PASSWORD: ${{ secrets.WINDOWS_CERTIFICATE_PASSWORD }}
+      - name: Build legacy laptop edition
         run: npm run dist:legacy
         env:
           CSC_LINK: ${{ secrets.WINDOWS_CERTIFICATE }}
@@ -58,7 +65,8 @@ jobs:
           path: |
             dist/*
             dist-action/*
-            dist-legacy/*\n            dist-classic/*
+            dist-legacy/*
+            dist-classic/*
           if-no-files-found: error
           retention-days: 7
 
@@ -74,6 +82,7 @@ jobs:
           files: |
             dist/*.exe
             dist-action/*.exe
-            dist-legacy/*.exe\n            dist-classic/*.exe
+            dist-legacy/*.exe
+            dist-classic/*.exe
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -121,3 +121,8 @@ Hinweis: Das ist ein stilisiertes Low-Poly-Schadensmodell, keine realistische Ka
 - Durchsichtiger gestaltete Scheiben und sichtbarer Innenraum mit Vorder- und Rücksitzen, Kopfstützen und Türverkleidungen.
 - Armaturenbrett mit Display, Mittelkonsole, Schalthebel und Lenkrad.
 - Initialisierung der Scheinwerfer-Referenzen vor ihrer Verwendung korrigiert.
+
+
+### Ego-Perspektive 0.3.6
+- Neue Fahrer-Kamera direkt im Cockpit hinter dem Lenkrad.
+- Über Kamera-Einstellungen oder mit C durch Verfolger, Nahansicht, Motorhaube und Ego-Perspektive wechseln.

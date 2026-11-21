@@ -89,3 +89,14 @@ Hinweis: Diese Systeme sind spielbare Prototypen. Wettereffekte sind zunächst �
 - Schadensanzeige zeigt Fahrzeugzustand und geschätzte Reparaturkosten.
 
 Hinweis: Das ist ein stilisiertes Low-Poly-Schadensmodell, keine realistische Karosserie-Verformung auf Bauteilebene. Die neue Version ist noch nicht auf der GT 555M des Spielers getestet.
+
+
+## Version 0.3.2 – Performance-Update für ältere Grafikkarten
+- Live-FPS-Anzeige direkt im Spiel.
+- Dynamische Auflösungsskalierung: Bei dauerhaft niedriger Bildrate reduziert das Spiel automatisch die Render-Auflösung.
+- Manuelle Änderung der Grafikqualität setzt die automatische Skalierung zurück.
+- Ziel: ältere GPUs wie die NVIDIA GeForce GT 555M besser abzufedern. Das ist eine adaptive Maßnahme, keine Garantie für eine bestimmte FPS-Zahl.
+
+## Teststatus 0.3.2
+- Quellcode und Windows-Build werden durch GitHub Actions geprüft.
+- Der echte Laufzeittest auf der GT 555M steht weiterhin aus.

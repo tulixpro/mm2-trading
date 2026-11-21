@@ -33,5 +33,7 @@ private:
 
     void AddBox(const FVector& Location, const FVector& Scale);
     void AddTree(const FVector& Location, float Height);
+    void AddStreetLight(const FVector& Location);
+    void AddBuilding(const FVector& Center, float Width, float Depth, float Height, int32 Seed);
     void BuildDistrict();
 };

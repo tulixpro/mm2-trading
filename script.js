@@ -738,9 +738,9 @@ function drawMiniMap(){
  const label=document.querySelector('#miniMapCoords');if(label)label.textContent=Math.round(camera.position.x)+' / '+Math.round(camera.position.z);
 }
 
-function startShopFilmScene(){if(!currentShop||!shopSceneOverlay)return;shopPanel.classList.add('hidden');shopScene={elapsed:0,stage:-1,name:currentShop.name};shopSceneOverlay.classList.remove('hidden');document.exitPointerLock?.();updateShopFilmScene(0);}
+function startShopFilmScene(){if(!currentShop||!shopSceneOverlay)return;shopPanel.classList.add('scene-active');shopScene={elapsed:0,stage:-1,name:currentShop.name};shopSceneOverlay.classList.remove('hidden');document.exitPointerLock?.();updateShopFilmScene(0);}
 function updateShopFilmScene(dt){if(!shopScene)return;shopScene.elapsed+=dt;const stage=Math.min(2,Math.floor(shopScene.elapsed/2.15));if(stage!==shopScene.stage){shopScene.stage=stage;const titles=['EIN UNERWARTETER MOMENT','ALARMSTIMMUNG IM LADEN','FILMSCHNITT · SZENE BEENDET'];const captions=['Die Kamera fährt in einer kurzen Einstellung durch '+shopScene.name+'.','Lichtsignale und Musik markieren die fiktive Action-Szene. Die Handlung bleibt abstrakt und ohne Gewalt.','Die Szene blendet aus. Du kannst wieder frei durch die Stadt gehen.'];const title=shopSceneOverlay.querySelector('#shopSceneTitle'),caption=shopSceneOverlay.querySelector('#shopSceneCaption'),step=shopSceneOverlay.querySelector('#shopSceneStep');if(title)title.textContent=titles[stage];if(caption)caption.textContent=captions[stage];if(step)step.textContent='SZENE '+(stage+1)+' / 3';}if(shopScene.elapsed>=6.6)finishShopFilmScene();}
-function finishShopFilmScene(){if(!shopScene)return;shopScene=null;shopSceneOverlay?.classList.add('hidden');if(status)status.textContent='FILMISCHE SHOP-SZENE BEENDET · KEINE SPIELWELT-AKTION';}
+function finishShopFilmScene(){if(!shopScene)return;shopScene=null;shopSceneOverlay?.classList.add('hidden');shopPanel?.classList.remove('scene-active');shopPanel?.classList.add('hidden');currentShop=null;if(status)status.textContent='FILMISCHE SHOP-SZENE BEENDET · KEINE SPIELWELT-AKTION';}
 
 function buildShopInteraction(){
  shopPanel=document.createElement('div');shopPanel.id='shopPanel';shopPanel.className='ingame-jobs hidden';

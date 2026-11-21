@@ -23,7 +23,7 @@ let perfHud=null,perfFrames=[],perfLastCheck=0,autoResolutionScale=1,perfHudTime
 const legacyMode=new URLSearchParams(location.search).get('legacy')==='1';
 const cpuCores=navigator.hardwareConcurrency||4;
 const memoryGb=navigator.deviceMemory||8;
-const lowEndDevice=legacyMode||cpuCores<=2||memoryGb<=4;
+const lowEndDevice=legacyMode||cpuCores<=4||memoryGb<=4;
 const liteMode=lowEndDevice;
 const performanceTier=lowEndDevice?'balanced':'full';
 let performanceFrame=0;
@@ -1593,7 +1593,7 @@ document.addEventListener('visibilitychange',()=>{
 function begin(){
   if(started)return;started=true;placeholder?.remove();
   if(qualitySelect){const saved=localStorage.getItem('flQuality');qualitySelect.value=lowEndDevice?'legacy':(saved&&qualitySettings[saved]?saved:(saved==='ultra'?'legacy':'medium'));}
-  if(fpsSelect){const savedFps=localStorage.getItem('flFps');fpsSelect.value=savedFps||'60';maxFps=fpsSelect.value==='unlimited'?0:Number(fpsSelect.value);}
+  if(fpsSelect){const savedFps=localStorage.getItem('flFps');fpsSelect.value=savedFps||(lowEndDevice?'30':'60');maxFps=fpsSelect.value==='unlimited'?0:Number(fpsSelect.value);}
   if(mouseSelect){mouseSelect.value=localStorage.getItem('flMouse')||'1';mouseSensitivity=Number(mouseSelect.value)||1;}
   if(fovSelect){fovSelect.value=localStorage.getItem('flFov')||'68';cameraFov=Number(fovSelect.value)||68;}
   if(cameraSelect){cameraSelect.value=localStorage.getItem('flCamera')||'follow';cameraMode=cameraSelect.value||'follow';}

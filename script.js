@@ -319,8 +319,7 @@ const jobs=[
 ];
 let jobPanel,careerHud,jobActive=false,jobCar=null,jobDestination=null;
 let driving=false,carSpeed=0,careerMoney=0,completedJobs=0;
-let damageLevel=0,damageHud=null,damageFlash=0,cameraLookOffset=0;
-const emergencyVehicles=[];
+let damageLevel=0,damageHud=null,damageFlash=0,cameraLookOffset=0,damageCooldown=0;
 const emergencyVehicles=[];
 const breakableProps=[];let lookDrag=false,lastPointerX=0,lastPointerY=0;
 function buildInGameJobs(){
@@ -562,8 +561,6 @@ function buildEmergencyServices(){
  makeEmergencyVehicle(75,49,'police');makeEmergencyVehicle(82,49,'police');makeEmergencyVehicle(90,49,'fire');
  const fireSign=new THREE.Mesh(new THREE.BoxGeometry(9,1.2,.18),new THREE.MeshStandardMaterial({color:0x183c5b}));fireSign.position.set(83,8,50.35);scene.add(fireSign);
 }
-const emergencyVehicles=[];
-
 function makeCity(){
   scene=new THREE.Scene();scene.background=new THREE.Color(0x91b1c8);scene.fog=new THREE.Fog(0x91b1c8,115,390);
   camera=new THREE.PerspectiveCamera(68,viewport.clientWidth/viewport.clientHeight,.1,620);camera.position.set(0,2.1,14);
@@ -699,7 +696,12 @@ function damagePlayerCar(){
  damageFlash=.28;
 }
 function updateBreakableCollisions(dt){
+ if(damageCooldown>0)damageCooldown=Math.max(0,damageCooldown-dt);
  if(driving&&jobCar&&Math.abs(carSpeed)>=.075){
+  if(damageCooldown===0){
+   const movingCars=[...trafficCars,...emergencyVehicles];
+   for(const other of movingCars){if(Math.hypot(jobCar.position.x-other.position.x,jobCar.position.z-other.position.z)<2.7){damagePlayerCar();damageCooldown=1.1;carSpeed*=.58;status.textContent='FAHRZEUGKOLLISION · SCHADEN';break;}}
+  }
   for(const prop of breakableProps){
    if(!prop.active)continue;
    const dx=jobCar.position.x-prop.group.position.x,dz=jobCar.position.z-prop.group.position.z;

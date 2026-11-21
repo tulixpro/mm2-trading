@@ -133,3 +133,10 @@ Hinweis: Das ist ein stilisiertes Low-Poly-Schadensmodell, keine realistische Ka
 - Stärker abgestuftes Bremsen, Rückwärtsgang und geschwindigkeitsabhängige Lenkung.
 - Handbremse mit Taste Leertaste für engere Kurven.
 - Weiterhin spielinterne Arcade-Physik, keine echte Fahrzeugsimulation.
+
+
+### Fahrverhalten und Schäden 0.3.8
+- Seitlicher Reifenschlupf bei höherem Tempo und stärkerem Lenken.
+- Handbremse verstärkt das Ausbrechen des Hecks und ermöglicht Drifts.
+- Fortschreitende optische Schäden: versetzte Stoßfänger, Dellen, Kratzer, Risse, beschädigte Scheinwerfer und Rauch bei schweren Schäden.
+- Weiterhin vereinfachte Arcade-Physik; Reifen-, Federungs- und echte Crashsimulation sind nicht enthalten.

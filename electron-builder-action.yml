@@ -1,0 +1,22 @@
+appId: de.frankfurtlife.action
+productName: Frankfurt Life Action
+directories:
+  output: dist-action
+files:
+  - game.html
+  - game.css
+  - index.html
+  - style.css
+  - script.js
+  - electron/**/*
+  - assets/**/*
+extraMetadata:
+  main: electron/main-action.cjs
+  version: 0.4.5
+win:
+  target:
+    - nsis
+    - portable
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true

@@ -281,6 +281,38 @@ function createShop(x,z,side,name,subtitle,color){
  shops.push({name,subtitle,x,z,side,products});
 }
 
+function buildFuelPumps(){
+ const pumpMat=new THREE.MeshStandardMaterial({color:0xe6edf0,roughness:.42,metalness:.25});
+ const darkMat=new THREE.MeshStandardMaterial({color:0x263746,roughness:.55,metalness:.35});
+ const screenMat=new THREE.MeshStandardMaterial({color:0x102c39,emissive:0x145365,emissiveIntensity:.55});
+ const hoseMat=new THREE.MeshStandardMaterial({color:0x15191d,roughness:.8});
+ for(const z of [137.5,142,146.5]){
+  const pump=new THREE.Group();
+  const base=new THREE.Mesh(new THREE.BoxGeometry(1.05,.18,1.15),darkMat);base.position.y=.09;pump.add(base);
+  const body=new THREE.Mesh(new THREE.BoxGeometry(.82,1.65,.82),pumpMat);body.position.y=1.0;pump.add(body);
+  const screen=new THREE.Mesh(new THREE.BoxGeometry(.035,.38,.46),screenMat);screen.position.set(.425,1.42,0);pump.add(screen);
+  const display=new THREE.Mesh(new THREE.BoxGeometry(.04,.08,.3),darkMat);display.position.set(.45,1.12,0);pump.add(display);
+  const hose=new THREE.Mesh(new THREE.TorusGeometry(.22,.035,6,12,Math.PI*1.35),hoseMat);hose.rotation.y=Math.PI/2;hose.position.set(.48,.83,.35);pump.add(hose);
+  const nozzle=new THREE.Mesh(new THREE.BoxGeometry(.12,.3,.1),darkMat);nozzle.position.set(.55,.83,.12);pump.add(nozzle);
+  const canopy=new THREE.Mesh(new THREE.BoxGeometry(1.25,.1,1.3),new THREE.MeshStandardMaterial({color:0x277b92,roughness:.5}));canopy.position.y=1.88;pump.add(canopy);
+  pump.position.set(7.4,0,z);scene.add(pump);
+ }
+}
+function tryRefuelAtPump(){
+ if(!driving||!jobCar)return false;
+ const d=Math.hypot(jobCar.position.x-7.4,jobCar.position.z-142);
+ if(d>7.5)return false;
+ if(Math.abs(carSpeed)>.025){status.textContent='HALTE AN DER ZAPFSÄULE AN, UM ZU TANKEN';return true;}
+ if(flFuel>=99.9){status.textContent='TANK IST BEREITS VOLL';return true;}
+ const amount=Math.min(25,100-flFuel);
+ const cost=Math.ceil(amount*2.2);
+ if(careerMoney<cost){status.textContent='ZU WENIG GELD · '+cost+' € FÜR '+Math.round(amount)+'% BENZIN';return true;}
+ careerMoney-=cost;flFuel=Math.min(100,flFuel+amount);
+ if(careerHud)careerHud.innerHTML='KONTO: '+careerMoney.toLocaleString('de-DE')+' €<br>AUFTRÄGE: '+completedJobs+'<br>★ RUF: '+Math.min(5,1+Math.floor(completedJobs/2))+'/5';
+ flUpdateStatus();flSaveGame();
+ status.textContent='GETANKT · +'+Math.round(amount)+'% · −'+cost+' € · TANK '+Math.round(flFuel)+'%';
+ return true;
+}
 function createTransitStop(x,z,label){
  const g=new THREE.Group();
  const metal=new THREE.MeshStandardMaterial({color:0x334653,metalness:.55,roughness:.42});
@@ -783,6 +815,7 @@ function makeCity(){
   createShop(-15,92,-1,'PIZZERIA ROMA','PIZZA · PASTA · LIEFERDIENST',0xb94d3c);
   createShop(15,112,1,'RESTAURANT MAINBLICK','BURGER · SCHNITZEL · SALATE',0x8d5c36);
   createShop(15,142,1,'TANKSTELLE MAIN','TANKEN · SHOP · SERVICE',0x277b92);
+  buildFuelPumps();
   createShop(-15,-128,-1,'RESTAURANT ZEIL','MITTAGSTISCH · ABENDKARTE',0x426f83);
   // Wohnviertel mit Mehrfamilienhäusern, Balkonen und Hauseingängen
   const homeColors=[0xc5b9a5,0xb8c2c5,0xd1c3ae,0x9daeb4,0xc8b6a6,0xb4b9aa];
@@ -1133,6 +1166,6 @@ function begin(){
 startButton?.addEventListener('click',begin);
 // In der eigenständigen Windows-Spielansicht direkt in die 3D-Stadt starten.
 if(document.body.classList.contains('game-app')) begin();
-document.addEventListener('keydown',e=>{keys[e.code]=true;keyboardKeys[e.code]=true;if(e.code==='F1'){e.preventDefault();if(!e.repeat)togglePhone();return;}if(e.code==='KeyE'&&!e.repeat){toggleShopOrDealer();}if(e.code==='KeyF'&&!e.repeat)toggleVehicle();if(e.code==='KeyJ'&&!e.repeat)toggleJobs();if(e.code==='KeyL'&&!e.repeat)toggleFlashlight();if(e.code==='F5'&&!e.repeat){e.preventDefault();flSaveGame(true);}if(e.code==='KeyC'&&!e.repeat)cycleCamera();if(e.code==='Escape'&&jobPanel&&!jobPanel.classList.contains('hidden'))jobPanel.classList.add('hidden');if(e.code==='Escape'&&shopPanel&&!shopPanel.classList.contains('hidden'))shopPanel.classList.add('hidden');if(e.code==='Escape'&&phonePanel&&!phonePanel.classList.contains('hidden'))phonePanel.classList.add('hidden');if(e.code==='Escape'&&dealerPanel&&!dealerPanel.classList.contains('hidden'))dealerPanel.classList.add('hidden');if(['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code))e.preventDefault();});
+document.addEventListener('keydown',e=>{keys[e.code]=true;keyboardKeys[e.code]=true;if(e.code==='F1'){e.preventDefault();if(!e.repeat)togglePhone();return;}if(e.code==='KeyE'&&!e.repeat){if(!tryRefuelAtPump())toggleShopOrDealer();}if(e.code==='KeyF'&&!e.repeat)toggleVehicle();if(e.code==='KeyJ'&&!e.repeat)toggleJobs();if(e.code==='KeyL'&&!e.repeat)toggleFlashlight();if(e.code==='F5'&&!e.repeat){e.preventDefault();flSaveGame(true);}if(e.code==='KeyC'&&!e.repeat)cycleCamera();if(e.code==='Escape'&&jobPanel&&!jobPanel.classList.contains('hidden'))jobPanel.classList.add('hidden');if(e.code==='Escape'&&shopPanel&&!shopPanel.classList.contains('hidden'))shopPanel.classList.add('hidden');if(e.code==='Escape'&&phonePanel&&!phonePanel.classList.contains('hidden'))phonePanel.classList.add('hidden');if(e.code==='Escape'&&dealerPanel&&!dealerPanel.classList.contains('hidden'))dealerPanel.classList.add('hidden');if(['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code))e.preventDefault();});
 document.addEventListener('keyup',e=>{keys[e.code]=false;keyboardKeys[e.code]=false;});
 window.addEventListener('resize',resize);

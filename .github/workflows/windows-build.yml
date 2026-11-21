@@ -16,6 +16,7 @@ on:
       - 'script.js'
       - 'package.json'
       - 'electron/**'
+      - 'electron-builder-action.yml'
       - '.github/workflows/windows-build.yml'
 
 jobs:
@@ -37,11 +38,18 @@ jobs:
         env:
           CSC_LINK: ${{ secrets.WINDOWS_CERTIFICATE }}
           CSC_KEY_PASSWORD: ${{ secrets.WINDOWS_CERTIFICATE_PASSWORD }}
+      - name: Build separate Action Edition
+        run: npx electron-builder --config electron-builder-action.yml --win nsis portable --publish never
+        env:
+          CSC_LINK: ${{ secrets.WINDOWS_CERTIFICATE }}
+          CSC_KEY_PASSWORD: ${{ secrets.WINDOWS_CERTIFICATE_PASSWORD }}
       - name: Upload Windows builds
         uses: actions/upload-artifact@v4
         with:
           name: Frankfurt-Life-Windows-x64
-          path: dist/*
+          path: |
+            dist/*
+            dist-action/*
           if-no-files-found: error
           retention-days: 7
 
@@ -56,5 +64,6 @@ jobs:
           overwrite_files: true
           files: |
             dist/*.exe
+            dist-action/*.exe
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -147,3 +147,16 @@ body.action-edition .controls{border-top-color:#b75b4a}
 .shop-scene-overlay{position:absolute;inset:0;z-index:40;display:grid;place-items:center;padding:22px;background:radial-gradient(ellipse at 50% 35%,#203c51ed,#030810f5 75%);backdrop-filter:blur(9px)}.shop-scene-overlay.hidden{display:none}.shop-scene-frame{width:min(680px,100%);padding:clamp(24px,5vw,52px);border:1px solid #8bc6db66;border-radius:18px;background:linear-gradient(145deg,#102234f2,#08111df5);box-shadow:0 24px 90px #000a;text-align:center;animation:shopSceneIn .5s cubic-bezier(.2,.8,.2,1)}.shop-scene-frame>span{color:#79d5ed;font-size:10px;font-weight:900;letter-spacing:2px}.shop-scene-frame h2{margin:22px 0 10px;color:#f2f8fc;font-size:clamp(24px,5vw,42px);letter-spacing:1px}.shop-scene-frame p{min-height:54px;color:#b5c9d8;line-height:1.6}.shop-scene-frame small{display:block;margin:18px;color:#78bfd5;letter-spacing:1.4px}.shop-scene-frame button{margin-top:12px;padding:10px 15px;border:1px solid #5b8298;border-radius:8px;background:#142d40;color:#eaf7ff;font-weight:800;cursor:pointer}@keyframes shopSceneIn{from{opacity:0;transform:translateY(18px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}
 
 .ingame-jobs.scene-active> :not(.shop-scene-overlay){visibility:hidden}.ingame-jobs.scene-active .shop-scene-overlay{visibility:visible}
+
+
+/* Mobile / Android touch controls */
+#mobileControls{position:absolute;inset:0;z-index:12;pointer-events:none;display:none;touch-action:none}
+#mobileControls button{pointer-events:auto;touch-action:none;border:1px solid #ffffff55;background:#101d2dcc;color:#fff;border-radius:13px;min-width:46px;min-height:44px;font:800 13px system-ui;box-shadow:0 5px 18px #0005;backdrop-filter:blur(8px)}
+.mobile-pad{position:absolute;left:14px;bottom:22px;display:flex;flex-direction:column;gap:5px}
+.mobile-pad>button{align-self:center}
+.mobile-pad>div{display:flex;gap:5px}
+.mobile-actions{position:absolute;right:14px;bottom:22px;display:grid;grid-template-columns:repeat(2,52px);gap:7px}
+.mobile-actions button{font-size:11px}
+.mobile-look{position:absolute;right:14px;top:25%;color:#ffffff80;font:700 10px system-ui;letter-spacing:.08em;pointer-events:none}
+@media (pointer:coarse),(max-width:800px){#mobileControls{display:block}.hud{gap:6px}.hud .settings{max-width:58vw;overflow-x:auto}.controls{display:none}#gameViewport{height:calc(100dvh - 64px)}.game-app .hud{min-height:58px}.brand span{font-size:11px}}
+@media (prefers-reduced-motion:reduce){#mobileControls button{backdrop-filter:none}}

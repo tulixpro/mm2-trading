@@ -5,6 +5,7 @@
 #include "FLRealisticCityBlock.generated.h"
 
 class UStaticMesh;
+class USceneComponent;
 
 UCLASS()
 class FRANKFURTLIFEREALISTIC_API AFLRealisticCityBlock : public AActor

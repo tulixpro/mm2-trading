@@ -51,26 +51,94 @@ function makePedestrian(x,z,index){
   group.userData={originX:x,originZ:z,phase:index*.8,speed:.35+(index%4)*.09};
   pedestrians.push(group);scene.add(group);
 }
-function makeCar(x,z,color,police=false){
+function makeCar(x,z,color,police=false,model='sedan'){
   const car=new THREE.Group();
-  const mat=new THREE.MeshStandardMaterial({color,roughness:.72,metalness:.12});
-  const body=new THREE.Mesh(new THREE.BoxGeometry(2.15,.72,4.1),mat);body.position.y=.72;car.add(body);
-  const cabin=new THREE.Mesh(new THREE.BoxGeometry(1.62,.78,2.05),new THREE.MeshStandardMaterial({color:0x263b4c,roughness:.35,metalness:.2}));
-  cabin.position.set(0,1.42,-.18);car.add(cabin);
-  for(const xw of [-1,1]) for(const zw of [-1.35,1.35]){
-    const wheel=new THREE.Mesh(new THREE.CylinderGeometry(.38,.38,.22,12),new THREE.MeshStandardMaterial({color:0x11151a}));
-    wheel.rotation.z=Math.PI/2;wheel.position.set(xw*1.08,.42,zw);car.add(wheel);
+  const paint=new THREE.MeshStandardMaterial({color,roughness:.38,metalness:.28});
+  const glass=new THREE.MeshStandardMaterial({color:0x182b3a,roughness:.18,metalness:.18});
+  const black=new THREE.MeshStandardMaterial({color:0x10151b,roughness:.7});
+  const chrome=new THREE.MeshStandardMaterial({color:0xb8c4ce,metalness:.8,roughness:.22});
+  const light=new THREE.MeshBasicMaterial({color:0xfff0c8});
+  const tail=new THREE.MeshBasicMaterial({color:0xff2638});
+  const profile={
+    hatch:{length:3.9,width:1.82,height:.68,cabin:1.45,roof:1.34,hood:1.25},
+    super:{length:4.55,width:2.02,height:.48,cabin:1.05,roof:1.04,hood:1.8},
+    sedan:{length:4.7,width:1.9,height:.68,cabin:1.65,roof:1.42,hood:1.5},
+    sportback:{length:4.8,width:1.95,height:.62,cabin:1.7,roof:1.35,hood:1.55},
+    coupe:{length:4.9,width:1.98,height:.65,cabin:1.5,roof:1.36,hood:1.6},
+    van:{length:5.1,width:2.0,height:.9,cabin:2.05,roof:1.8,hood:1.05}
+  }[model]||{length:4.5,width:1.9,height:.65,cabin:1.55,roof:1.35,hood:1.5};
+  const L=profile.length,W=profile.width;
+  const lower=new THREE.Mesh(new THREE.BoxGeometry(W,.48,L),paint);lower.position.y=.58;car.add(lower);
+  const hood=new THREE.Mesh(new THREE.BoxGeometry(W*.96,.2,profile.hood),paint);hood.position.set(0,.83,L*.34);car.add(hood);
+  const rear=new THREE.Mesh(new THREE.BoxGeometry(W*.94,.22,Math.max(.65,L-profile.hood-1.7)),paint);rear.position.set(0,.79,-L*.34);car.add(rear);
+  const cabin=new THREE.Mesh(new THREE.BoxGeometry(W*.78,profile.cabin,L*.43),glass);cabin.position.set(0,1.08,-.12);car.add(cabin);
+  const roof=new THREE.Mesh(new THREE.BoxGeometry(W*.72,.12,L*.32),paint);roof.position.set(0,1.08+profile.cabin/2,-.18);car.add(roof);
+  const frontGlass=new THREE.Mesh(new THREE.BoxGeometry(W*.76,.04,.58),glass);frontGlass.position.set(0,1.34,L*.16);frontGlass.rotation.x=-.42;car.add(frontGlass);
+  const backGlass=new THREE.Mesh(new THREE.BoxGeometry(W*.72,.04,.48),glass);backGlass.position.set(0,1.31,-L*.34);backGlass.rotation.x=.48;car.add(backGlass);
+  for(const side of [-1,1]){
+    const mirror=new THREE.Mesh(new THREE.BoxGeometry(.2,.13,.24),black);mirror.position.set(side*W*.53,1.03,.48);car.add(mirror);
+    for(const zw of [-L*.32,L*.32]){
+      const wheel=new THREE.Mesh(new THREE.CylinderGeometry(.37,.37,.2,16),black);wheel.rotation.z=Math.PI/2;wheel.position.set(side*(W*.51),.42,zw);car.add(wheel);
+      const rim=new THREE.Mesh(new THREE.CylinderGeometry(.22,.22,.205,12),chrome);rim.rotation.z=Math.PI/2;rim.position.copy(wheel.position);car.add(rim);
+    }
+    const head=new THREE.Mesh(new THREE.BoxGeometry(.36,.13,.08),light);head.position.set(side*W*.34,.78,L*.505);car.add(head);
+    const rearLight=new THREE.Mesh(new THREE.BoxGeometry(.32,.14,.08),tail);rearLight.position.set(side*W*.34,.78,-L*.505);car.add(rearLight);
+  }
+  const grille=new THREE.Mesh(new THREE.BoxGeometry(W*.42,.18,.06),black);grille.position.set(0,.64,L*.51);car.add(grille);
+  if(model==='super'){
+    const splitter=new THREE.Mesh(new THREE.BoxGeometry(W*1.03,.08,.35),black);splitter.position.set(0,.36,L*.53);car.add(splitter);
+    const wing=new THREE.Mesh(new THREE.BoxGeometry(W*.78,.07,.25),black);wing.position.set(0,1.03,-L*.48);car.add(wing);
+  }
+  if(model==='hatch'){
+    const spoiler=new THREE.Mesh(new THREE.BoxGeometry(W*.65,.07,.2),black);spoiler.position.set(0,1.35,-L*.43);car.add(spoiler);
   }
   if(police){
-    const bar=new THREE.Mesh(new THREE.BoxGeometry(1.05,.16,.28),new THREE.MeshBasicMaterial({color:0xe8f1ff}));
-    bar.position.set(0,1.88,-.15);car.add(bar);
-    const red=new THREE.Mesh(new THREE.BoxGeometry(.42,.18,.3),new THREE.MeshBasicMaterial({color:0xff243e}));
-    const blue=new THREE.Mesh(new THREE.BoxGeometry(.42,.18,.3),new THREE.MeshBasicMaterial({color:0x247bff}));
-    red.position.set(-.28,1.91,-.15);blue.position.set(.28,1.91,-.15);car.add(red,blue);
+    const bar=new THREE.Mesh(new THREE.BoxGeometry(1.05,.13,.25),black);bar.position.set(0,1.58,-.12);car.add(bar);
+    const red=new THREE.Mesh(new THREE.BoxGeometry(.42,.15,.25),new THREE.MeshBasicMaterial({color:0xff243e}));
+    const blue=new THREE.Mesh(new THREE.BoxGeometry(.42,.15,.25),new THREE.MeshBasicMaterial({color:0x247bff}));
+    red.position.set(-.28,1.6,-.12);blue.position.set(.28,1.6,-.12);car.add(red,blue);
     car.userData.lights=[red,blue];policeCars.push(car);
   }
   car.position.set(x,0,z);scene.add(car);return car;
 }
+const fleet=[
+  {id:'golf',name:'Kompakt-Klassiker',model:'hatch',color:0xb51e2b,job:'Paketdienst'},
+  {id:'super',name:'Supersportwagen',model:'super',color:0xd7ed12,job:'VIP-Chauffeur'},
+  {id:'mercedes',name:'Premium-Limousine',model:'sedan',color:0x9f101d,job:'Business-Fahrer'},
+  {id:'audi',name:'Elektro-Sportback',model:'sportback',color:0xc72d24,job:'Kurierdienst'},
+  {id:'alpina',name:'Luxus-Coupé',model:'coupe',color:0x075b45,job:'Premium-Transport'},
+  {id:'taxi',name:'Taxi-Limousine',model:'sedan',color:0xf0c52d,job:'Taxi-Fahrer'},
+  {id:'van',name:'Transporter',model:'van',color:0xe6e8e8,job:'Möbeltransport'},
+  {id:'service',name:'Service-Kombi',model:'hatch',color:0x2872b7,job:'Stadtwerke'}
+];
+function setupJobs(){
+  const jobSelect=document.querySelector('#jobSelect');
+  const accept=document.querySelector('#acceptJob');
+  const jobInfo=document.querySelector('#jobInfo');
+  if(!jobSelect||!accept)return;
+  const jobs=[
+    {name:'Paketdienst',vehicle:'golf',desc:'Liefere drei Pakete an Adressen in der Innenstadt.'},
+    {name:'VIP-Chauffeur',vehicle:'super',desc:'Hole einen Gast ab und bringe ihn zum Bankenviertel.'},
+    {name:'Business-Fahrer',vehicle:'mercedes',desc:'Fahre einen Geschäftskunden zu einem Büro am Main.'},
+    {name:'Kurierdienst',vehicle:'audi',desc:'Bringe eine dringende Sendung quer durch die Stadt.'},
+    {name:'Premium-Transport',vehicle:'alpina',desc:'Fahre einen Kunden komfortabel zu seinem Ziel.'},
+    {name:'Taxi-Fahrer',vehicle:'taxi',desc:'Nimm Fahrgäste auf und bringe sie sicher ans Ziel.'},
+    {name:'Möbeltransport',vehicle:'van',desc:'Transportiere Möbel zu einem neuen Zuhause.'},
+    {name:'Stadtwerke',vehicle:'service',desc:'Fahre zu einer gemeldeten Störung und prüfe den Einsatzort.'}
+  ];
+  jobs.forEach((j,i)=>{const o=document.createElement('option');o.value=String(i);o.textContent=j.name+' · '+fleet.find(v=>v.id===j.vehicle).name;jobSelect.appendChild(o);});
+  function update(){const j=jobs[Number(jobSelect.value)||0];jobInfo.textContent=j.desc+' Dienstfahrzeug: '+fleet.find(v=>v.id===j.vehicle).name+'.';}
+  jobSelect.addEventListener('change',update);update();
+  accept.addEventListener('click',()=>{
+    if(!started){status.textContent='STARTE ZUERST DIE 3D-DEMO';return;}
+    const j=jobs[Number(jobSelect.value)||0],v=fleet.find(v=>v.id===j.vehicle);
+    makeCar(4,-4,v.color,false,v.model);
+    jobInfo.textContent='JOB ANGENOMMEN: '+j.name+'. Dein Fahrzeug steht neben der Straße. '+j.desc;
+    status.textContent='JOB AKTIV · '+j.name.toUpperCase();
+  });
+}
+setupJobs();
+
 function makeCity(){
   scene=new THREE.Scene();scene.background=new THREE.Color(0x91b1c8);scene.fog=new THREE.Fog(0x91b1c8,65,185);
   camera=new THREE.PerspectiveCamera(72,viewport.clientWidth/viewport.clientHeight,.1,260);camera.position.set(0,2.1,14);
@@ -84,8 +152,8 @@ function makeCity(){
   for(let z=-105;z<35;z+=18){building(-15,z,8,12,12+Math.random()*22,0x6c7885);building(15,z-7,8,12,15+Math.random()*25,0x77828c);}
   for(let i=0;i<7;i++)building(-42+i*14,-72,8,9,25+Math.random()*38,0x43576a);
   for(let z=-95;z<25;z+=14)for(const x of [-11,11])tree(x,z);
-  makeCar(4,-8,0x1c354d);
-  makeCar(-3,-35,0xffffff,true);
+  makeCar(4,-8,0x1c354d,false,'sportback');
+  makeCar(-3,-35,0xffffff,true,'sedan');
   for(let i=0;i<14;i++){
     const side=i%2===0?-1:1;
     makePedestrian(side*(9.1+(i%3)*.65),-88+(i*13)%112,i);

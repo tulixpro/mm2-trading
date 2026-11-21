@@ -286,6 +286,8 @@ function begin(){
   }
 }
 startButton?.addEventListener('click',begin);
+// In der eigenständigen Windows-Spielansicht direkt in die 3D-Stadt starten.
+if(document.body.classList.contains('game-app')) begin();
 document.addEventListener('keydown',e=>{keys[e.code]=true;if(e.code==='KeyF'&&!e.repeat)toggleVehicle();if(e.code==='KeyJ'&&!e.repeat)toggleJobs();if(e.code==='Escape'&&jobPanel&&!jobPanel.classList.contains('hidden'))jobPanel.classList.add('hidden');if(['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code))e.preventDefault();});
 document.addEventListener('keyup',e=>keys[e.code]=false);
 window.addEventListener('resize',resize);

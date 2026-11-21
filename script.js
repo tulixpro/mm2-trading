@@ -13,7 +13,7 @@ const qualitySettings={
  medium:{pixelRatio:.9,shadows:false,fog:165,exposure:1,ambient:2,label:'MITTEL'},
  high:{pixelRatio:1.25,shadows:true,fog:215,exposure:1.12,ambient:2.15,label:'HOCH'}
 };
-let sunLight=null;
+let sunLight=null,hemiLight=null;
 function applyQuality(){
  if(!renderer||!scene)return;
  const mode=qualitySelect?.value||'medium',q=qualitySettings[mode];
@@ -21,9 +21,9 @@ function applyQuality(){
  renderer.shadowMap.enabled=q.shadows;
  renderer.toneMappingExposure=q.exposure;
  if(scene.fog)scene.fog.far=q.fog;
- if(sunLight){sunLight.intensity=mode==='low'?1.05:mode==='medium'?1.5:1.9;sunLight.castShadow=q.shadows;}
+ if(sunLight){sunLight.intensity=mode==='low'?1.05:mode==='medium'?1.5:1.9;sunLight.castShadow=q.shadows;sunLight.shadow.mapSize.set(1024,1024);sunLight.shadow.camera.left=-65;sunLight.shadow.camera.right=65;sunLight.shadow.camera.top=65;sunLight.shadow.camera.bottom=-65;sunLight.shadow.camera.near=1;sunLight.shadow.camera.far=140;sunLight.shadow.camera.updateProjectionMatrix();}\n if(hemiLight)hemiLight.intensity=q.ambient;
  scene.traverse(obj=>{if(obj.isMesh){obj.castShadow=q.shadows;obj.receiveShadow=q.shadows;}});
- const hint=document.querySelector('#graphicsHint');
+ const hint=document.querySelector('#graphicsHint')||document.querySelector('#qualityStatus');
  if(hint)hint.textContent='Grafik: '+q.label+' · '+(q.shadows?'Schatten AN':'Schatten AUS');
  if(viewport)viewport.dataset.graphics=mode;
  resize();
@@ -211,7 +211,7 @@ function createTraffic(){
 function makeCity(){
   scene=new THREE.Scene();scene.background=new THREE.Color(0x91b1c8);scene.fog=new THREE.Fog(0x91b1c8,65,185);
   camera=new THREE.PerspectiveCamera(72,viewport.clientWidth/viewport.clientHeight,.1,260);camera.position.set(0,2.1,14);
-  scene.add(new THREE.HemisphereLight(0xd7ecff,0x4a5260,2));
+  hemiLight=new THREE.HemisphereLight(0xd7ecff,0x4a5260,2);scene.add(hemiLight);
   sunLight=new THREE.DirectionalLight(0xffe0b4,1.5);sunLight.position.set(-25,45,25);sunLight.castShadow=false;scene.add(sunLight);
   const ground=new THREE.Mesh(new THREE.PlaneGeometry(240,240),new THREE.MeshLambertMaterial({color:0x58636b}));ground.rotation.x=-Math.PI/2;ground.position.y=-.12;scene.add(ground);
   const road=new THREE.Mesh(new THREE.PlaneGeometry(15,190),new THREE.MeshLambertMaterial({color:0x202a35}));road.rotation.x=-Math.PI/2;road.position.set(0,0,-35);scene.add(road);
@@ -324,7 +324,7 @@ function begin(){
     renderer.toneMapping=THREE.ACESFilmicToneMapping;
     renderer.shadowMap.type=THREE.PCFSoftShadowMap;
     renderer.shadowMap.enabled=false;
-    sunLight=null;
+    sunLight=null;hemiLight=null;
     makeCity();buildInGameJobs();applyQuality();viewport.appendChild(renderer.domElement);resize();loop();
     renderer.domElement.addEventListener('click',()=>renderer.domElement.requestPointerLock?.());
     document.addEventListener('pointerlockchange',()=>{

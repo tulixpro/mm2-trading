@@ -1,7 +1,7 @@
 {
   "name": "frankfurt-life",
-  "version": "0.3.7",
-  "description": "Frankfurt Life - 3D city prototype with improved vehicle physics and cockpit view",
+  "version": "0.3.8",
+  "description": "Frankfurt Life - 3D city prototype with tire slip, drifting and progressive vehicle damage",
   "main": "electron/main.cjs",
   "author": "Frankfurt Life Community",
   "license": "UNLICENSED",

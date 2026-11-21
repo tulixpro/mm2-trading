@@ -78,8 +78,8 @@ void AFLRealisticCityBlock::AddStreetLight(const FVector& Location)
 void AFLRealisticCityBlock::AddBuilding(const FVector& Center, float Width, float Depth, float Height, int32 Seed)
 {
     // Greybox building mass with repeated inset-like facade panels.
-    AddBox(Center + FVector(0, 0, Height * 0.5f), FVector(Width * 0.005f, Depth * 0.005f, Height * 0.005f));
-    AddBox(Center + FVector(0, 0, Height + 18), FVector(Width * 0.005f + 0.18f, Depth * 0.005f + 0.18f, 0.18f));
+    AddBox(Center + FVector(0, 0, Height * 0.5f), FVector(Width * 0.01f, Depth * 0.01f, Height * 0.01f));
+    AddBox(Center + FVector(0, 0, Height + 18), FVector(Width * 0.01f + 0.18f, Depth * 0.01f + 0.18f, 0.18f));
 
     const int32 Floors = FMath::Max(2, FMath::FloorToInt(Height / 190.0f));
     const int32 Columns = FMath::Max(2, FMath::FloorToInt(Width / 150.0f));

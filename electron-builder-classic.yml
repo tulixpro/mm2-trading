@@ -1,7 +1,7 @@
-appId: de.frankfurtlife.classic
-productName: Frankfurt Life Classic
+appId: de.frankfurtlife.sanandreas
+productName: Frankfurt Life San Andreas
 directories:
-  output: dist-classic
+  output: dist-sanandreas
 files:
   - game.html
   - game.css

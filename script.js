@@ -122,11 +122,12 @@ const jobs=[
  {name:'Stadtwerke',vehicle:'service',desc:'Fahre zu einer gemeldeten Störung.'}
 ];
 let jobPanel,jobActive=false,jobCar=null,jobDestination=null;
-let driving=false,carSpeed=0;
+let driving=false,carSpeed=0,careerMoney=0,completedJobs=0;
 function buildInGameJobs(){
  jobPanel=document.createElement('div');jobPanel.id='inGameJobs';jobPanel.className='ingame-jobs hidden';
  jobPanel.innerHTML='<div class="ingame-jobs-head"><b>FRANKFURT LIFE / JOBZENTRALE</b><button id="closeJobs" aria-label="Schließen">×</button></div><h3>Wähle deinen Beruf</h3><p class="ingame-jobs-hint">Dein Auftrag und das passende Dienstfahrzeug starten direkt in der 3D-Stadt.</p><div id="ingameJobChoices"></div><div id="ingameJobDetail">Wähle einen Job aus.</div><button id="startJob" class="ingame-start" disabled>AUFTRAG ANNEHMEN</button><small>J oder ESC · Menü schließen</small>';
  viewport.appendChild(jobPanel);
+ const careerHud=document.createElement('div');careerHud.id='careerHud';careerHud.style.cssText='position:absolute;top:14px;right:14px;z-index:8;padding:10px 14px;border:1px solid #ffffff30;border-radius:10px;background:#101b2ddd;color:#fff;font:700 13px/1.6 system-ui;pointer-events:none;';careerHud.innerHTML='KONTO: 0 €<br>AUFTRÄGE: 0';viewport.appendChild(careerHud);
  const choices=jobPanel.querySelector('#ingameJobChoices'),detail=jobPanel.querySelector('#ingameJobDetail'),accept=jobPanel.querySelector('#startJob');
  let selected=0;
  jobs.forEach((job,i)=>{
@@ -143,7 +144,7 @@ function buildInGameJobs(){
  jobPanel.querySelector('#closeJobs').addEventListener('click',()=>jobPanel.classList.add('hidden'));
  accept.addEventListener('click',()=>{
   const job=jobs[selected],vehicle=fleet.find(v=>v.id===job.vehicle);
-  if(jobCar)scene.remove(jobCar);
+  if(jobCar){scene.remove(jobCar);if(jobCar.userData.jobMarker)scene.remove(jobCar.userData.jobMarker);}
   jobCar=makeCar(camera.position.x+3,camera.position.z-5,vehicle.color,false,vehicle.model);
   jobCar.rotation.y=yaw;
   jobDestination=new THREE.Vector3(Math.max(-30,Math.min(30,camera.position.x+18)),0,Math.max(-100,Math.min(25,camera.position.z-35)));
@@ -151,6 +152,7 @@ function buildInGameJobs(){
   marker.position.copy(jobDestination);marker.position.y=.12;scene.add(marker);
   jobCar.userData.jobMarker=marker;
   jobActive=true;
+  if(careerHud)careerHud.innerHTML='KONTO: '+careerMoney.toLocaleString('de-DE')+' €<br>AUFTRÄGE: '+completedJobs;
   detail.textContent='AUFTRAG AKTIV: '+job.name+' – '+job.desc+' Fahre zum markierten Ziel. (Fahrzeug ist in der Stadt gespawnt.)';
   status.textContent='JOB AKTIV · '+job.name.toUpperCase();
   jobPanel.classList.add('hidden');
@@ -214,6 +216,14 @@ function move(){
     jobCar.rotation.y+=steer*Math.min(.035,Math.abs(carSpeed)*.11);
     const forward=new THREE.Vector3(Math.sin(jobCar.rotation.y),0,Math.cos(jobCar.rotation.y));
     jobCar.position.addScaledVector(forward,carSpeed);
+    if(jobActive&&jobDestination&&jobCar.position.distanceTo(jobDestination)<4){
+      jobActive=false;completedJobs++;const reward=250+Math.floor(Math.random()*251);careerMoney+=reward;
+      if(jobCar.userData.jobMarker){scene.remove(jobCar.userData.jobMarker);jobCar.userData.jobMarker=null;}
+      driving=false;carSpeed=0;
+      if(careerHud)careerHud.innerHTML='KONTO: '+careerMoney.toLocaleString('de-DE')+' €<br>AUFTRÄGE: '+completedJobs;
+      status.textContent='AUFTRAG ERLEDIGT · +'+reward+' € · F ZUM AUSSTEIGEN';
+      jobDestination=null;
+    }
     jobCar.position.x=Math.max(-48,Math.min(48,jobCar.position.x));
     jobCar.position.z=Math.max(-115,Math.min(45,jobCar.position.z));
     yaw=jobCar.rotation.y-Math.PI;

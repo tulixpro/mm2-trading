@@ -168,6 +168,25 @@ function building(x,z,w,d,h,color){
       }
     }
   }
+  // Fassadenrahmen, Gesimse und Dachtechnik geben den Blockgebäuden mehr Tiefe.
+  const trimMat=new THREE.MeshStandardMaterial({color:0xd2d0c7,roughness:.82});
+  for(const side of [-1,1]){
+    const pilaster=new THREE.Mesh(new THREE.BoxGeometry(.16,h,.18),trimMat);
+    pilaster.position.set(side*(w/2-.12),h/2,d/2+.1);g.add(pilaster);
+  }
+  for(let y=3;y<h;y+=5.2){
+    const band=new THREE.Mesh(new THREE.BoxGeometry(w+.12,.12,.18),trimMat);
+    band.position.set(0,y,d/2+.1);g.add(band);
+  }
+  const roofUnitsMat=new THREE.MeshStandardMaterial({color:0x68747b,metalness:.35,roughness:.7});
+  for(let n=0;n<2;n++){
+    const unit=new THREE.Mesh(new THREE.BoxGeometry(1.05,.65,.85),roofUnitsMat);
+    unit.position.set((n-.5)*w*.38,h+.48,0);g.add(unit);
+    const vent=new THREE.Mesh(new THREE.BoxGeometry(.72,.06,.62),new THREE.MeshStandardMaterial({color:0x303b43,metalness:.25}));
+    vent.position.set(unit.position.x,h+.83,0);g.add(vent);
+  }
+  const entry=new THREE.Mesh(new THREE.BoxGeometry(1.1,2.1,.1),new THREE.MeshStandardMaterial({color:0x263746,roughness:.45,metalness:.15}));
+  entry.position.set(0,1.05,d/2+.12);g.add(entry);
   g.position.set(x,0,z);scene.add(g);
 }
 function residentialBuilding(x,z,w,d,h,color){

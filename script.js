@@ -426,6 +426,49 @@ function makeCar(x,z,color,police=false,model='sedan'){
   if(model==='hatch'){
     const spoiler=new THREE.Mesh(new THREE.BoxGeometry(W*.65,.07,.2),black);spoiler.position.set(0,1.35,-L*.43);car.add(spoiler);
   }
+  // Eigenständige Karosserie-Details je Fahrzeugklasse.
+  const addDetail=(geometry,material,x,y,z,rx=0,ry=0,rz=0)=>{
+    const part=new THREE.Mesh(geometry,material);part.position.set(x,y,z);part.rotation.set(rx,ry,rz);car.add(part);return part;
+  };
+  const accent=new THREE.MeshStandardMaterial({color:model==='sportback'?0x39b9d4:0x343d46,metalness:.65,roughness:.3});
+  const trim=new THREE.MeshStandardMaterial({color:0x111820,roughness:.72});
+  // Seitenscheiben und klar erkennbare Fensterrahmen.
+  for(const side of [-1,1]){
+    const sideWindow=addDetail(new THREE.BoxGeometry(.035,.39,L*.29),glass,side*W*.397,1.25,-.12,0,0,0);
+    addDetail(new THREE.BoxGeometry(.045,.045,L*.31),accent,side*W*.405,1.49,-.12);
+    addDetail(new THREE.BoxGeometry(.045,.045,L*.31),accent,side*W*.405,1.02,-.12);
+  }
+  // Vier ausgearbeitete Radläufe mit separaten Kotflügel-Akzenten.
+  for(const side of [-1,1])for(const z of [-L*.32,L*.32]){
+    const arch=addDetail(new THREE.TorusGeometry(.405,.055,7,20,Math.PI),paint,side*W*.515,.43,z,0,Math.PI/2,Math.PI);
+    arch.scale.set(1,1,1);
+  }
+  if(model==='sedan'||model==='sportback'){
+    addDetail(new THREE.BoxGeometry(W*.52,.24,.075),model==='sportback'?accent:chrome,0,.68,L*.515);
+    for(let i=-2;i<=2;i++)addDetail(new THREE.BoxGeometry(.035,.2,.025),model==='sportback'?trim:black,i*W*.085,.68,L*.56);
+    addDetail(new THREE.BoxGeometry(W*.72,.055,.12),chrome,0,.94,-L*.51);
+  }
+  if(model==='coupe'){
+    addDetail(new THREE.BoxGeometry(W*.78,.12,.38),paint,0,.93,-L*.39);
+    addDetail(new THREE.BoxGeometry(W*.72,.07,.16),accent,0,1.18,-L*.46);
+    for(const side of [-1,1])addDetail(new THREE.BoxGeometry(.16,.09,.42),black,side*W*.39,.66,L*.05);
+  }
+  if(model==='van'){
+    for(const side of [-1,1]){
+      addDetail(new THREE.BoxGeometry(.045,.5,L*.34),accent,side*W*.505,.94,-L*.22);
+      addDetail(new THREE.BoxGeometry(.05,.08,.72),chrome,side*W*.51,.68,-L*.22);
+      addDetail(new THREE.BoxGeometry(.045,.34,.72),glass,side*W*.505,1.38,-L*.22);
+    }
+    addDetail(new THREE.BoxGeometry(W*.78,.09,.12),chrome,0,1.76,-L*.49);
+  }
+  if(model==='super'){
+    addDetail(new THREE.BoxGeometry(W*.72,.08,.72),trim,0,.68,-L*.28);
+    for(const side of [-1,1]){
+      addDetail(new THREE.BoxGeometry(.18,.06,.65),accent,side*W*.38,.69,L*.05);
+      addDetail(new THREE.BoxGeometry(.32,.07,.16),light,side*W*.34,.78,L*.555);
+    }
+    addDetail(new THREE.BoxGeometry(W*.88,.12,.22),black,0,.36,-L*.53);
+  }
   if(police){
     const bar=new THREE.Mesh(new THREE.BoxGeometry(1.05,.13,.25),black);bar.position.set(0,1.58,-.12);car.add(bar);
     const red=new THREE.Mesh(new THREE.BoxGeometry(.42,.15,.25),new THREE.MeshBasicMaterial({color:0xff243e}));

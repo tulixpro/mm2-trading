@@ -175,7 +175,6 @@ function openPhoneApp(app){
  help:'<div class="phone-page-head">Hilfe & Steuerung</div><p>WASD bewegen · Maus umsehen · Shift sprinten · J Missionen · F Auto · C Kamera wechseln · E Interaktion · F1 Handy.</p>'
  };
  page.innerHTML='<button class="phone-back" data-action="home">‹ Apps</button>'+(pages[app]||'');
- if(app==='bank')page.querySelector('[data-action="bankSend"]')?.addEventListener('click',()=>{const recipient=page.querySelector('#bankRecipient')?.value,amount=page.querySelector('#bankAmount')?.value;if(!flBankTransfer(recipient,amount)){const field=page.querySelector('#bankAmount');if(field)field.focus();}});
  if(app==='map'){const mc=page.querySelector('#phoneMapCanvas');if(mc)drawCityMap(mc.getContext('2d'),mc.width,mc.height,true);}
  if(app==='settings'){
   const pairs=[['phoneQuality',qualitySelect],['phoneFps',fpsSelect],['phoneMouse',mouseSelect],['phoneFov',fovSelect],['phoneCamera',cameraSelect]];

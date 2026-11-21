@@ -1,5 +1,10 @@
 const THREE = await import('./node_modules/three/build/three.module.js').catch(()=>import('https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js'));
 
+let deferredInstallPrompt=null;
+const installAppButton=document.querySelector('#installApp');
+window.addEventListener('beforeinstallprompt',event=>{event.preventDefault();deferredInstallPrompt=event;if(installAppButton)installAppButton.hidden=false;});
+installAppButton?.addEventListener('click',async()=>{if(deferredInstallPrompt){deferredInstallPrompt.prompt();await deferredInstallPrompt.userChoice;deferredInstallPrompt=null;}else{status.textContent='INSTALLATION: CHROME-MENÜ → ZUM STARTBILDSCHIRM HINZUFÜGEN';}});
+window.addEventListener('appinstalled',()=>{if(installAppButton)installAppButton.textContent='APP INSTALLIERT';});
 const startButton=document.querySelector('#startGame');
 const placeholder=document.querySelector('.game-placeholder');
 const viewport=document.querySelector('#gameViewport');

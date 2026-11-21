@@ -191,3 +191,6 @@ body.action-edition .controls{border-top-color:#b75b4a}
 .fl-photo-actions input::placeholder{color:#8fa7b8}
 .fl-post small{color:#85c9dc;font-size:9px;letter-spacing:1px}
 @media(prefers-reduced-motion:reduce){#vehicleEntryCinema{animation:none}}
+
+/* Frankfurt Life Classic: eigenständiger Retro-3D-Look */
+.classic-edition{background:#171b20;color:#e7dfc7}.classic-edition .hud{background:#20251f;border-color:#6c694c}.classic-edition .brand{color:#e7dfc7}.classic-edition .settings select,.classic-edition .open-settings{background:#30382b;border-color:#77734c;color:#f0e7c8}.classic-edition #gameViewport{background:#7e9279}.classic-edition #gameViewport canvas{image-rendering:pixelated}.classic-edition .controls{background:#20251f;color:#d6d0b4;border-color:#77734c}.classic-edition .game-placeholder{filter:saturate(.82) contrast(1.08)}

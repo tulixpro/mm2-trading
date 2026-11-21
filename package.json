@@ -1,6 +1,6 @@
 {
   "name": "frankfurt-life",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Frankfurt Life - 3D city exploration prototype",
   "main": "electron/main.cjs",
   "author": "Frankfurt Life Community",
@@ -8,6 +8,9 @@
   "scripts": {
     "start": "electron .",
     "dist": "electron-builder --win nsis portable --publish never"
+  },
+  "dependencies": {
+    "three": "0.160.0"
   },
   "devDependencies": {
     "electron": "^33.2.1",

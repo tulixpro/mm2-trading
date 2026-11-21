@@ -179,3 +179,10 @@ Hinweis: Die Grafikprofile reduzieren vor allem die GPU-Last. Die tatsächliche 
 - App-Icons mit überarbeiteten Glanz-, Hover- und Touch-Effekten.
 - Neues animiertes Quick-Access-Rad über **Q** mit Handy, Karte, Taschenlampe und Kamera-Perspektive.
 - Das Rad enthält ausschließlich harmlose Komfortfunktionen; keine Waffenfunktion.
+
+
+## Version 0.4.4 – Cinematisches Einführungs-Tutorial
+- Beim ersten Spielstart beginnt ein vierteiliges Intro mit filmischen Balken, Kapitelkarten, Übergängen und Fortschrittsanzeige.
+- Erklärt Bewegung, Umsehen, Ein-/Aussteigen, Jobs, Kameraperspektiven, Smartphone und Quick-Access-Rad.
+- Das Tutorial kann jederzeit übersprungen werden und wird nach Abschluss lokal als gesehen markiert.
+- Der Einstieg ist eine inszenierte Einführung über der 3D-Stadt; keine vorgerenderten Filmsequenzen.

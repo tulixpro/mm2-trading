@@ -49,6 +49,7 @@ const pedestrians=[];
 const policeCars=[];
 const trafficCars=[];
 const airportBuses=[];
+const taxiVehicles=[];
 const streetLights=[];
 const shops=[];
 const inventory={Kaffee:0,Snack:0,Stadtplan:0,Brot:0,Brezel:0,Croissant:0,Kuchen:0};
@@ -91,6 +92,20 @@ function flChangeOutfit(){flOutfit=(flOutfit+1)%6;const person=pedestrians[0];if
 function flTransitRide(){if(driving){status.textContent='STEIGE ZUERST AUS, UM ÖPNV ZU NUTZEN';return;}const stops=[{x:82,z:-245,name:'Flughafen'},{x:13,z:-72,name:'Innenstadt'},{x:-26,z:-96,name:'Wohnviertel'},{x:145,z:-145,name:'Ostend'},{x:-145,z:165,name:'Südquartier'}],stop=stops[flTransitTrips%stops.length];camera.position.set(stop.x,2.1,stop.z);flTransitTrips++;flCheckDailyDate();flDailyRides++;status.textContent='ÖPNV · ANGEKOMMEN: '+stop.name;flSaveGame();openPhoneApp('transit');}
 function flUpdateSystems(dt){flGameHour=(flGameHour+dt*.075)%24;flWeatherTimer+=dt;flSaveTimer+=dt;flStatusTimer+=dt;if(flWeatherTimer>150){flWeatherTimer=0;const choices=['Klar','Bewölkt','Regen','Nebel'];flWeather=choices[(choices.indexOf(flWeather)+1+Math.floor(Math.random()*3))%choices.length];flApplyWeather();}if(driving&&Math.abs(carSpeed)>.02)flFuel=Math.max(0,flFuel-dt*.012*Math.max(1,Math.abs(carSpeed)*8));if(driving&&flFuel<=0){carSpeed=0;status.textContent='TANK LEER · FAHRE ZUR TANKSTELLE';}if(flSaveTimer>20){flSaveTimer=0;flSaveGame();}const lightStep=Math.floor(flGameHour*4);if(lightStep!==flLightingStep){flLightingStep=lightStep;flApplyWeather();}if(flStatusTimer>.25){flStatusTimer=0;flUpdateStatus();}}
 
+
+function flCallTaxi(){
+ if(driving){status.textContent='STEIGE ZUERST AUS, UM EIN TAXI ZU RUFEN';return;}
+ if(taxiVehicles.length){status.textContent='DEIN TAXI IST BEREITS UNTERWEGS';return;}
+ const angle=yaw;
+ const spawn=new THREE.Vector3(camera.position.x+Math.sin(angle)*42,0,camera.position.z+Math.cos(angle)*42);
+ const taxi=makeCar(spawn.x,spawn.z,0xf0c928,false,'sedan');
+ taxi.rotation.y=Math.atan2(camera.position.x-spawn.x,camera.position.z-spawn.z);
+ taxi.userData.isTaxi=true;
+ taxiVehicles.push({group:taxi,state:'approach',speed:.16});
+ status.textContent='TAXI BESTELLT · FAHRER IST UNTERWEGS';
+ phonePanel?.classList.add('hidden');
+}
+
 function buildPhone(){
  phonePanel=document.createElement('section');phonePanel.id='phonePanel';phonePanel.className='phone-overlay hidden';
  phonePanel.innerHTML='<div class="phone-device"><div class="phone-notch"></div><div class="phone-status"><span>● FRANKFURT MOBILE</span><span>5G ▰ 100%</span></div><div class="phone-clock" id="phoneClock">12:00</div><div class="phone-date">SAMSTAG · FRANKFURT AM MAIN</div><div class="phone-appgrid" id="phoneApps"></div><div class="phone-page hidden" id="phonePage"></div><div class="phone-dock"><button data-open="map">⌖<small>Karte</small></button><button data-open="jobs">▣<small>Jobs</small></button><button data-open="garage">🚘<small>Garage</small></button><button data-open="bank">€<small>Bank</small></button></div><button class="phone-home" id="phoneHome" aria-label="Startbildschirm"></button><button class="phone-exit" id="phoneExit">Schließen ×</button></div>';
@@ -103,7 +118,7 @@ function buildPhone(){
 function showPhoneHome(){
  phonePage='home';const grid=phonePanel.querySelector('#phoneApps'),page=phonePanel.querySelector('#phonePage');
  page.classList.add('hidden');grid.classList.remove('hidden');
- const apps=[['map','🗺️','Karte'],['jobs','💼','Missionen'],['bank','🏦','Bank'],['garage','🚘','Garage'],['housing','🏠','Wohnen'],['transit','🚋','ÖPNV'],['news','📰','News'],['camera','📷','Kamera'],['services','🛠️','Service'],['settings','⚙️','Einstellungen'],['inventory','🎒','Inventar'],['customize','👕','Outfit'],['daily','🎯','Tagesziele'],['save','💾','Speichern'],['help','❔','Hilfe'],['dealer','🚗','Autohändler']];
+ const apps=[['map','🗺️','Karte'],['jobs','💼','Missionen'],['bank','🏦','Bank'],['garage','🚘','Garage'],['housing','🏠','Wohnen'],['transit','🚋','ÖPNV'],['news','📰','News'],['camera','📷','Kamera'],['services','🛠️','Service'],['settings','⚙️','Einstellungen'],['inventory','🎒','Inventar'],['customize','👕','Outfit'],['daily','🎯','Tagesziele'],['save','💾','Speichern'],['help','❔','Hilfe'],['dealer','🚗','Autohändler'],['taxi','🚕','Taxi rufen']];
  grid.innerHTML=apps.map(a=>'<button class="phone-app" data-app="'+a[0]+'"><b>'+a[1]+'</b><span>'+a[2]+'</span></button>').join('');
  grid.querySelectorAll('[data-app]').forEach(b=>b.addEventListener('click',()=>openPhoneApp(b.dataset.app)));
 }
@@ -117,6 +132,7 @@ function openPhoneApp(app){
  jobs:'<div class="phone-page-head">Missionen</div><div class="phone-stat">Aktive Aufträge <b>'+(jobActive?'1':'0')+'</b></div><div class="phone-stat">Erledigt <b>'+completedJobs+'</b></div><p>Öffne die Jobzentrale und wähle deinen nächsten Auftrag.</p><button data-action="jobs">Jobzentrale öffnen</button>',
  bank:'<div class="phone-page-head">Frankfurt Bank</div><div class="phone-balance">'+careerMoney.toLocaleString('de-DE')+' €</div><p>Dein Kontostand</p><div class="phone-stat">Abgeschlossene Jobs <b>'+completedJobs+'</b></div>',
  garage:'<div class="phone-page-head">Meine Garage</div><p>Eigene Fahrzeuge: '+ownedCars.length+'</p>'+ownedCars.map(id=>'<div class="phone-stat">'+(dealerCars.find(v=>v.id===id)?.name||id)+' <b>✓</b></div>').join('')+'<button data-action="dealer">Autohändler öffnen</button>',
+ taxi:'<div class="phone-page-head">Taxi-Service</div><p>Bestelle ein Taxi zu deinem aktuellen Standort. Das Taxi fährt im Spiel zu dir.</p><button data-action="taxi">Taxi bestellen</button>',
  dealer:'<div class="phone-page-head">Frankfurt Motors</div><p>Fahrzeuge ansehen und kaufen – besuche auch den Showroom in der Stadt.</p><button data-action="dealer">Showroom öffnen</button>',
  inventory:'<div class="phone-page-head">Inventar & Essen</div><div class="phone-stat">Sättigung <b>'+appetite+'%</b></div>'+['Brot','Brezel','Croissant','Kuchen','Kaffee','Snack','Pizza','Pasta','Limo','Burger-Menü','Schnitzel','Salat','Cola'].map(name=>'<div class="phone-stat"><span>'+name+' · '+(inventory[name]||0)+'</span><button data-eat="'+name+'">Verzehren</button></div>').join(''),
  housing:'<div class="phone-page-head">Meine Wohnung</div><div class="phone-stat">Status <b>'+(flHomeOwned?'Gemietet':'Noch keine Wohnung')+'</b></div><div class="phone-stat">Möbel <b>'+flHomeFurniture+'</b></div><p>Miete deine erste Wohnung im Westend und ergänze nach und nach Möbel.</p><button data-action="homebuy">'+(flHomeOwned?'Wohnung gemietet':'Wohnung mieten · 800 €')+'</button><button data-action="gohome">Nach Hause fahren</button><button data-action="furniture">Möbel kaufen · 180 €</button>',
@@ -144,7 +160,7 @@ function openPhoneApp(app){
  }
  if(app==='map'){page.querySelector('[data-action="recenter"]')?.addEventListener('click',()=>openPhoneApp('map'));}
  page.querySelectorAll('[data-eat]').forEach(b=>b.addEventListener('click',()=>{const name=b.dataset.eat;if((inventory[name]||0)<1){b.textContent='Nicht vorhanden';return;}inventory[name]--;appetite=Math.min(100,appetite+({Brot:18,Brezel:15,Croissant:16,Kuchen:20,Kaffee:7,Snack:12,Pizza:28,Pasta:25,Limo:6,'Burger-Menü':24,Schnitzel:26,Salat:15,Cola:5}[name]||10));openPhoneApp('inventory');}));
- page.querySelectorAll('[data-action]').forEach(b=>b.addEventListener('click',()=>{const action=b.dataset.action;if(action==='home')showPhoneHome();if(action==='jobs'){phonePanel.classList.add('hidden');toggleJobs();}if(action==='dealer'){phonePanel.classList.add('hidden');openDealer();}if(action==='homebuy')flBuyHome();if(action==='gohome')flGoHome();if(action==='furniture')flBuyFurniture();if(action==='transitride')flTransitRide();if(action==='outfit')flChangeOutfit();if(action==='dailyclaim')flClaimDaily();if(action==='save'){flSaveGame(true);openPhoneApp('save');}}));
+ page.querySelectorAll('[data-action]').forEach(b=>b.addEventListener('click',()=>{const action=b.dataset.action;if(action==='home')showPhoneHome();if(action==='taxi')flCallTaxi();if(action==='jobs'){phonePanel.classList.add('hidden');toggleJobs();}if(action==='dealer'){phonePanel.classList.add('hidden');openDealer();}if(action==='homebuy')flBuyHome();if(action==='gohome')flGoHome();if(action==='furniture')flBuyFurniture();if(action==='transitride')flTransitRide();if(action==='outfit')flChangeOutfit();if(action==='dailyclaim')flClaimDaily();if(action==='save'){flSaveGame(true);openPhoneApp('save');}}));
 }
 function togglePhone(){
  if(!started||!phonePanel)return;
@@ -935,6 +951,40 @@ function buildStreetInfrastructure(){
  }
 }
 
+
+function buildRoadSigns(){
+ const poleMat=new THREE.MeshStandardMaterial({color:0x59636b,metalness:.5,roughness:.55});
+ const red=new THREE.MeshStandardMaterial({color:0xc72b32,roughness:.7});
+ const white=new THREE.MeshStandardMaterial({color:0xf2f1e9,roughness:.7});
+ const blue=new THREE.MeshStandardMaterial({color:0x176c9b,roughness:.65});
+ const sign=(x,z,type,text)=>{
+  const g=new THREE.Group();
+  const pole=new THREE.Mesh(new THREE.CylinderGeometry(.055,.075,2.6,8),poleMat);pole.position.y=1.3;g.add(pole);
+  let board;
+  if(type==='stop'){
+   board=new THREE.Mesh(new THREE.CylinderGeometry(.62,.62,.12,8),red);board.rotation.x=Math.PI/2;board.position.y=2.55;g.add(board);
+   const label=new THREE.Mesh(new THREE.BoxGeometry(.75,.22,.025),white);label.position.set(0,2.55,.08);g.add(label);
+  }else if(type==='yield'){
+   board=new THREE.Mesh(new THREE.ConeGeometry(.72,.72,3),white);board.rotation.z=Math.PI;board.position.set(0,2.55,0);g.add(board);
+   const inner=new THREE.Mesh(new THREE.ConeGeometry(.52,.52,3),red);inner.rotation.z=Math.PI;inner.position.set(0,2.56,.055);g.add(inner);
+  }else{
+   board=new THREE.Mesh(new THREE.CylinderGeometry(.58,.58,.12,20),blue);board.rotation.x=Math.PI/2;board.position.y=2.55;g.add(board);
+   if(type==='speed'){const ring=new THREE.Mesh(new THREE.CylinderGeometry(.58,.58,.13,24),white);ring.rotation.x=Math.PI/2;ring.position.set(0,2.55,.07);g.add(ring);}
+  }
+  g.position.set(x,0,z);scene.add(g);
+  if(text){const c=document.createElement('canvas');c.width=256;c.height=96;const ctx=c.getContext('2d');ctx.fillStyle='#fff';ctx.font='bold 56px Arial';ctx.textAlign='center';ctx.fillText(text,128,66);const m=new THREE.Mesh(new THREE.PlaneGeometry(.82,.3),new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(c),transparent:true}));m.position.set(0,2.55,.16);g.add(m);}
+ };
+ for(const z of [-190,-114,-38,38,114,190]){
+  sign(-11.5,z,'stop','STOP');sign(11.5,z+9,'yield','VORFAHRT');
+  sign(-11.5,z+18,'speed','30');
+  for(const side of [-1,1]){
+   const pole=new THREE.Mesh(new THREE.CylinderGeometry(.045,.06,2.5,8),poleMat);pole.position.set(side*10.5,1.25,z+4);scene.add(pole);
+   const board=new THREE.Mesh(new THREE.BoxGeometry(.58,.78,.12),blue);board.position.set(side*10.5,2.45,z+4);scene.add(board);
+   const pedestrian=new THREE.Mesh(new THREE.BoxGeometry(.2,.34,.04),white);pedestrian.position.set(side*10.5,2.48,z+4.08);scene.add(pedestrian);
+  }
+ }
+}
+
 function makeCity(){
   scene=new THREE.Scene();scene.background=new THREE.Color(0x91b1c8);scene.fog=new THREE.Fog(0x91b1c8,115,390);
   camera=new THREE.PerspectiveCamera(cameraFov,viewport.clientWidth/viewport.clientHeight,.1,620);camera.position.set(0,2.1,14);
@@ -948,7 +998,7 @@ function makeCity(){
   for(let z=-300;z<225;z+=12){const line=new THREE.Mesh(new THREE.PlaneGeometry(.18,5),new THREE.MeshBasicMaterial({color:0xe5dfc5}));line.rotation.x=-Math.PI/2;line.position.set(0,.015,z);scene.add(line);}
   const sidewalkMat=new THREE.MeshLambertMaterial({color:0x92999b});
   for(const x of [-9.2,9.2]){const s=new THREE.Mesh(new THREE.BoxGeometry(3.5,.25,520),sidewalkMat);s.position.set(x,.08,-45);scene.add(s);}
-  buildStreetInfrastructure();buildTransitStops();buildAirportAndBuses();
+  buildStreetInfrastructure();buildTransitStops();buildAirportAndBuses();buildRoadSigns();
   const leftShops=new Map([[-87,['SUPERMARKT','MARKT · FRISCHE WAREN',0x3c966c]],[ -51,['BÄCKEREI','BROT · KAFFEE · KUCHEN',0xc58b43]],[ -15,['MODEHAUS','MODE FÜR JEDEN TAG',0x8a638e]],[21,['ELEKTRO','TECHNIK & ZUBEHÖR',0x397ca5]]]);
   const rightShops=new Map([[-94,['CAFÉ AM MAIN','KAFFEE · SNACKS',0x9b6547]],[ -58,['AUTOWELT','FAHRZEUGE & SERVICE',0x397a91]],[ -22,['SPORTTREFF','SPORT · OUTDOOR',0x62884f]],[14,['KIOSK 24','ZEITUNGEN · GETRÄNKE',0xb68a39]]]);
   for(let z=-105;z<35;z+=18){
@@ -1037,6 +1087,7 @@ function updateWorld(dt){
   for(const signal of trafficSignals){const phase=(t+signal.phase*1.7)%8;const active=phase<5?0:phase<6.2?1:2;signal.lamps.forEach((lamp,i)=>lamp.material.emissiveIntensity=i===active?.9:.04);}
   if((performanceFrame++%4)===0)drawMiniMap();
   for(const bus of airportBuses){bus.group.position.z+=bus.direction*bus.speed*dt*60;if(bus.group.position.z>bus.to&&bus.direction>0)bus.group.position.z=bus.from;if(bus.group.position.z<bus.from&&bus.direction<0)bus.group.position.z=bus.to;}
+  for(const taxi of taxiVehicles){if(taxi.state!=='approach')continue;const dx=camera.position.x-taxi.group.position.x,dz=camera.position.z-taxi.group.position.z,dist=Math.hypot(dx,dz);if(dist<5){taxi.state='arrived';status.textContent='TAXI ANGEKOMMEN · STEIGE EIN';}else{taxi.group.position.x+=dx/dist*taxi.speed*dt*60;taxi.group.position.z+=dz/dist*taxi.speed*dt*60;taxi.group.rotation.y=Math.atan2(dx,dz);}}
   for(const car of trafficCars){
     const traffic=car.userData.traffic;
     car.position.z+=traffic.direction*traffic.speed*dt*60;

@@ -94,7 +94,8 @@ const dealerCars=[
  {id:'audi',name:'E-Sportback',model:'sportback',color:0xc72d24,price:3200,desc:'Sportlich und modern.'},
  {id:'alpina',name:'Luxury Coupé',model:'coupe',color:0x075b45,price:5200,desc:'Elegantes Oberklasse-Coupé.'},
  {id:'super',name:'Super Sport',model:'super',color:0xd7ed12,price:9500,desc:'Für schnelle Ausfahrten.'},
- {id:'van',name:'Cargo Van',model:'van',color:0xe6e8e8,price:2400,desc:'Viel Platz für Transportjobs.'}
+ {id:'van',name:'Cargo Van',model:'van',color:0xe6e8e8,price:2400,desc:'Viel Platz für Transportjobs.'},
+ {id:'bmw-xm-label',name:'XM Label · 748 PS',model:'suv',color:0x263b35,price:185000,desc:'Großes Performance-SUV · 748 PS · prozedurales Platzhaltermodell, kein Original-3D-Scan.'}
 ];
 let dealerPanel=null,dealership={x:-28,z:82,name:'Frankfurt Motors'};
 /* 0.2.9 gameplay systems */
@@ -488,13 +489,15 @@ function makeCar(x,z,color,police=false,model='sedan'){
     sedan:{length:4.7,width:1.9,height:.68,cabin:1.65,roof:1.42,hood:1.5},
     sportback:{length:4.8,width:1.95,height:.62,cabin:1.7,roof:1.35,hood:1.55},
     coupe:{length:4.9,width:1.98,height:.65,cabin:1.5,roof:1.36,hood:1.6},
-    van:{length:5.1,width:2.0,height:.9,cabin:2.05,roof:1.8,hood:1.05}
+    van:{length:5.1,width:2.0,height:.9,cabin:2.05,roof:1.8,hood:1.05},
+    suv:{length:5.1,width:2.05,height:.86,cabin:1.82,roof:1.62,hood:1.45}
   }[model]||{length:4.5,width:1.9,height:.65,cabin:1.55,roof:1.35,hood:1.5};
   const L=profile.length,W=profile.width;
   const vehiclePerformance={
     hatch:{top:175,power:.82},sedan:{top:215,power:1.0},
     sportback:{top:245,power:1.12},coupe:{top:265,power:1.2},
-    super:{top:335,power:1.55},van:{top:155,power:.72}
+    super:{top:335,power:1.55},van:{top:155,power:.72},
+    suv:{top:250,power:1.58}
   }[model]||{top:190,power:.95};
   car.userData.maxSpeedKmh=vehiclePerformance.top;
   car.userData.enginePower=vehiclePerformance.power;

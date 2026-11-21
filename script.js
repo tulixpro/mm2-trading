@@ -10,6 +10,7 @@ const fpsSelect=document.querySelector('#fpsSelect');
 const mouseSelect=document.querySelector('#mouseSelect');
 const fovSelect=document.querySelector('#fovSelect');
 let maxFps=60,lastFrame=0;
+let perfHud=null,perfFrames=[],perfLastCheck=0,autoResolutionScale=1,perfHudTimer=0;
 const lowEndDevice=(navigator.hardwareConcurrency||4)<=2||(navigator.deviceMemory||8)<=4;
 let performanceFrame=0;
 const qualitySettings={
@@ -22,7 +23,7 @@ let sunLight=null,hemiLight=null,flashlight=null,flashlightTarget=null,flashligh
 function applyQuality(){
  if(!renderer||!scene)return;
  const mode=qualitySelect?.value||'medium',q=qualitySettings[mode]||qualitySettings.medium;
- renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,q.pixelRatio));
+ renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,q.pixelRatio*autoResolutionScale));
  renderer.shadowMap.enabled=q.shadows;
  renderer.toneMappingExposure=q.exposure;
  if(scene.fog)scene.fog.far=q.fog;
@@ -34,7 +35,7 @@ function applyQuality(){
  if(viewport)viewport.dataset.graphics=mode;
  resize();
 }
-qualitySelect?.addEventListener('change',()=>{localStorage.setItem('flQuality',qualitySelect.value);applyQuality();});
+qualitySelect?.addEventListener('change',()=>{autoResolutionScale=1;localStorage.setItem('flQuality',qualitySelect.value);applyQuality();});
 fpsSelect?.addEventListener('change',()=>{maxFps=fpsSelect.value==='unlimited'?0:Number(fpsSelect.value);localStorage.setItem('flFps',fpsSelect.value);});
 mouseSelect?.addEventListener('change',()=>{mouseSensitivity=Number(mouseSelect.value)||1;});
 fovSelect?.addEventListener('change',()=>{cameraFov=Number(fovSelect.value)||68;if(camera){camera.fov=cameraFov;camera.updateProjectionMatrix();}});
@@ -1074,11 +1075,24 @@ function toggleVehicle(){
     status.textContent='AUSGESTIEGEN · F / X ZUM EINSTEIGEN';
   }
 }
+function buildPerformanceHud(){
+  perfHud=document.createElement('div');perfHud.id='performanceHud';
+  perfHud.style.cssText='position:absolute;right:14px;top:14px;z-index:9;padding:7px 10px;border:1px solid #ffffff35;border-radius:7px;background:#081321dd;color:#d9f4ff;font:700 11px/1.45 system-ui;letter-spacing:.3px;pointer-events:none;white-space:pre-line';
+  perfHud.textContent='FPS: --\\nGPU-Skalierung: 100%';viewport.appendChild(perfHud);
+}
 function loop(now=0){
   raf=requestAnimationFrame(loop);
   pollGamepad();
   if(maxFps&&now-lastFrame<1000/maxFps)return;
+  const frameMs=lastFrame?now-lastFrame:0;
+  if(frameMs>0){perfFrames.push(frameMs);if(perfFrames.length>45)perfFrames.shift();}
   lastFrame=now;const dt=Math.min(clock.getDelta(),.05);
+  if(now-perfLastCheck>2500&&perfFrames.length>=20){
+    perfLastCheck=now;const avgMs=perfFrames.reduce((a,b)=>a+b,0)/perfFrames.length;
+    if(avgMs>46&&autoResolutionScale>.34){autoResolutionScale=Math.max(.34,autoResolutionScale*.86);applyQuality();}
+  }
+  perfHudTimer+=dt;
+  if(perfHud&&perfHudTimer>.5){perfHudTimer=0;const avg=perfFrames.length?perfFrames.reduce((a,b)=>a+b,0)/perfFrames.length:0;const fps=avg>0?Math.round(1000/avg):0;perfHud.textContent='FPS: '+(fps||'--')+'\\nGPU-Skalierung: '+Math.round(autoResolutionScale*100)+'%';}
   move();updateWorld(dt);renderer.render(scene,camera);
 }
 function begin(){
@@ -1094,7 +1108,7 @@ function begin(){
     renderer.shadowMap.type=THREE.PCFSoftShadowMap;
     renderer.shadowMap.enabled=false;
     sunLight=null;hemiLight=null;
-    makeCity();buildBreakableProps();buildInGameJobs();buildShopInteraction();buildPhone();buildDealerPanel();buildMiniMap();buildGamepadStatus();flBuildStatus();applyQuality();viewport.appendChild(renderer.domElement);flLoadGame();flApplyWeather();resize();loop();
+    makeCity();buildBreakableProps();buildInGameJobs();buildShopInteraction();buildPhone();buildDealerPanel();buildMiniMap();buildGamepadStatus();flBuildStatus();applyQuality();viewport.appendChild(renderer.domElement);buildPerformanceHud();flLoadGame();flApplyWeather();resize();loop();
     renderer.domElement.tabIndex=0;
     renderer.domElement.addEventListener('click',()=>{renderer.domElement.focus();if(!phonePanel||phonePanel.classList.contains('hidden')){try{const result=renderer.domElement.requestPointerLock?.();if(result?.catch)result.catch(()=>{status.textContent='MAUSZIEHEN ZUM UMSEHEN';});}catch(_){status.textContent='MAUSZIEHEN ZUM UMSEHEN';}}});
     renderer.domElement.addEventListener('pointerdown',e=>{if(e.button!==0||locked)return;lookDrag=true;lastPointerX=e.clientX;lastPointerY=e.clientY;});

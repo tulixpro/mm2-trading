@@ -1,0 +1,16 @@
+appId: de.frankfurtlife.classic
+productName: Frankfurt Life Classic
+directories:
+  output: dist-classic
+files:
+  - classic-2d.html
+  - electron/main-classic.cjs
+extraMetadata:
+  main: electron/main-classic.cjs
+win:
+  target:
+    - nsis
+    - portable
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true

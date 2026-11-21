@@ -172,3 +172,10 @@ Hinweis: Die Grafikprofile reduzieren vor allem die GPU-Last. Die tatsächliche 
 - Busse fahren weiterhin auf einer vereinfachten Route; ÖPNV-App bietet die Flughafenverbindung.
 - Flugzeuge bleiben für eine spätere zivile Piloten-/Rundflugmission vorgesehen; keine Flugzeug-Übernahmefunktion.
 - Fahrzeuge werden nicht durch reale Diebstahlmethoden zugänglich gemacht.
+
+
+## Version 0.4.3 – Smartphone-Redesign & Quick Access
+- Smartphone mit 3D-Öffnungsanimation, verfeinerter Glas-/Dock-Optik und dynamischer Uhrzeit sowie Datum.
+- App-Icons mit überarbeiteten Glanz-, Hover- und Touch-Effekten.
+- Neues animiertes Quick-Access-Rad über **Q** mit Handy, Karte, Taschenlampe und Kamera-Perspektive.
+- Das Rad enthält ausschließlich harmlose Komfortfunktionen; keine Waffenfunktion.

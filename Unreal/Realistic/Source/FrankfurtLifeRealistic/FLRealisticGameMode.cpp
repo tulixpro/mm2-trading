@@ -1,4 +1,5 @@
 #include "FLRealisticGameMode.h"
+#include "FLRealisticWeatherManager.h"
 #include "FLRealisticCharacter.h"
 #include "FLRealisticCityBlock.h"
 #include "FLRealisticHUD.h"
@@ -18,6 +19,7 @@ void AFLRealisticGameMode::StartPlay()
 
     if (UWorld* World = GetWorld())
     {
+        World->SpawnActor<AFLRealisticWeatherManager>(AFLRealisticWeatherManager::StaticClass(), FVector::ZeroVector, FRotator::ZeroRotator);
         FActorSpawnParameters Params;
         Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
         World->SpawnActor<AFLRealisticCityBlock>(

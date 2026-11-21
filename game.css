@@ -72,3 +72,5 @@
 
 /* Extra phone settings controls */
 .phone-setting{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:9px 0;padding:10px 11px;border:1px solid #ffffff20;border-radius:10px;background:#ffffff08}.phone-setting label{font-size:11px;color:#c5d8e6}.phone-setting select{max-width:48%;padding:7px 8px;border:1px solid #45627a;border-radius:7px;background:#12283a;color:#f1f8ff;font:inherit;font-size:11px}.phone-page .phone-setting select:focus{outline:2px solid #65c9ff;outline-offset:2px}
+
+/* Legacy laptop performance preset */

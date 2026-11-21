@@ -272,6 +272,11 @@ function makeCar(x,z,color,police=false,model='sedan'){
     const rearLight=new THREE.Mesh(new THREE.BoxGeometry(.32,.14,.08),tail);rearLight.position.set(side*W*.34,.78,-L*.505);car.add(rearLight);
   }
   const grille=new THREE.Mesh(new THREE.BoxGeometry(W*.42,.18,.06),black);grille.position.set(0,.64,L*.51);car.add(grille);
+  const bumper=new THREE.Mesh(new THREE.BoxGeometry(W*1.02,.16,.16),chrome);bumper.position.set(0,.39,L*.51);car.add(bumper);
+  const crackMat=new THREE.LineBasicMaterial({color:0xd9f4ff,transparent:true,opacity:.85});
+  const crackPoints=[new THREE.Vector3(-.45,1.34,.19),new THREE.Vector3(-.1,1.15,.2),new THREE.Vector3(.1,1.3,.2),new THREE.Vector3(.42,1.17,.2)];
+  const crack=new THREE.Line(new THREE.BufferGeometry().setFromPoints(crackPoints),crackMat);crack.visible=false;car.add(crack);
+  car.userData.damageParts={paint,bumper,crack,originalColor:paint.color.getHex()};
   if(model==='super'){
     const splitter=new THREE.Mesh(new THREE.BoxGeometry(W*1.03,.08,.35),black);splitter.position.set(0,.36,L*.53);car.add(splitter);
     const wing=new THREE.Mesh(new THREE.BoxGeometry(W*.78,.07,.25),black);wing.position.set(0,1.03,-L*.48);car.add(wing);
@@ -310,12 +315,15 @@ const jobs=[
 ];
 let jobPanel,careerHud,jobActive=false,jobCar=null,jobDestination=null;
 let driving=false,carSpeed=0,careerMoney=0,completedJobs=0;
+let damageLevel=0,damageHud=null,damageFlash=0;
+const breakableProps=[];let lookDrag=false,lastPointerX=0,lastPointerY=0;
 function buildInGameJobs(){
  jobPanel=document.createElement('div');jobPanel.id='inGameJobs';jobPanel.className='ingame-jobs hidden';
  jobPanel.innerHTML='<div class="ingame-jobs-head"><b>FRANKFURT LIFE / JOBZENTRALE</b><button id="closeJobs" aria-label="Schließen">×</button></div><h3>Wähle deinen Beruf</h3><p class="ingame-jobs-hint">Dein Auftrag und das passende Dienstfahrzeug starten direkt in der 3D-Stadt.</p><div id="ingameJobChoices"></div><div id="ingameJobDetail">Wähle einen Job aus.</div><button id="startJob" class="ingame-start" disabled>AUFTRAG ANNEHMEN</button><small>J oder ESC · Menü schließen</small>';
  viewport.appendChild(jobPanel);
  careerHud=document.createElement('div');careerHud.id='careerHud';careerHud.style.cssText='position:absolute;top:14px;right:14px;z-index:8;padding:10px 14px;border:1px solid #ffffff30;border-radius:10px;background:#101b2ddd;color:#fff;font:700 13px/1.6 system-ui;pointer-events:none;';careerHud.innerHTML='KONTO: 0 €<br>AUFTRÄGE: 0';viewport.appendChild(careerHud);
  missionHud=document.createElement('div');missionHud.id='missionHud';missionHud.className='mission-hud hidden';viewport.appendChild(missionHud);
+ damageHud=document.createElement('div');damageHud.id='damageHud';damageHud.className='damage-hud hidden';viewport.appendChild(damageHud);
  const choices=jobPanel.querySelector('#ingameJobChoices'),detail=jobPanel.querySelector('#ingameJobDetail'),accept=jobPanel.querySelector('#startJob');
  let selected=0;
  jobs.forEach((job,i)=>{
@@ -571,6 +579,60 @@ function updateWorld(dt){
     blue.material.color.setHex(flash?0x173c78:0x247bff);
   }
 }
+
+function buildBreakableProps(){
+ const mats={cone:new THREE.MeshStandardMaterial({color:0xf07826,roughness:.85}),bin:new THREE.MeshStandardMaterial({color:0x246c61,roughness:.9}),sign:new THREE.MeshStandardMaterial({color:0x4a7c9c,metalness:.3,roughness:.7})};
+ const placements=[[-8,-22,'cone'],[8,-52,'cone'],[-8,-86,'bin'],[8,-112,'bin'],[-8,8,'sign'],[8,42,'cone'],[-8,74,'bin'],[8,100,'sign'],[-8,-150,'cone'],[8,-180,'bin']];
+ for(const [x,z,type] of placements){
+  const g=new THREE.Group();
+  if(type==='cone'){
+   const base=new THREE.Mesh(new THREE.CylinderGeometry(.42,.48,.12,12),mats.cone);base.position.y=.06;g.add(base);
+   const body=new THREE.Mesh(new THREE.ConeGeometry(.28,.85,12),mats.cone);body.position.y=.52;g.add(body);
+   const stripe=new THREE.Mesh(new THREE.CylinderGeometry(.19,.25,.11,12),new THREE.MeshStandardMaterial({color:0xf5f4e9}));stripe.position.y=.48;g.add(stripe);
+  }else if(type==='bin'){
+   const body=new THREE.Mesh(new THREE.CylinderGeometry(.42,.36,1.05,12),mats.bin);body.position.y=.55;g.add(body);
+   const lid=new THREE.Mesh(new THREE.CylinderGeometry(.46,.46,.12,12),mats.sign);lid.position.y=1.12;g.add(lid);
+  }else{
+   const pole=new THREE.Mesh(new THREE.CylinderGeometry(.07,.09,1.5,8),mats.sign);pole.position.y=.75;g.add(pole);
+   const board=new THREE.Mesh(new THREE.BoxGeometry(.9,.55,.12),mats.sign);board.position.y=1.45;g.add(board);
+  }
+  g.position.set(x,.02,z);scene.add(g);breakableProps.push({group:g,type,radius:type==='sign'?.9:.8,active:true,velocity:0});
+ }
+}
+function damagePlayerCar(){
+ if(!jobCar)return;
+ damageLevel=Math.min(4,damageLevel+1);
+ const d=jobCar.userData.damageParts;if(d){
+  d.paint.color.setHex([d.originalColor,0x777777,0x55545a,0x34383d,0x20252b][damageLevel]);
+  d.paint.roughness=Math.min(.95,.38+damageLevel*.13);
+  d.bumper.rotation.x=-damageLevel*.11;
+  d.crack.visible=damageLevel>=2;
+ }
+ if(damageHud){damageHud.classList.remove('hidden');damageHud.innerHTML='<b>FAHRZEUGZUSTAND</b><span>'+['','Leichte Kratzer','Dellen & Risse','Stark beschädigt','Kritischer Zustand'][damageLevel]+'</span><div class="damage-bars">'+[0,1,2,3].map(i=>'<i class="'+(i<damageLevel?'lost':'')+'"></i>').join('')+'</div>';}
+ damageFlash=.28;
+}
+function updateBreakableCollisions(dt){
+ if(!driving||!jobCar||Math.abs(carSpeed)<.075)return;
+ for(const prop of breakableProps){
+  if(!prop.active)continue;
+  const dx=jobCar.position.x-prop.group.position.x,dz=jobCar.position.z-prop.group.position.z;
+  const dist=Math.hypot(dx,dz);
+  if(dist<prop.radius+1.45){
+   prop.active=false;prop.velocity=Math.max(.14,Math.abs(carSpeed)*1.4);
+   prop.group.userData.falling=true;prop.group.userData.fallDir=Math.atan2(dx,dz);
+   damagePlayerCar();carSpeed*=.72;
+   status.textContent='KOLLISION · FAHRZEUG BESCHÄDIGT';
+  }
+ }
+ for(const prop of breakableProps){
+  if(prop.active||!prop.group.userData.falling)continue;
+  prop.velocity=Math.max(0,prop.velocity-dt*.55);
+  prop.group.rotation.x+=prop.velocity*dt*5;
+  prop.group.rotation.z+=prop.velocity*dt*3;
+  if(prop.velocity<=.01)prop.group.userData.falling=false;
+ }
+}
+
 function move(){
   if(driving&&jobCar){
     const accelerating=keys.KeyW||keys.ArrowUp, braking=keys.KeyS||keys.ArrowDown;
@@ -581,6 +643,7 @@ function move(){
     jobCar.rotation.y+=steer*Math.min(.035,Math.abs(carSpeed)*.11);
     const forward=new THREE.Vector3(Math.sin(jobCar.rotation.y),0,Math.cos(jobCar.rotation.y));
     jobCar.position.addScaledVector(forward,carSpeed);
+    updateBreakableCollisions(Math.min(clock.getDelta(),.05));
     if(jobActive&&jobDestination&&jobCar.position.distanceTo(jobDestination)<4){
       jobStopIndex++;
       if(jobStopIndex<jobStops.length){
@@ -606,6 +669,7 @@ function move(){
     yaw=jobCar.rotation.y-Math.PI;
     camera.position.copy(jobCar.position).addScaledVector(forward,-6);
     camera.position.y=3.2;
+    if(damageFlash>0)damageFlash=Math.max(0,damageFlash-.02);
   }else{
     const speed=(keys.ShiftLeft||keys.ShiftRight)?.2:.12;
     const forward=new THREE.Vector3(-Math.sin(yaw),0,-Math.cos(yaw));
@@ -655,15 +719,19 @@ function begin(){
     renderer.shadowMap.type=THREE.PCFSoftShadowMap;
     renderer.shadowMap.enabled=false;
     sunLight=null;hemiLight=null;
-    makeCity();buildInGameJobs();buildShopInteraction();buildPhone();buildDealerPanel();applyQuality();viewport.appendChild(renderer.domElement);resize();loop();
-    renderer.domElement.addEventListener('click',()=>renderer.domElement.requestPointerLock?.());
+    makeCity();buildBreakableProps();buildInGameJobs();buildShopInteraction();buildPhone();buildDealerPanel();applyQuality();viewport.appendChild(renderer.domElement);resize();loop();
+    renderer.domElement.tabIndex=0;
+    renderer.domElement.addEventListener('click',()=>{renderer.domElement.focus();if(!phonePanel||phonePanel.classList.contains('hidden'))renderer.domElement.requestPointerLock?.();});
+    renderer.domElement.addEventListener('pointerdown',e=>{if(e.button!==0||locked)return;lookDrag=true;lastPointerX=e.clientX;lastPointerY=e.clientY;});
+    document.addEventListener('pointerup',()=>lookDrag=false);
+    document.addEventListener('pointermove',e=>{if(!lookDrag||locked)return;const dx=e.clientX-lastPointerX,dy=e.clientY-lastPointerY;lastPointerX=e.clientX;lastPointerY=e.clientY;yaw-=dx*.006;pitch=Math.max(-1.15,Math.min(1.15,pitch-dy*.006));});
     document.addEventListener('pointerlockchange',()=>{
       locked=document.pointerLockElement===renderer.domElement;
       status.textContent=locked?'MAUS AKTIV · ESC ZUM PAUSIEREN':'KLICKE INS SPIEL ZUM WEITER-SPIELEN';
     });
     document.addEventListener('mousemove',e=>{
-      if(!locked)return;yaw-=e.movementX*.002;
-      pitch=Math.max(-1.15,Math.min(1.15,pitch-e.movementY*.002));
+      if(!locked)return;yaw-=e.movementX*.0045;
+      pitch=Math.max(-1.15,Math.min(1.15,pitch-e.movementY*.0045));
     });
   }catch(e){
     status.textContent='3D NICHT VERFÜGBAR';

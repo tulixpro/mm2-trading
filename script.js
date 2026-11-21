@@ -5,6 +5,13 @@ const placeholder=document.querySelector('.game-placeholder');
 const viewport=document.querySelector('#gameViewport');
 const status=document.querySelector('#gameStatus');
 const coords=document.querySelector('#coords');
+const qualitySelect=document.querySelector('#qualitySelect');
+const fpsSelect=document.querySelector('#fpsSelect');
+let maxFps=60,lastFrame=0;
+const qualitySettings={low:{pixelRatio:.75,shadows:false},medium:{pixelRatio:1,shadows:false},high:{pixelRatio:1.25,shadows:true}};
+function applyQuality(){if(!renderer)return;const q=qualitySettings[qualitySelect?.value||'medium'];renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,q.pixelRatio));renderer.shadowMap.enabled=q.shadows;resize();}
+qualitySelect?.addEventListener('change',applyQuality);
+fpsSelect?.addEventListener('change',()=>{maxFps=fpsSelect.value==='unlimited'?0:Number(fpsSelect.value);});
 let renderer,scene,camera,raf,started=false,yaw=0,pitch=0,locked=false;
 const keys={};
 const pedestrians=[];
@@ -96,6 +103,8 @@ function updateWorld(dt){
     p.position.z=u.originZ+Math.sin(t*u.speed+u.phase)*2.6;
     p.position.x=u.originX+Math.sin(t*u.speed*.55+u.phase)*.55;
     p.rotation.y=Math.cos(t*u.speed+u.phase)*.18;
+    p.children[2].rotation.x=Math.sin(t*5+u.phase)*.22;
+    p.children[3].rotation.x=-Math.sin(t*5+u.phase)*.22;
   }
   for(const car of policeCars){
     const [red,blue]=car.userData.lights;
@@ -117,8 +126,10 @@ function move(){
   camera.position.y=2.1;camera.rotation.order='YXZ';camera.rotation.set(pitch,yaw,0);
   coords.textContent='POSITION '+Math.round(camera.position.x)+' / '+Math.round(camera.position.z);
 }
-function loop(){
-  raf=requestAnimationFrame(loop);const dt=Math.min(clock.getDelta(),.05);
+function loop(now=0){
+  raf=requestAnimationFrame(loop);
+  if(maxFps&&now-lastFrame<1000/maxFps)return;
+  lastFrame=now;const dt=Math.min(clock.getDelta(),.05);
   move();updateWorld(dt);renderer.render(scene,camera);
 }
 function begin(){
@@ -126,8 +137,10 @@ function begin(){
   status.textContent='STADT GELADEN · KLICKE INS SPIEL';
   try{
     renderer=new THREE.WebGLRenderer({antialias:false,powerPreference:'low-power'});
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,1.25));
-    renderer.outputColorSpace=THREE.SRGBColorSpace;viewport.appendChild(renderer.domElement);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,1));
+    renderer.outputColorSpace=THREE.SRGBColorSpace;
+    renderer.shadowMap.enabled=false;
+    applyQuality();viewport.appendChild(renderer.domElement);
     makeCity();resize();loop();
     renderer.domElement.addEventListener('click',()=>renderer.domElement.requestPointerLock?.());
     document.addEventListener('pointerlockchange',()=>{

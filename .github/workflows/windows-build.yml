@@ -34,3 +34,17 @@ jobs:
           path: dist/*
           if-no-files-found: error
           retention-days: 7
+
+      - name: Publish stable beta downloads to GitHub Releases
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: beta
+          name: Frankfurt Life Beta
+          target_commitish: main
+          prerelease: true
+          make_latest: false
+          overwrite_files: true
+          files: |
+            dist/*.exe
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

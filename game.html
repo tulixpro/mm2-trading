@@ -3,7 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<meta name="theme-color" content="#080d18">\n<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#080d18">
+<link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/svg+xml" href="assets/frankfurt-life-mark.svg">
 <title>Frankfurt Life – Spiel</title>
 <link rel="stylesheet" href="game.css">
@@ -11,7 +12,8 @@
 <body class="game-app">
 <header class="hud">
   <div class="brand"><img class="brand-mark" src="assets/frankfurt-life-mark.svg" alt=""><span>FRANKFURT <b>LIFE</b></span></div>
-  <div class="hud-center"><span id="gameStatus">BEREIT ZUM START</span><span id="coords">SEKTOR 01</span></div>\n  <button id="installApp" class="install-app-button" type="button">APP INSTALLIEREN</button>
+  <div class="hud-center"><span id="gameStatus">BEREIT ZUM START</span><span id="coords">SEKTOR 01</span></div>
+  <button id="installApp" class="install-app-button" type="button">APP INSTALLIEREN</button>
   <div class="settings">
     <label>GRAFIK <select id="qualitySelect"><option value="minimum">Minimal</option><option value="low">Niedrig</option><option value="medium" selected>Mittel</option><option value="high">Hoch</option><option value="maximum">Maximal</option><option value="advanced">Erweitert</option></select></label>
     <span id="qualityStatus" class="quality-status">Grafik: MITTEL</span><label>FPS <select id="fpsSelect"><option value="30">30</option><option value="60" selected>60</option><option value="unlimited">Unbegrenzt</option></select></label><label>MAUS <select id="mouseSelect"><option value="0.65">Langsam</option><option value="1" selected>Normal</option><option value="1.5">Schnell</option></select></label><label>SICHT <select id="fovSelect"><option value="60">60°</option><option value="68" selected>68°</option><option value="78">78°</option><option value="88">88°</option></select></label><label>KAMERA <select id="cameraSelect"><option value="follow" selected>Verfolger</option><option value="close">Nah</option><option value="hood">Motorhaube</option><option value="ego">Ego-Perspektive</option></select></label><button id="openSettings" class="open-settings" type="button" title="Alle Einstellungen öffnen">⚙ Einstellungen</button>
@@ -31,5 +33,6 @@
   <span class="hint">Gamepad: A Interaktion · X Auto · Y Jobs · B Handy · LB Kamera · RB Licht</span>
 </footer>
 <script type="module" src="script.js"></script>
-<script>if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js").catch(()=>{}));}</script>\n</body>
+<script>if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js").catch(()=>{}));}</script>
+</body>
 </html>

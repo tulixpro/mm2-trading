@@ -21,8 +21,8 @@ const lowEndDevice=legacyMode||(navigator.hardwareConcurrency||8)<=2||(navigator
 const liteMode=lowEndDevice;
 let performanceFrame=0;
 const qualitySettings={
- minimum:{pixelRatio:.22,shadows:false,fog:38,exposure:.78,ambient:1.15,label:'ULTRA-SPARMODUS'},
- legacy:{pixelRatio:.32,shadows:false,fog:58,exposure:.82,ambient:1.25,label:'LAPTOP-SPARMODUS'},
+ minimum:{pixelRatio:.38,shadows:false,fog:105,exposure:.84,ambient:1.35,label:'ULTRA-SPARMODUS'},
+ legacy:{pixelRatio:.46,shadows:false,fog:125,exposure:.9,ambient:1.5,label:'OLD-SCHOOL-MODUS'},
 
  low:{pixelRatio:.58,shadows:false,fog:125,exposure:.92,ambient:1.65,label:'NIEDRIG'},
  medium:{pixelRatio:.88,shadows:false,fog:185,exposure:1.04,ambient:1.95,label:'MITTEL'},
@@ -38,7 +38,7 @@ function applyQuality(){
  renderer.shadowMap.enabled=q.shadows;
  renderer.toneMappingExposure=q.exposure;
  if(scene.fog)scene.fog.far=q.fog;
- if(sunLight){sunLight.intensity=mode==='minimum'?0.95:mode==='low'?1.05:mode==='medium'?1.5:mode==='high'?1.9:2.05;sunLight.castShadow=q.shadows;sunLight.shadow.mapSize.set(1024,1024);sunLight.shadow.camera.left=-65;sunLight.shadow.camera.right=65;sunLight.shadow.camera.top=65;sunLight.shadow.camera.bottom=-65;sunLight.shadow.camera.near=1;sunLight.shadow.camera.far=140;sunLight.shadow.camera.updateProjectionMatrix();}
+ if(sunLight){sunLight.intensity=mode==='minimum'?1.0:mode==='legacy'?1.15:mode==='low'?1.25:mode==='medium'?1.55:mode==='high'?1.9:2.05;sunLight.castShadow=q.shadows;sunLight.shadow.mapSize.set(1024,1024);sunLight.shadow.camera.left=-65;sunLight.shadow.camera.right=65;sunLight.shadow.camera.top=65;sunLight.shadow.camera.bottom=-65;sunLight.shadow.camera.near=1;sunLight.shadow.camera.far=140;sunLight.shadow.camera.updateProjectionMatrix();}
  if(hemiLight)hemiLight.intensity=q.ambient;
  scene.traverse(obj=>{if(obj.isMesh){obj.castShadow=q.shadows;obj.receiveShadow=q.shadows;}});
  const hint=document.querySelector('#graphicsHint')||document.querySelector('#qualityStatus');
@@ -1571,12 +1571,12 @@ function loop(now=0){
 }
 function begin(){
   if(started)return;started=true;placeholder?.remove();
-  if(qualitySelect){const saved=localStorage.getItem('flQuality');qualitySelect.value=lowEndDevice?'low':(saved&&qualitySettings[saved]?saved:(saved==='ultra'?'low':'medium'));}
+  if(qualitySelect){const saved=localStorage.getItem('flQuality');qualitySelect.value=lowEndDevice?'legacy':(saved&&qualitySettings[saved]?saved:(saved==='ultra'?'legacy':'medium'));}
   if(fpsSelect){const savedFps=localStorage.getItem('flFps');fpsSelect.value=savedFps|| (lowEndDevice?'30':'60');maxFps=fpsSelect.value==='unlimited'?0:Number(fpsSelect.value);}
   if(mouseSelect){mouseSelect.value=localStorage.getItem('flMouse')||'1';mouseSensitivity=Number(mouseSelect.value)||1;}
   if(fovSelect){fovSelect.value=localStorage.getItem('flFov')||'68';cameraFov=Number(fovSelect.value)||68;}
   if(cameraSelect){cameraSelect.value=localStorage.getItem('flCamera')||'follow';cameraMode=cameraSelect.value||'follow';}
-  status.textContent=lowEndDevice?'LAPTOP-MODUS · OPTIMIERTE GRAFIK':'STADT GELADEN · KLICKE INS SPIEL';
+  status.textContent=lowEndDevice?'OLD-SCHOOL-MODUS · STADT BLEIBT GUT ERKENNBAR':'STADT GELADEN · KLICKE INS SPIEL';
   try{
     renderer=new THREE.WebGLRenderer({antialias:!lowEndDevice,powerPreference:lowEndDevice?'low-power':'high-performance',stencil:false,depth:true});
     renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,1));

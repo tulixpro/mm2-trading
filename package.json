@@ -20,6 +20,8 @@
       "output": "dist"
     },
     "files": [
+      "game.html",
+      "game.css",
       "index.html",
       "style.css",
       "script.js",

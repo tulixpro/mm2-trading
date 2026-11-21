@@ -585,7 +585,7 @@ function makeCar(x,z,color,police=false,model='sedan',performanceOverride=null){
     const rearLens=new THREE.Mesh(new THREE.BoxGeometry(.4,.17,.025),lens);rearLens.position.set(side*W*.34,.78,-L*.54);car.add(rearLens);
   }
   const grille=new THREE.Mesh(new THREE.BoxGeometry(W*.48,.2,.075),black);grille.position.set(0,.64,L*.51);car.add(grille);
-  for(let slat=0;slat<7;slat++){const bar=new THREE.Mesh(new THREE.BoxGeometry(.025,.15,.025),rimDark);bar.position.set((slat-3)*W*.055,.64,L*.535);car.add(bar);}
+  for(let slat=0;slat<7;slat++){const bar=new THREE.Mesh(new THREE.BoxGeometry(.025,.15,.025),black);bar.position.set((slat-3)*W*.055,.64,L*.535);car.add(bar);}
   // Eigenständiges Frankfurt-Life-Roundel statt eines kopierten Herstellerlogos.
   const badge=new THREE.Group();
   const badgeBase=new THREE.Mesh(new THREE.CylinderGeometry(.105,.105,.035,32),badgeDark);badgeBase.rotation.x=Math.PI/2;badge.add(badgeBase);
@@ -639,7 +639,7 @@ function makeCar(x,z,color,police=false,model='sedan',performanceOverride=null){
     mirrorStem.position.set(side*W*.49,1.04,.49);car.add(mirrorStem);
     const indicator=new THREE.Mesh(new THREE.BoxGeometry(.035,.045,.22),new THREE.MeshBasicMaterial({color:0xffb52e}));
     indicator.position.set(side*W*.505,.86,L*.18);car.add(indicator);
-    const lowerSill=new THREE.Mesh(new THREE.BoxGeometry(.11,.12,L*.62),trim);
+    const lowerSill=new THREE.Mesh(new THREE.BoxGeometry(.11,.12,L*.62),black);
     lowerSill.position.set(side*W*.49,.35,0);car.add(lowerSill);
   }
   // Präzisere Haubenkanten, seitliche Luftauslässe und dunkle Diffusor-Akzente.
@@ -673,6 +673,52 @@ function makeCar(x,z,color,police=false,model='sedan',performanceOverride=null){
   };
   const accent=new THREE.MeshStandardMaterial({color:model==='sportback'?0x39b9d4:0x343d46,metalness:.65,roughness:.3});
   const trim=new THREE.MeshStandardMaterial({color:0x111820,roughness:.72});
+  const rubberSeal=new THREE.MeshStandardMaterial({color:0x080b0f,roughness:.88});
+  const carbon=new THREE.MeshStandardMaterial({color:0x202830,metalness:.48,roughness:.38});
+  const reflector=new THREE.MeshStandardMaterial({color:0xe8f2f7,metalness:.82,roughness:.16});
+  const redReflector=new THREE.MeshStandardMaterial({color:0xb51d2b,metalness:.42,roughness:.25});
+  // Zusätzliche feinere Bauteile: Scheibendichtungen, Säulen, Türfugen und Glasdetails.
+  for(const side of [-1,1]){
+    for(const z of [-.48,.18]){
+      addDetail(new THREE.BoxGeometry(.035,.46,.045),carbon,side*W*.405,1.25,z);
+    }
+    addDetail(new THREE.BoxGeometry(.035,.38,.045),carbon,side*W*.405,1.25,-.12);
+    addDetail(new THREE.BoxGeometry(.055,.035,L*.3),rubberSeal,side*W*.405,1.48,-.12);
+    addDetail(new THREE.BoxGeometry(.055,.035,L*.3),rubberSeal,side*W*.405,1.025,-.12);
+    // Türfugen und dezente Seitenreflektoren.
+    for(const z of [-.28,.28]){
+      const seam=addDetail(new THREE.BoxGeometry(.012,.48,.012),rubberSeal,side*W*.502,.79,z);
+      seam.material= new THREE.MeshBasicMaterial({color:0x20252b});
+    }
+    addDetail(new THREE.BoxGeometry(.025,.075,.18),redReflector,side*W*.505,.68,-L*.43);
+    addDetail(new THREE.BoxGeometry(.025,.045,.16),reflector,side*W*.505,.68,L*.42);
+    // Außenspiegel mit separater Spiegelfläche.
+    addDetail(new THREE.BoxGeometry(.025,.075,.15),reflector,side*W*.565,1.055,.48);
+  }
+  // Frontscheibenwischer und feine Dichtlippen.
+  for(const side of [-1,1]){
+    const wiper=addDetail(new THREE.BoxGeometry(.018,.018,.52),black,side*.19,1.31,L*.17,-.42,0,side*.08);
+    wiper.material=black;
+  }
+  // Park-Sensoren und Abschleppösen als kleine, sichtbare Karosseriedetails.
+  for(const side of [-1,1]){
+    for(const offset of [-.31,0,.31]){
+      const sensor=addDetail(new THREE.CircleGeometry(.025,12),chrome,side*W*.34,.43,L*.535,0,0,0);
+      sensor.scale.setScalar(.72);
+      sensor.position.x=offset;
+    }
+  }
+  // Mehr Tiefe an den Leuchten: Reflektoren und getrennte LED-Segmente.
+  for(const side of [-1,1]){
+    addDetail(new THREE.BoxGeometry(.12,.07,.018),reflector,side*W*.34,.79,L*.548);
+    addDetail(new THREE.BoxGeometry(.13,.035,.018),redReflector,side*W*.34,.79,-L*.548);
+    for(let led=0;led<3;led++){
+      addDetail(new THREE.BoxGeometry(.025,.018,.012),light,side*W*.34-.04+led*.04,.78,L*.55);
+    }
+  }
+  // Seitenschweller und Stoßfänger erhalten zusätzliche mehrlagige Kanten.
+  addDetail(new THREE.BoxGeometry(W*.94,.055,.12),carbon,0,.31,L*.5);
+  addDetail(new THREE.BoxGeometry(W*.94,.055,.12),carbon,0,.31,-L*.5);
   // Seitenscheiben und klar erkennbare Fensterrahmen.
   for(const side of [-1,1]){
     const sideWindow=addDetail(new THREE.BoxGeometry(.035,.39,L*.29),glass,side*W*.397,1.25,-.12,0,0,0);

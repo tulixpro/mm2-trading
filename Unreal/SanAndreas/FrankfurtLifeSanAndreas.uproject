@@ -1,0 +1,9 @@
+{
+  "FileVersion": 3,
+  "EngineAssociation": "4.27",
+  "Category": "Games",
+  "Description": "Frankfurt Life - San Andreas Edition (UE 4.27 starter project)",
+  "Modules": [
+    { "Name": "FrankfurtLifeSanAndreas", "Type": "Runtime", "LoadingPhase": "Default" }
+  ]
+}

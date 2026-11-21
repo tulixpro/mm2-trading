@@ -315,7 +315,7 @@ const jobs=[
 ];
 let jobPanel,careerHud,jobActive=false,jobCar=null,jobDestination=null;
 let driving=false,carSpeed=0,careerMoney=0,completedJobs=0;
-let damageLevel=0,damageHud=null,damageFlash=0;
+let damageLevel=0,damageHud=null,damageFlash=0,cameraLookOffset=0;
 const breakableProps=[];let lookDrag=false,lastPointerX=0,lastPointerY=0;
 function buildInGameJobs(){
  jobPanel=document.createElement('div');jobPanel.id='inGameJobs';jobPanel.className='ingame-jobs hidden';
@@ -666,7 +666,7 @@ function move(){
     if(jobCar.position.x>22&&jobCar.position.z>-118&&jobCar.position.z<48)jobCar.position.x=22;
     jobCar.position.x=Math.max(-112,Math.min(112,jobCar.position.x));
     jobCar.position.z=Math.max(-220,Math.min(120,jobCar.position.z));
-    yaw=jobCar.rotation.y-Math.PI;
+    yaw=jobCar.rotation.y-Math.PI+cameraLookOffset;
     camera.position.copy(jobCar.position).addScaledVector(forward,-6);
     camera.position.y=3.2;
     if(damageFlash>0)damageFlash=Math.max(0,damageFlash-.02);
@@ -694,10 +694,10 @@ function toggleVehicle(){
   if(!jobCar){status.textContent='WÄHLE ZUERST EINEN JOB MIT J';return;}
   if(!driving){
     if(camera.position.distanceTo(jobCar.position)>9){status.textContent='GEHE NÄHER AN DEIN DIENSTFAHRZEUG';return;}
-    driving=true;carSpeed=0;yaw=jobCar.rotation.y-Math.PI;
+    driving=true;carSpeed=0;cameraLookOffset=0;yaw=jobCar.rotation.y-Math.PI;
     status.textContent='IM FAHRZEUG · WASD FAHREN · F AUSSTEIGEN';
   }else{
-    driving=false;carSpeed=0;
+    driving=false;carSpeed=0;cameraLookOffset=0;
     camera.position.set(jobCar.position.x+3,2.1,jobCar.position.z+3);
     status.textContent='AUSGESTIEGEN · F ZUM EINSTEIGEN';
   }
@@ -724,13 +724,13 @@ function begin(){
     renderer.domElement.addEventListener('click',()=>{renderer.domElement.focus();if(!phonePanel||phonePanel.classList.contains('hidden'))renderer.domElement.requestPointerLock?.();});
     renderer.domElement.addEventListener('pointerdown',e=>{if(e.button!==0||locked)return;lookDrag=true;lastPointerX=e.clientX;lastPointerY=e.clientY;});
     document.addEventListener('pointerup',()=>lookDrag=false);
-    document.addEventListener('pointermove',e=>{if(!lookDrag||locked)return;const dx=e.clientX-lastPointerX,dy=e.clientY-lastPointerY;lastPointerX=e.clientX;lastPointerY=e.clientY;yaw-=dx*.006;pitch=Math.max(-1.15,Math.min(1.15,pitch-dy*.006));});
+    document.addEventListener('pointermove',e=>{if(!lookDrag||locked)return;const dx=e.clientX-lastPointerX,dy=e.clientY-lastPointerY;lastPointerX=e.clientX;lastPointerY=e.clientY;yaw-=dx*.006;if(driving)cameraLookOffset-=dx*.006;pitch=Math.max(-1.15,Math.min(1.15,pitch-dy*.006));});
     document.addEventListener('pointerlockchange',()=>{
       locked=document.pointerLockElement===renderer.domElement;
       status.textContent=locked?'MAUS AKTIV · ESC ZUM PAUSIEREN':'KLICKE INS SPIEL ZUM WEITER-SPIELEN';
     });
     document.addEventListener('mousemove',e=>{
-      if(!locked)return;yaw-=e.movementX*.0045;
+      if(!locked)return;yaw-=e.movementX*.0045;if(driving)cameraLookOffset-=e.movementX*.0045;
       pitch=Math.max(-1.15,Math.min(1.15,pitch-e.movementY*.0045));
     });
   }catch(e){

@@ -20,6 +20,11 @@ Die NPCs und der Streifenwagen sind Platzhalter aus einfachen 3D-Formen, keine r
 ## Windows-App
 Ein Electron-Projekt und ein GitHub-Actions-Workflow bereiten Windows-x64-Artefakte (Installer und portable Ausgabe) vor. Der Workflow muss erfolgreich laufen, bevor ein echter Download bereitgestellt werden kann. Die App lädt Three.js derzeit über jsDelivr und benötigt beim Start eine Internetverbindung.
 
+## Neu in Version 0.1.8
+- Geschäfte in der Stadt können zu Fuß mit **E** geöffnet werden.
+- In Geschäften können Kaffee, Snacks und Stadtpläne mit dem verdienten Spielgeld gekauft werden.
+- Ein einfaches Inventar zählt die gekauften Gegenstände.
+
 ## Noch nicht enthalten
 - fotorealistische Frankfurt-Karte oder echte 1:1-Stadt
 - ausgefeilte NPC-KI, Verkehr, Fahrphysik oder begehbare Innenräume

@@ -68,3 +68,8 @@ These are internal targets, not tested requirements. UE4.27 does not guarantee s
 
 - Modern/browser: https://tulixpro.github.io/mm2-trading/game.html
 - San Andreas browser preset: https://tulixpro.github.io/mm2-trading/game.html?edition=sanandreas
+
+
+### Realistic Edition: startup overlay
+
+The Realistic Edition now assigns `AFLRealisticHUD` as its HUD. It draws a short branded startup overlay (title, edition label, status text, progress-style bar, fade-in/fade-out) for the first 4.5 seconds after the world begins. This is an in-game intro overlay, not the engine's pre-map MoviePlayer loading screen and not a measured asset-loading percentage. The C++ source has not yet been compiled or tested in Unreal Editor.

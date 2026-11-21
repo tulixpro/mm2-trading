@@ -575,7 +575,7 @@ function makeCar(x,z,color,police=false,model='sedan',performanceOverride=null){
     const mirror=new THREE.Mesh(new THREE.BoxGeometry(.2,.13,.24),black);mirror.position.set(side*W*.53,1.03,.48);car.add(mirror);
     for(const zw of [-L*.32,L*.32]){
       const wheel=new THREE.Mesh(new THREE.CylinderGeometry(.37,.37,.24,32),black);wheel.rotation.z=Math.PI/2;wheel.position.set(side*(W*.51),.42,zw);car.add(wheel);
-      const tyreShoulder=new THREE.Mesh(new THREE.TorusGeometry(.315,.055,10,32),rubber);tyreShoulder.rotation.y=Math.PI/2;tyreShoulder.position.copy(wheel.position);car.add(tyreShoulder);
+      const tyreShoulder=new THREE.Mesh(new THREE.TorusGeometry(.315,.055,10,32),black);tyreShoulder.rotation.y=Math.PI/2;tyreShoulder.position.copy(wheel.position);car.add(tyreShoulder);
       const rim=new THREE.Mesh(new THREE.CylinderGeometry(.235,.235,.245,24),chrome);rim.rotation.z=Math.PI/2;rim.position.copy(wheel.position);car.add(rim);customRims.push(rim);
     }
     const head=new THREE.Mesh(new THREE.BoxGeometry(.42,.15,.09),light);head.position.set(side*W*.34,.78,L*.512);car.add(head);headlights.push(head);

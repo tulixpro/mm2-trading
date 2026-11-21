@@ -276,7 +276,11 @@ function makeCar(x,z,color,police=false,model='sedan'){
   const crackMat=new THREE.LineBasicMaterial({color:0xd9f4ff,transparent:true,opacity:.85});
   const crackPoints=[new THREE.Vector3(-.45,1.34,.19),new THREE.Vector3(-.1,1.15,.2),new THREE.Vector3(.1,1.3,.2),new THREE.Vector3(.42,1.17,.2)];
   const crack=new THREE.Line(new THREE.BufferGeometry().setFromPoints(crackPoints),crackMat);crack.visible=false;car.add(crack);
-  car.userData.damageParts={paint,bumper,crack,originalColor:paint.color.getHex()};
+  const frontBumper=new THREE.Mesh(new THREE.BoxGeometry(W*1.02,.16,.18),black);frontBumper.position.set(0,.42,L*.52);car.add(frontBumper);
+  const rearBumper=new THREE.Mesh(new THREE.BoxGeometry(W*1.02,.16,.18),black);rearBumper.position.set(0,.42,-L*.52);car.add(rearBumper);
+  const hoodDent=new THREE.Mesh(new THREE.SphereGeometry(.55,12,8),new THREE.MeshStandardMaterial({color:0x20252b,roughness:.95}));hoodDent.scale.set(1,.08,.55);hoodDent.position.set(0,.94,L*.32);hoodDent.visible=false;car.add(hoodDent);
+  const smoke=new THREE.Mesh(new THREE.SphereGeometry(.32,8,6),new THREE.MeshBasicMaterial({color:0x5d6268,transparent:true,opacity:.5}));smoke.position.set(0,1.8,-L*.28);smoke.visible=false;car.add(smoke);
+  car.userData.damageParts={paint,bumper,crack,frontBumper,rearBumper,hoodDent,smoke,originalColor:paint.color.getHex()};
   if(model==='super'){
     const splitter=new THREE.Mesh(new THREE.BoxGeometry(W*1.03,.08,.35),black);splitter.position.set(0,.36,L*.53);car.add(splitter);
     const wing=new THREE.Mesh(new THREE.BoxGeometry(W*.78,.07,.25),black);wing.position.set(0,1.03,-L*.48);car.add(wing);
@@ -316,6 +320,8 @@ const jobs=[
 let jobPanel,careerHud,jobActive=false,jobCar=null,jobDestination=null;
 let driving=false,carSpeed=0,careerMoney=0,completedJobs=0;
 let damageLevel=0,damageHud=null,damageFlash=0,cameraLookOffset=0;
+const emergencyVehicles=[];
+const emergencyVehicles=[];
 const breakableProps=[];let lookDrag=false,lastPointerX=0,lastPointerY=0;
 function buildInGameJobs(){
  jobPanel=document.createElement('div');jobPanel.id='inGameJobs';jobPanel.className='ingame-jobs hidden';
@@ -482,6 +488,82 @@ function createPedestrianDistrict(){
   makePedestrian(x,z,24+i);
  }
 }
+
+function buildFrankfurtLandmarks(){
+ const stone=new THREE.MeshStandardMaterial({color:0xc5b69b,roughness:.88}),darkStone=new THREE.MeshStandardMaterial({color:0x756a5d,roughness:.9}),glass=new THREE.MeshStandardMaterial({color:0x7899a9,metalness:.35,roughness:.22}),roof=new THREE.MeshStandardMaterial({color:0x394553,roughness:.82});
+ // Mainufer und Wasserband mit Uferpromenaden
+ const water=new THREE.Mesh(new THREE.PlaneGeometry(250,30),new THREE.MeshStandardMaterial({color:0x397e99,roughness:.22,metalness:.25}));
+ water.rotation.x=-Math.PI/2;water.position.set(0,-.025,-168);scene.add(water);
+ for(const z of [-185,-151]){
+  const bank=new THREE.Mesh(new THREE.BoxGeometry(250,.32,2.4),stone);bank.position.set(0,.12,z);scene.add(bank);
+  for(let x=-110;x<115;x+=18)tree(x,z+(z< -170?-2:2));
+ }
+ // Eiserner-Steg-inspirierte Fußgängerbrücke
+ const bridge=new THREE.Group();
+ const deck=new THREE.Mesh(new THREE.BoxGeometry(34,.45,3.2),darkStone);deck.position.y=2.2;bridge.add(deck);
+ for(const x of [-15,15]){const tower=new THREE.Mesh(new THREE.BoxGeometry(.55,8,.55),roof);tower.position.set(x,6,0);bridge.add(tower);}
+ for(let x=-14;x<=14;x+=2){const cable=new THREE.Mesh(new THREE.CylinderGeometry(.035,.035,7,6),new THREE.MeshStandardMaterial({color:0xb6b8b3,metalness:.7}));cable.position.set(x,5.3,0);cable.rotation.z=(x/15)*.38;bridge.add(cable);}
+ bridge.position.set(0,0,-168);scene.add(bridge);
+ // Bankenviertel-Silhouette mit schlanken Glastürmen
+ const towers=[[-66,-120,14,13,68],[-48,-105,12,12,54],[-30,-126,13,13,82],[-10,-110,12,12,48],[12,-128,13,12,72],[34,-112,12,12,58],[54,-132,14,13,76],[74,-108,12,12,50]];
+ for(const [x,z,w,d,h] of towers){
+  const g=new THREE.Group();const body=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),glass);body.position.y=h/2;g.add(body);
+  for(let y=5;y<h;y+=5){const band=new THREE.Mesh(new THREE.BoxGeometry(w+.08,.12,d+.08),new THREE.MeshStandardMaterial({color:0xb4c6cc,metalness:.5,roughness:.3}));band.position.y=y;g.add(band);}
+  const crown=new THREE.Mesh(new THREE.BoxGeometry(w*.72,.9,d*.72),roof);crown.position.y=h+.4;g.add(crown);g.position.set(x,0,z);scene.add(g);
+ }
+ // Main Tower-artiger Aussichtsturm
+ const tower=new THREE.Group();const shaft=new THREE.Mesh(new THREE.BoxGeometry(9,82,9),glass);shaft.position.y=41;tower.add(shaft);
+ const deck1=new THREE.Mesh(new THREE.BoxGeometry(13,2,13),darkStone);deck1.position.y=70;tower.add(deck1);
+ const deck2=new THREE.Mesh(new THREE.BoxGeometry(11,1.5,11),darkStone);deck2.position.y=75;tower.add(deck2);
+ const spire=new THREE.Mesh(new THREE.ConeGeometry(1.2,13,8),roof);spire.position.y=83;tower.add(spire);tower.position.set(-82,0,-72);scene.add(tower);
+ // Römerberg: Fachwerk-Rathaus mit Giebeln
+ for(let i=0;i<3;i++){
+  const g=new THREE.Group();const base=new THREE.Mesh(new THREE.BoxGeometry(9,9,7),stone);base.position.y=4.5;g.add(base);
+  const upper=new THREE.Mesh(new THREE.BoxGeometry(8.2,5.5,7.2),new THREE.MeshStandardMaterial({color:0x9a5c42,roughness:.9}));upper.position.y=11.2;g.add(upper);
+  for(let y=9;y<15;y+=1.7){const beam=new THREE.Mesh(new THREE.BoxGeometry(8.4,.18,7.35),darkStone);beam.position.y=y;g.add(beam);}
+  for(let x=-3;x<=3;x+=2){const beam=new THREE.Mesh(new THREE.BoxGeometry(.16,5.5,7.4),darkStone);beam.position.set(x,11.2,0);g.add(beam);}
+  const gable=new THREE.Mesh(new THREE.ConeGeometry(5.4,5.2,4),roof);gable.rotation.y=Math.PI/4;gable.position.set(0,16.5,0);g.add(gable);
+  g.position.set(35+i*10,0,-38);scene.add(g);
+ }
+ // Kaiserdom-inspirierter Kirchturm
+ const church=new THREE.Group();const nave=new THREE.Mesh(new THREE.BoxGeometry(16,13,22),stone);nave.position.y=6.5;church.add(nave);
+ const steeple=new THREE.Mesh(new THREE.BoxGeometry(6,28,6),darkStone);steeple.position.y=20;church.add(steeple);
+ const spire2=new THREE.Mesh(new THREE.ConeGeometry(4.2,18,8),roof);spire2.position.y=43;church.add(spire2);
+ church.position.set(58,0,-55);scene.add(church);
+ // Stadtbeschilderung
+ const signs=[[-18,-18,'ZEIL'],[18,-92,'BANKENVIERTEL'],[48,-34,'RÖMERBERG'],[-30,-155,'MAINUFER']];
+ for(const [x,z,label] of signs){
+  const canvas=document.createElement('canvas');canvas.width=512;canvas.height=128;const ctx=canvas.getContext('2d');
+  ctx.fillStyle='#164d70';ctx.fillRect(0,0,512,128);ctx.strokeStyle='#e5f4f5';ctx.lineWidth=7;ctx.strokeRect(5,5,502,118);ctx.fillStyle='#fff';ctx.font='bold 54px Arial';ctx.textAlign='center';ctx.fillText(label,256,82);
+  const board=new THREE.Mesh(new THREE.BoxGeometry(5,.95,.12),new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(canvas)}));board.position.set(x,4,z);scene.add(board);
+ }
+}
+function makeEmergencyVehicle(x,z,kind){
+ const isFire=kind==='fire';const car=makeCar(x,z,isFire?0xc51f28:0xf4f4ef,true,isFire?'van':'sedan');
+ car.rotation.y=Math.PI/2;
+ if(isFire){
+  const tank=new THREE.Mesh(new THREE.BoxGeometry(1.85,1.2,2.5),new THREE.MeshStandardMaterial({color:0xc51f28,roughness:.58}));tank.position.set(0,1.65,-.45);car.add(tank);
+  const stripe=new THREE.Mesh(new THREE.BoxGeometry(1.92,.2,2.6),new THREE.MeshStandardMaterial({color:0xf0d34d,metalness:.2}));stripe.position.set(0,1.35,-.45);car.add(stripe);
+  const ladder=new THREE.Mesh(new THREE.BoxGeometry(.22,.18,3.1),new THREE.MeshStandardMaterial({color:0xe0dfd5,metalness:.6}));ladder.position.set(0,2.35,-.45);car.add(ladder);
+  car.userData.emergencyKind='fire';
+ }else{
+  const stripe=new THREE.Mesh(new THREE.BoxGeometry(1.96,.18,2.8),new THREE.MeshStandardMaterial({color:0x2468a4,metalness:.25}));stripe.position.set(0,.95,-.2);car.add(stripe);
+  car.userData.emergencyKind='police';
+ }
+ car.userData.emergencyLights=car.userData.lights;
+ emergencyVehicles.push(car);return car;
+}
+function buildEmergencyServices(){
+ const wall=new THREE.MeshStandardMaterial({color:0xb9c4c8,roughness:.82}),blue=new THREE.MeshStandardMaterial({color:0x24527a,roughness:.72}),red=new THREE.MeshStandardMaterial({color:0xb7282d,roughness:.72});
+ const station=new THREE.Group();const base=new THREE.Mesh(new THREE.BoxGeometry(25,7,15),wall);base.position.y=3.5;station.add(base);
+ for(let i=0;i<3;i++){const door=new THREE.Mesh(new THREE.BoxGeometry(.18,4.6,6.2),i===2?red:blue);door.position.set(-12.6,2.7,-5+i*5);station.add(door);}
+ const roofline=new THREE.Mesh(new THREE.BoxGeometry(26,.4,16),blue);roofline.position.y=7.2;station.add(roofline);
+ station.position.set(83,0,58);scene.add(station);
+ makeEmergencyVehicle(75,49,'police');makeEmergencyVehicle(82,49,'police');makeEmergencyVehicle(90,49,'fire');
+ const fireSign=new THREE.Mesh(new THREE.BoxGeometry(9,1.2,.18),new THREE.MeshStandardMaterial({color:0x183c5b}));fireSign.position.set(83,8,50.35);scene.add(fireSign);
+}
+const emergencyVehicles=[];
+
 function makeCity(){
   scene=new THREE.Scene();scene.background=new THREE.Color(0x91b1c8);scene.fog=new THREE.Fog(0x91b1c8,115,390);
   camera=new THREE.PerspectiveCamera(68,viewport.clientWidth/viewport.clientHeight,.1,620);camera.position.set(0,2.1,14);
@@ -513,6 +595,7 @@ function makeCity(){
   for(let z=-105;z<35;z+=20)for(const x of [-10.4,10.4])streetLamp(x,z);
   makeCar(4,-8,0x1c354d,false,'sportback');
   makeCar(-3,-35,0xffffff,true,'sedan');
+  buildEmergencyServices();buildFrankfurtLandmarks();
   buildDealership();
   createTraffic();
   // Erweiterte Stadt: zusätzliche Wohn- und Geschäftsquartiere, Nebenstraßen und Plätze.
@@ -574,10 +657,11 @@ function updateWorld(dt){
   if(phonePanel&&!phonePanel.classList.contains('hidden')){const clockEl=phonePanel.querySelector('#phoneClock');if(clockEl)clockEl.textContent=new Date().toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'});}
   for(const car of policeCars){
     const [red,blue]=car.userData.lights;
-    const flash=Math.floor(t*5)%2===0;
+    const flash=Math.floor(t*7)%2===0;
     red.material.color.setHex(flash?0xff2038:0x40151d);
     blue.material.color.setHex(flash?0x173c78:0x247bff);
   }
+  for(const car of emergencyVehicles){const [red,blue]=car.userData.emergencyLights;const flash=Math.floor(t*8)%2===0;red.material.color.setHex(flash?0xff2638:0x52121a);blue.material.color.setHex(flash?0x1c7cff:0x142b51);}
 }
 
 function buildBreakableProps(){
@@ -606,7 +690,10 @@ function damagePlayerCar(){
   d.paint.color.setHex([d.originalColor,0x777777,0x55545a,0x34383d,0x20252b][damageLevel]);
   d.paint.roughness=Math.min(.95,.38+damageLevel*.13);
   d.bumper.rotation.x=-damageLevel*.11;
-  d.crack.visible=damageLevel>=2;
+  d.frontBumper.position.y=.42-damageLevel*.055;d.frontBumper.rotation.x=-damageLevel*.07;
+  d.rearBumper.position.y=.42-damageLevel*.035;
+  d.hoodDent.visible=damageLevel>=2;d.hoodDent.position.y=.94-damageLevel*.025;
+  d.crack.visible=damageLevel>=2;d.smoke.visible=damageLevel>=4;
  }
  if(damageHud){damageHud.classList.remove('hidden');damageHud.innerHTML='<b>FAHRZEUGZUSTAND</b><span>'+['','Leichte Kratzer','Dellen & Risse','Stark beschädigt','Kritischer Zustand'][damageLevel]+'</span><div class="damage-bars">'+[0,1,2,3].map(i=>'<i class="'+(i<damageLevel?'lost':'')+'"></i>').join('')+'</div>';}
  damageFlash=.28;
@@ -721,17 +808,20 @@ function begin(){
     sunLight=null;hemiLight=null;
     makeCity();buildBreakableProps();buildInGameJobs();buildShopInteraction();buildPhone();buildDealerPanel();applyQuality();viewport.appendChild(renderer.domElement);resize();loop();
     renderer.domElement.tabIndex=0;
-    renderer.domElement.addEventListener('click',()=>{renderer.domElement.focus();if(!phonePanel||phonePanel.classList.contains('hidden'))renderer.domElement.requestPointerLock?.();});
+    renderer.domElement.addEventListener('click',()=>{renderer.domElement.focus();if(!phonePanel||phonePanel.classList.contains('hidden')){try{const result=renderer.domElement.requestPointerLock?.();if(result?.catch)result.catch(()=>{status.textContent='MAUSZIEHEN ZUM UMSEHEN';});}catch(_){status.textContent='MAUSZIEHEN ZUM UMSEHEN';}}});
     renderer.domElement.addEventListener('pointerdown',e=>{if(e.button!==0||locked)return;lookDrag=true;lastPointerX=e.clientX;lastPointerY=e.clientY;});
     document.addEventListener('pointerup',()=>lookDrag=false);
-    document.addEventListener('pointermove',e=>{if(!lookDrag||locked)return;const dx=e.clientX-lastPointerX,dy=e.clientY-lastPointerY;lastPointerX=e.clientX;lastPointerY=e.clientY;yaw-=dx*.006;if(driving)cameraLookOffset-=dx*.006;pitch=Math.max(-1.15,Math.min(1.15,pitch-dy*.006));});
+    const applyMouseLook=(dx,dy)=>{yaw-=dx*.0045;if(driving)cameraLookOffset-=dx*.0045;pitch=Math.max(-1.15,Math.min(1.15,pitch-dy*.0045));};
+    viewport.addEventListener('pointerdown',e=>{if(e.button!==0||e.target.closest('button,select,input,.phone-overlay,.ingame-jobs'))return;lookDrag=true;lastPointerX=e.clientX;lastPointerY=e.clientY;});
+    document.addEventListener('pointermove',e=>{if(!lookDrag||locked)return;const dx=e.clientX-lastPointerX,dy=e.clientY-lastPointerY;lastPointerX=e.clientX;lastPointerY=e.clientY;applyMouseLook(dx,dy);});
+    document.addEventListener('pointerlockerror',()=>{locked=false;status.textContent='MAUSZIEHEN ZUM UMSEHEN';});
     document.addEventListener('pointerlockchange',()=>{
       locked=document.pointerLockElement===renderer.domElement;
-      status.textContent=locked?'MAUS AKTIV · ESC ZUM PAUSIEREN':'KLICKE INS SPIEL ZUM WEITER-SPIELEN';
+      if(locked)lookDrag=false;
+      status.textContent=locked?'MAUS AKTIV · ESC ZUM PAUSIEREN':'MAUSZIEHEN ODER INS SPIEL KLICKEN';
     });
     document.addEventListener('mousemove',e=>{
-      if(!locked)return;yaw-=e.movementX*.0045;if(driving)cameraLookOffset-=e.movementX*.0045;
-      pitch=Math.max(-1.15,Math.min(1.15,pitch-e.movementY*.0045));
+      if(!locked)return;applyMouseLook(e.movementX,e.movementY);
     });
   }catch(e){
     status.textContent='3D NICHT VERFÜGBAR';

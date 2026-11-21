@@ -55,3 +55,15 @@ Die ursprüngliche Version bleibt auf `main`; diese Neugestaltung liegt auf `fra
 - Bewegungsgrenzen und Straßen-/Geländeflächen an das größere Gebiet angepasst.
 - GPS-Minimap öffnet per Klick die große Stadtkarte mit Spielerposition, Geschäften, Autohaus und Missionsziel.
 - Handy-Einstellungen für Grafikqualität, FPS, Maus-Empfindlichkeit, Sichtfeld, Kamera und Minimap-Sichtbarkeit.
+
+
+## Version 0.2.9 – Stadtleben & Spielstand
+- Spielstand lokal speichern und automatisch laden (Geld, Jobs, Fahrzeuge, Inventar, Position und neue Stadtleben-Werte).
+- Dynamischer Tageszeitenzyklus sowie wechselnde Wetterlagen (klar, bewölkt, Regen, Nebel) mit angepasster Beleuchtung und Sicht.
+- Tankfüllung für Fahrzeuge und Tankstelle mit mehreren Tankmengen.
+- Erste Wohnung mieten, Möbel sammeln und zur Wohnung zurückkehren.
+- ÖPNV-Demo mit mehreren Stadtteil-Haltepunkten und Fahrtenzähler.
+- Outfit-Farbvarianten über das Smartphone wechseln.
+- Neue Handy-Apps für Speichern und Charakter-Anpassung.
+
+Hinweis: Diese Systeme sind spielbare Prototypen. Wettereffekte sind zunächst über Beleuchtung und Sichtweite umgesetzt; ÖPNV-Fahrten wechseln in dieser Version zwischen Haltepunkten statt einer vollständig simulierten Bus-/Straßenbahnfahrt. Innenräume, echte Radiosender, Multiplayer und eine vollständige Charakter-Modellierung bleiben weitere Ausbaustufen.

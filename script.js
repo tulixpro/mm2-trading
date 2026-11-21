@@ -960,7 +960,7 @@ function buildAirportAndBuses(){
  const heliBody=new THREE.Mesh(new THREE.SphereGeometry(1,14,10),heliBodyMat);heliBody.scale.set(1.35,.82,2.15);heli.add(heliBody);
  const cockpit=new THREE.Mesh(new THREE.SphereGeometry(1,12,9),heliGlass);cockpit.scale.set(1.12,.62,.92);cockpit.position.set(0,.2,1.35);heli.add(cockpit);
  const tailBoom=new THREE.Mesh(new THREE.CylinderGeometry(.16,.32,5.3,10),heliBodyMat);tailBoom.rotation.x=Math.PI/2;tailBoom.position.set(0,.12,-3.45);heli.add(tailBoom);
- const fin=new THREE.Mesh(new THREE.BoxGeometry(.12,1.35,.8),heliBodyMat);fin.position.set(0,.55,-5.65);heli.add(fin);
+ const heliFin=new THREE.Mesh(new THREE.BoxGeometry(.12,1.35,.8),heliBodyMat);heliFin.position.set(0,.55,-5.65);heli.add(heliFin);
  const skidMat=new THREE.MeshStandardMaterial({color:0x252d34,metalness:.6,roughness:.38});
  for(const x of [-.95,.95]){const skid=new THREE.Mesh(new THREE.CylinderGeometry(.07,.07,4.1,8),skidMat);skid.rotation.x=Math.PI/2;skid.position.set(x,-.85,.05);heli.add(skid);const strut=new THREE.Mesh(new THREE.CylinderGeometry(.055,.055,1.05,8),skidMat);strut.position.set(x,-.38,.55);heli.add(strut);}
  const rotorHub=new THREE.Group();rotorHub.position.y=1.03;heli.add(rotorHub);

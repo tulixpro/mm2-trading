@@ -48,7 +48,7 @@ jobs:
         env:
           CSC_LINK: ${{ secrets.WINDOWS_CERTIFICATE }}
           CSC_KEY_PASSWORD: ${{ secrets.WINDOWS_CERTIFICATE_PASSWORD }}
-      - name: Build separate 2D Classic edition
+      - name: Build separate Classic retro-3D edition
         run: npm run dist:classic
         env:
           CSC_LINK: ${{ secrets.WINDOWS_CERTIFICATE }}

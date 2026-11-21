@@ -3,8 +3,12 @@ productName: Frankfurt Life Classic
 directories:
   output: dist-classic
 files:
-  - classic-2d.html
+  - game.html
+  - game.css
+  - script.js
   - electron/main-classic.cjs
+  - assets/**/*
+  - node_modules/three/**/*
 extraMetadata:
   main: electron/main-classic.cjs
 win:

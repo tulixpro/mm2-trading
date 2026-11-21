@@ -194,3 +194,11 @@ Hinweis: Die Grafikprofile reduzieren vor allem die GPU-Last. Die tatsächliche 
 - Action Edition verwendet eine dunklere, kontrastreichere Atmosphäre für Verfolgungs- und Action-Missionen; keine grafischen Blut- oder Gore-Effekte.
 - Website-Downloadbereich auf Version 0.4.5 aktualisiert und um beide Editionen erweitert.
 - Windows-Workflow baut Installer und portable Version für beide Editionen. Downloads sind erst verfügbar, wenn der Workflow erfolgreich abgeschlossen und die Release-Dateien veröffentlicht wurden.
+
+
+## Version 0.4.6 – Flugmissionen & Fahrzeug-Interaktionen
+- Das Passagierflugzeug am Flughafen kann in einem vereinfachten Arcade-Flugmodus bewegt werden.
+- Flugsteuerung: W/S für Tempo, A/D für Richtung, Leertaste zum Steigen, Shift zum Sinken, F zum Beenden. Dies ist eine abstrakte Spielsteuerung, keine reale Flugausbildung.
+- Während einer Flugmission erscheinen zwei stilisierte Begleitflugzeuge als geskriptete militärische Verfolgungs-/Begleitsequenz. Keine Waffen oder taktischen Ausweichmechaniken.
+- Mit G kann in Reichweite ein vorbeifahrendes NPC-Fahrzeug über eine kurze, abstrakte Interaktion übernommen werden. Es werden keine realen Einbruchstechniken simuliert.
+- Die übernommenen Fahrzeuge verwenden das vorhandene Fahr- und Kamerasystem.

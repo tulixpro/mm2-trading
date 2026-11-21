@@ -1,4 +1,5 @@
 name: Build Frankfurt Life for Windows
+# Packages the modern and San Andreas editions after game-code or asset-catalog changes.
 
 permissions:
   contents: write

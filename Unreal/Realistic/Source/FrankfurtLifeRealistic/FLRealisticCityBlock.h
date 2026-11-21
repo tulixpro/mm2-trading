@@ -1,0 +1,36 @@
+#pragma once
+
+#include "CoreMinimal.h"
+#include "GameFramework/Actor.h"
+#include "FLRealisticCityBlock.generated.h"
+
+class UStaticMesh;
+
+UCLASS()
+class FRANKFURTLIFEREALISTIC_API AFLRealisticCityBlock : public AActor
+{
+    GENERATED_BODY()
+
+public:
+    AFLRealisticCityBlock();
+
+protected:
+    virtual void BeginPlay() override;
+
+private:
+    UPROPERTY()
+    USceneComponent* SceneRoot;
+
+    UPROPERTY()
+    UStaticMesh* CubeMesh;
+
+    UPROPERTY()
+    UStaticMesh* CylinderMesh;
+
+    UPROPERTY()
+    UStaticMesh* SphereMesh;
+
+    void AddBox(const FVector& Location, const FVector& Scale);
+    void AddTree(const FVector& Location, float Height);
+    void BuildDistrict();
+};

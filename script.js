@@ -111,33 +111,55 @@ const fleet=[
   {id:'van',name:'Transporter',model:'van',color:0xe6e8e8,job:'Möbeltransport'},
   {id:'service',name:'Service-Kombi',model:'hatch',color:0x2872b7,job:'Stadtwerke'}
 ];
-function setupJobs(){
-  const jobSelect=document.querySelector('#jobSelect');
-  const accept=document.querySelector('#acceptJob');
-  const jobInfo=document.querySelector('#jobInfo');
-  if(!jobSelect||!accept)return;
-  const jobs=[
-    {name:'Paketdienst',vehicle:'golf',desc:'Liefere drei Pakete an Adressen in der Innenstadt.'},
-    {name:'VIP-Chauffeur',vehicle:'super',desc:'Hole einen Gast ab und bringe ihn zum Bankenviertel.'},
-    {name:'Business-Fahrer',vehicle:'mercedes',desc:'Fahre einen Geschäftskunden zu einem Büro am Main.'},
-    {name:'Kurierdienst',vehicle:'audi',desc:'Bringe eine dringende Sendung quer durch die Stadt.'},
-    {name:'Premium-Transport',vehicle:'alpina',desc:'Fahre einen Kunden komfortabel zu seinem Ziel.'},
-    {name:'Taxi-Fahrer',vehicle:'taxi',desc:'Nimm Fahrgäste auf und bringe sie sicher ans Ziel.'},
-    {name:'Möbeltransport',vehicle:'van',desc:'Transportiere Möbel zu einem neuen Zuhause.'},
-    {name:'Stadtwerke',vehicle:'service',desc:'Fahre zu einer gemeldeten Störung und prüfe den Einsatzort.'}
-  ];
-  jobs.forEach((j,i)=>{const o=document.createElement('option');o.value=String(i);o.textContent=j.name+' · '+fleet.find(v=>v.id===j.vehicle).name;jobSelect.appendChild(o);});
-  function update(){const j=jobs[Number(jobSelect.value)||0];jobInfo.textContent=j.desc+' Dienstfahrzeug: '+fleet.find(v=>v.id===j.vehicle).name+'.';}
-  jobSelect.addEventListener('change',update);update();
-  accept.addEventListener('click',()=>{
-    if(!started){status.textContent='STARTE ZUERST DIE 3D-DEMO';return;}
-    const j=jobs[Number(jobSelect.value)||0],v=fleet.find(v=>v.id===j.vehicle);
-    makeCar(4,-4,v.color,false,v.model);
-    jobInfo.textContent='JOB ANGENOMMEN: '+j.name+'. Dein Fahrzeug steht neben der Straße. '+j.desc;
-    status.textContent='JOB AKTIV · '+j.name.toUpperCase();
+const jobs=[
+ {name:'Paketdienst',vehicle:'golf',desc:'Liefere drei Pakete in der Innenstadt ab.'},
+ {name:'VIP-Chauffeur',vehicle:'super',desc:'Hole einen Gast ab und fahre zum Bankenviertel.'},
+ {name:'Business-Fahrer',vehicle:'mercedes',desc:'Bringe einen Geschäftskunden zu seinem Büro am Main.'},
+ {name:'Kurierdienst',vehicle:'audi',desc:'Bringe eine Sendung quer durch die Stadt.'},
+ {name:'Premium-Transport',vehicle:'alpina',desc:'Fahre einen Kunden komfortabel ans Ziel.'},
+ {name:'Taxi-Fahrer',vehicle:'taxi',desc:'Nimm Fahrgäste auf und bringe sie ans Ziel.'},
+ {name:'Möbeltransport',vehicle:'van',desc:'Transportiere Möbel zu einer neuen Wohnung.'},
+ {name:'Stadtwerke',vehicle:'service',desc:'Fahre zu einer gemeldeten Störung.'}
+];
+let jobPanel,jobActive=false,jobCar=null,jobDestination=null;
+function buildInGameJobs(){
+ jobPanel=document.createElement('div');jobPanel.id='inGameJobs';jobPanel.className='ingame-jobs hidden';
+ jobPanel.innerHTML='<div class="ingame-jobs-head"><b>FRANKFURT LIFE / JOBZENTRALE</b><button id="closeJobs" aria-label="Schließen">×</button></div><h3>Wähle deinen Beruf</h3><p class="ingame-jobs-hint">Dein Auftrag und das passende Dienstfahrzeug starten direkt in der 3D-Stadt.</p><div id="ingameJobChoices"></div><div id="ingameJobDetail">Wähle einen Job aus.</div><button id="startJob" class="ingame-start" disabled>AUFTRAG ANNEHMEN</button><small>J oder ESC · Menü schließen</small>';
+ viewport.appendChild(jobPanel);
+ const choices=jobPanel.querySelector('#ingameJobChoices'),detail=jobPanel.querySelector('#ingameJobDetail'),accept=jobPanel.querySelector('#startJob');
+ let selected=0;
+ jobs.forEach((job,i)=>{
+  const vehicle=fleet.find(v=>v.id===job.vehicle);
+  const button=document.createElement('button');button.className='ingame-job-choice'+(i===0?' selected':'');
+  button.innerHTML='<b>'+job.name+'</b><span>'+vehicle.name+'</span>';
+  button.addEventListener('click',()=>{
+   selected=i;choices.querySelectorAll('button').forEach((el,n)=>el.classList.toggle('selected',n===i));
+   detail.textContent=job.desc+' Fahrzeug: '+vehicle.name+'.';accept.disabled=false;
   });
+  choices.appendChild(button);
+ });
+ choices.firstChild?.click();
+ jobPanel.querySelector('#closeJobs').addEventListener('click',()=>jobPanel.classList.add('hidden'));
+ accept.addEventListener('click',()=>{
+  const job=jobs[selected],vehicle=fleet.find(v=>v.id===job.vehicle);
+  if(jobCar)scene.remove(jobCar);
+  jobCar=makeCar(camera.position.x+3,camera.position.z-5,vehicle.color,false,vehicle.model);
+  jobCar.rotation.y=yaw;
+  jobDestination=new THREE.Vector3(Math.max(-30,Math.min(30,camera.position.x+18)),0,Math.max(-100,Math.min(25,camera.position.z-35)));
+  const marker=new THREE.Mesh(new THREE.CylinderGeometry(1.2,1.2,.15,24),new THREE.MeshBasicMaterial({color:0x36d9c4}));
+  marker.position.copy(jobDestination);marker.position.y=.12;scene.add(marker);
+  jobCar.userData.jobMarker=marker;
+  jobActive=true;
+  detail.textContent='AUFTRAG AKTIV: '+job.name+' – '+job.desc+' Fahre zum markierten Ziel. (Fahrzeug ist in der Stadt gespawnt.)';
+  status.textContent='JOB AKTIV · '+job.name.toUpperCase();
+  jobPanel.classList.add('hidden');
+ });
 }
-setupJobs();
+function toggleJobs(){
+ if(!started||!jobPanel)return;
+ jobPanel.classList.toggle('hidden');
+ if(!jobPanel.classList.contains('hidden'))document.exitPointerLock?.();
+}
 
 function makeCity(){
   scene=new THREE.Scene();scene.background=new THREE.Color(0x91b1c8);scene.fog=new THREE.Fog(0x91b1c8,65,185);
@@ -192,7 +214,7 @@ function move(){
   camera.position.x=Math.max(-48,Math.min(48,camera.position.x));
   camera.position.z=Math.max(-115,Math.min(45,camera.position.z));
   camera.position.y=2.1;camera.rotation.order='YXZ';camera.rotation.set(pitch,yaw,0);
-  coords.textContent='POSITION '+Math.round(camera.position.x)+' / '+Math.round(camera.position.z);
+  coords.textContent='POSITION '+Math.round(camera.position.x)+' / '+Math.round(camera.position.z)+(jobActive&&jobDestination?' · ZIEL '+Math.round(camera.position.distanceTo(jobDestination))+' M':'');
 }
 function loop(now=0){
   raf=requestAnimationFrame(loop);
@@ -209,7 +231,7 @@ function begin(){
     renderer.outputColorSpace=THREE.SRGBColorSpace;
     renderer.shadowMap.enabled=false;
     applyQuality();viewport.appendChild(renderer.domElement);
-    makeCity();resize();loop();
+    makeCity();buildInGameJobs();resize();loop();
     renderer.domElement.addEventListener('click',()=>renderer.domElement.requestPointerLock?.());
     document.addEventListener('pointerlockchange',()=>{
       locked=document.pointerLockElement===renderer.domElement;
@@ -225,6 +247,6 @@ function begin(){
   }
 }
 startButton?.addEventListener('click',begin);
-document.addEventListener('keydown',e=>{keys[e.code]=true;if(['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code))e.preventDefault();});
+document.addEventListener('keydown',e=>{keys[e.code]=true;if(e.code==='KeyJ'&&!e.repeat)toggleJobs();if(e.code==='Escape'&&jobPanel&&!jobPanel.classList.contains('hidden'))jobPanel.classList.add('hidden');if(['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code))e.preventDefault();});
 document.addEventListener('keyup',e=>keys[e.code]=false);
 window.addEventListener('resize',resize);

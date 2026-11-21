@@ -1,7 +1,7 @@
 {
   "name": "frankfurt-life",
-  "version": "0.3.4",
-  "description": "Frankfurt Life - 3D city prototype with detailed vehicle models and refueling",
+  "version": "0.3.5",
+  "description": "Frankfurt Life - 3D city prototype with detailed vehicle interiors and models",
   "main": "electron/main.cjs",
   "author": "Frankfurt Life Community",
   "license": "UNLICENSED",

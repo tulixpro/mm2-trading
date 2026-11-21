@@ -160,3 +160,7 @@ body.action-edition .controls{border-top-color:#b75b4a}
 .mobile-look{position:absolute;right:14px;top:25%;color:#ffffff80;font:700 10px system-ui;letter-spacing:.08em;pointer-events:none}
 @media (pointer:coarse),(max-width:800px){#mobileControls{display:block}.hud{gap:6px}.hud .settings{max-width:58vw;overflow-x:auto}.controls{display:none}#gameViewport{height:calc(100dvh - 64px)}.game-app .hud{min-height:58px}.brand span{font-size:11px}}
 @media (prefers-reduced-motion:reduce){#mobileControls button{backdrop-filter:none}}
+
+.install-app-button{border:1px solid #58c9ef;background:#102c40;color:#e9faff;border-radius:7px;padding:9px 12px;font-size:10px;font-weight:800;letter-spacing:.07em;cursor:pointer;white-space:nowrap}
+.install-app-button:hover{background:#17435a}
+@media(max-width:800px){.install-app-button{position:absolute;top:68px;right:10px;z-index:20;padding:7px 9px}.hud{position:relative}}

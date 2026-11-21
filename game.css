@@ -109,3 +109,22 @@
 .quick-wheel .quick-wheel-close{width:34px;height:34px;border-radius:50%;font-size:20px;transform:translateY(0);background:#263f52}
 @keyframes wheel-fade{from{opacity:0;transform:scale(.94)}to{opacity:1;transform:scale(1)}}
 @media(max-width:420px){.quick-wheel button{width:78px;height:78px}.quick-wheel button[data-quick="phone"]{transform:translateY(-100px)}.quick-wheel button[data-quick="map"]{transform:translateX(100px)}.quick-wheel button[data-quick="light"]{transform:translateY(100px)}.quick-wheel button[data-quick="camera"]{transform:translateX(-100px)}}
+
+
+/* Version 0.4.4 – cinematic first-start tutorial */
+.tutorial-overlay{position:absolute;z-index:35;inset:0;display:flex;align-items:flex-end;justify-content:center;overflow:hidden;background:linear-gradient(180deg,#0207111c 0%,#02071122 32%,#020711d9 100%);backdrop-filter:saturate(1.15)}
+.tutorial-overlay.hidden{display:none}
+.tutorial-bars{position:absolute;left:0;right:0;height:8%;background:#02050b;box-shadow:0 5px 28px #0009}
+.tutorial-bars.top{top:0}.tutorial-bars.bottom{bottom:0}
+.tutorial-scene-tag{position:absolute;top:11%;left:6%;color:#a4e9f4;font-size:10px;font-weight:900;letter-spacing:3px;text-shadow:0 2px 10px #000}
+.tutorial-content{position:relative;width:min(850px,88%);margin:0 auto 12%;padding:26px 30px 22px;border-left:3px solid #59dbe5;background:linear-gradient(90deg,#061522ed,#061522b8 65%,transparent);text-shadow:0 2px 10px #000;animation:tutorial-rise .5s cubic-bezier(.2,.8,.2,1)}
+.tutorial-content.tutorial-scene-change{animation:tutorial-rise .42s cubic-bezier(.2,.8,.2,1)}
+.tutorial-eyebrow{color:#7de3ed;font-size:10px;font-weight:900;letter-spacing:3px}
+.tutorial-content h1{font-size:clamp(27px,5vw,54px);line-height:1.02;letter-spacing:-1px;margin:12px 0;color:#f4fbff;font-weight:950}
+.tutorial-content p{max-width:690px;color:#d4e4ef;font-size:clamp(13px,1.7vw,16px);line-height:1.7;margin:0}
+.tutorial-progress{display:flex;gap:7px;margin:22px 0 18px}.tutorial-progress i{width:28px;height:3px;background:#ffffff35;border-radius:4px}.tutorial-progress i.active{background:#63e3ec;box-shadow:0 0 12px #63e3ec88}
+.tutorial-actions{display:flex;justify-content:space-between;align-items:center;gap:12px}.tutorial-actions button{border:1px solid #ffffff38;border-radius:8px;padding:11px 15px;background:#ffffff0b;color:#d5e9f4;font-size:10px;font-weight:900;letter-spacing:1px;cursor:pointer}.tutorial-actions #tutorialNext{border-color:#62dce6;background:linear-gradient(135deg,#7ce8e8,#3aaebe);color:#06202c;min-width:150px}.tutorial-actions button:hover{filter:brightness(1.15);transform:translateY(-1px)}
+.tutorial-scene-count{position:absolute;right:6%;bottom:9.5%;color:#9db9c9;font-size:9px;font-weight:800;letter-spacing:2px}
+@keyframes tutorial-rise{from{opacity:0;transform:translateY(22px);filter:blur(4px)}to{opacity:1;transform:translateY(0);filter:blur(0)}}
+@media(max-width:650px){.tutorial-content{width:90%;margin-bottom:16%;padding:18px 18px 16px}.tutorial-content h1{font-size:29px}.tutorial-scene-tag{top:10%;left:5%;font-size:8px}.tutorial-scene-count{bottom:9%;right:5%}.tutorial-actions button{font-size:9px;padding:10px}.tutorial-actions #tutorialNext{min-width:118px}}
+@media(prefers-reduced-motion:reduce){.tutorial-content,.tutorial-content.tutorial-scene-change{animation:none}.tutorial-actions button{transition:none}}

@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#080d18">
+<title>Frankfurt Life – Spiel</title>
+<link rel="stylesheet" href="game.css">
+</head>
+<body class="game-app">
+<header class="hud">
+  <div class="brand"><span class="brand-mark">FL</span><span>FRANKFURT <b>LIFE</b></span></div>
+  <div class="hud-center"><span id="gameStatus">BEREIT ZUM START</span><span id="coords">SEKTOR 01</span></div>
+  <div class="settings">
+    <label>GRAFIK <select id="qualitySelect"><option value="low">Niedrig</option><option value="medium" selected>Mittel</option><option value="high">Hoch</option></select></label>
+    <label>FPS <select id="fpsSelect"><option value="30">30</option><option value="60" selected>60</option><option value="unlimited">Unbegrenzt</option></select></label>
+  </div>
+</header>
+<main id="gameViewport">
+  <div class="game-placeholder">
+    <div class="eyebrow">FRANKFURT AM MAIN · CITY BLOCK 01</div>
+    <div class="placeholder-title">DEIN FRANKFURT<br><em>DEIN LEBEN.</em></div>
+    <p>Erkunde die Stadt zu Fuß, steige in Dienstfahrzeuge und erledige Aufträge.</p>
+    <button id="startGame">SPIEL STARTEN <span>→</span></button>
+    <small>WASD bewegen · Maus umsehen · Shift sprinten · J Jobs · F ein-/aussteigen · ESC Maus lösen</small>
+  </div>
+</main>
+<footer class="controls">
+  <span><kbd>W A S D</kbd> Bewegen</span><span><kbd>MAUS</kbd> Umsehen</span><span><kbd>SHIFT</kbd> Sprinten</span><span><kbd>J</kbd> Jobzentrale</span><span><kbd>F</kbd> Fahrzeug</span>
+  <span class="hint">Tipp: Klicke ins Spielfeld, um die Maus zu aktivieren.</span>
+</footer>
+<script type="module" src="script.js"></script>
+</body>
+</html>

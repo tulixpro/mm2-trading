@@ -115,3 +115,9 @@ Hinweis: Das ist ein stilisiertes Low-Poly-Schadensmodell, keine realistische Ka
 - Coupé bekommt ein ausgearbeitetes Heck, Transporter zusätzliche Seiten- und Laderaumdetails.
 - Supersportwagen erhält zusätzliche Lufteinlässe und Diffusor-Details.
 - Ergänzte Radlauf-Akzente für einen plastischeren Look.
+
+
+### Fahrzeugmodelle 0.3.5
+- Durchsichtiger gestaltete Scheiben und sichtbarer Innenraum mit Vorder- und Rücksitzen, Kopfstützen und Türverkleidungen.
+- Armaturenbrett mit Display, Mittelkonsole, Schalthebel und Lenkrad.
+- Initialisierung der Scheinwerfer-Referenzen vor ihrer Verwendung korrigiert.

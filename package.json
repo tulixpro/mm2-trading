@@ -1,7 +1,7 @@
 {
   "name": "frankfurt-life",
-  "version": "0.4.9",
-  "description": "Frankfurt Life - low-end laptop and Android touch support",
+  "version": "0.5.0",
+  "description": "Frankfurt Life - optimized desktop city game with camera and MainFeed",
   "main": "electron/main.cjs",
   "author": "Frankfurt Life Community",
   "license": "UNLICENSED",

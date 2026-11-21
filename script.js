@@ -17,18 +17,18 @@ const fovSelect=document.querySelector('#fovSelect');
 let maxFps=60,lastFrame=0;
 let perfHud=null,perfFrames=[],perfLastCheck=0,autoResolutionScale=1,perfHudTimer=0;
 const legacyMode=new URLSearchParams(location.search).get('legacy')==='1';
-const lowEndDevice=legacyMode||(navigator.hardwareConcurrency||4)<=4||(navigator.deviceMemory||8)<=6;
+const lowEndDevice=legacyMode||(navigator.hardwareConcurrency||8)<=2||(navigator.deviceMemory||8)<=4;
 const liteMode=lowEndDevice;
 let performanceFrame=0;
 const qualitySettings={
  minimum:{pixelRatio:.22,shadows:false,fog:38,exposure:.78,ambient:1.15,label:'ULTRA-SPARMODUS'},
  legacy:{pixelRatio:.32,shadows:false,fog:58,exposure:.82,ambient:1.25,label:'LAPTOP-SPARMODUS'},
 
- low:{pixelRatio:.45,shadows:false,fog:88,exposure:.86,ambient:1.5,label:'NIEDRIG'},
- medium:{pixelRatio:.72,shadows:false,fog:145,exposure:1,ambient:1.85,label:'MITTEL'},
- high:{pixelRatio:1,shadows:true,fog:205,exposure:1.08,ambient:2.05,label:'HOCH'},
- maximum:{pixelRatio:1.25,shadows:true,fog:260,exposure:1.12,ambient:2.2,label:'MAXIMAL'},
- advanced:{pixelRatio:1.1,shadows:true,fog:245,exposure:1.12,ambient:2.25,label:'ERWEITERT'}
+ low:{pixelRatio:.58,shadows:false,fog:125,exposure:.92,ambient:1.65,label:'NIEDRIG'},
+ medium:{pixelRatio:.88,shadows:false,fog:185,exposure:1.04,ambient:1.95,label:'MITTEL'},
+ high:{pixelRatio:1,shadows:true,fog:225,exposure:1.08,ambient:2.1,label:'HOCH'},
+ maximum:{pixelRatio:1.15,shadows:true,fog:260,exposure:1.12,ambient:2.2,label:'MAXIMAL'},
+ advanced:{pixelRatio:1.05,shadows:true,fog:245,exposure:1.12,ambient:2.2,label:'ERWEITERT'}
 };
 let sunLight=null,hemiLight=null,flashlight=null,flashlightTarget=null,flashlightOn=false;
 function applyQuality(){
@@ -1571,12 +1571,12 @@ function loop(now=0){
 }
 function begin(){
   if(started)return;started=true;placeholder?.remove();
-  if(qualitySelect){const saved=localStorage.getItem('flQuality');qualitySelect.value=lowEndDevice?'minimum':(saved&&qualitySettings[saved]?saved:(saved==='ultra'?'minimum':'medium'));}
+  if(qualitySelect){const saved=localStorage.getItem('flQuality');qualitySelect.value=lowEndDevice?'low':(saved&&qualitySettings[saved]?saved:(saved==='ultra'?'low':'medium'));}
   if(fpsSelect){const savedFps=localStorage.getItem('flFps');fpsSelect.value=savedFps|| (lowEndDevice?'30':'60');maxFps=fpsSelect.value==='unlimited'?0:Number(fpsSelect.value);}
   if(mouseSelect){mouseSelect.value=localStorage.getItem('flMouse')||'1';mouseSensitivity=Number(mouseSelect.value)||1;}
   if(fovSelect){fovSelect.value=localStorage.getItem('flFov')||'68';cameraFov=Number(fovSelect.value)||68;}
   if(cameraSelect){cameraSelect.value=localStorage.getItem('flCamera')||'follow';cameraMode=cameraSelect.value||'follow';}
-  status.textContent=lowEndDevice?'LAPTOP-SPARMODUS AKTIV · REDUZIERTE STADTDETAILS':'STADT GELADEN · KLICKE INS SPIEL';
+  status.textContent=lowEndDevice?'LAPTOP-MODUS · OPTIMIERTE GRAFIK':'STADT GELADEN · KLICKE INS SPIEL';
   try{
     renderer=new THREE.WebGLRenderer({antialias:!lowEndDevice,powerPreference:lowEndDevice?'low-power':'high-performance',stencil:false,depth:true});
     renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,1));

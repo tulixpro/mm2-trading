@@ -1,11 +1,13 @@
 #include "FLRealisticGameMode.h"
 #include "FLRealisticCharacter.h"
 #include "FLRealisticCityBlock.h"
+#include "FLRealisticHUD.h"
 #include "Engine/World.h"
 
 AFLRealisticGameMode::AFLRealisticGameMode()
 {
     DefaultPawnClass = AFLRealisticCharacter::StaticClass();
+    HUDClass = AFLRealisticHUD::StaticClass();
     bStartPlayersAsSpectators = false;
 }
 

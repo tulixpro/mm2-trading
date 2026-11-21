@@ -276,9 +276,9 @@ function openDealer(){
 
 function building(x,z,w,d,h,color){
   const g=new THREE.Group();
-  const body=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),new THREE.MeshLambertMaterial({color}));
+  const body=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),new THREE.MeshStandardMaterial({color,roughness:.88,metalness:.035}));
   body.position.y=h/2;g.add(body);
-  if(liteMode){const simpleRoof=new THREE.Mesh(new THREE.BoxGeometry(w*1.03,.35,d*1.03),new THREE.MeshLambertMaterial({color:0x26364b}));simpleRoof.position.y=h+.15;g.add(simpleRoof);g.position.set(x,0,z);scene.add(g);return;}
+  if(liteMode){const simpleRoof=new THREE.Mesh(new THREE.BoxGeometry(w*1.03,.35,d*1.03),new THREE.MeshStandardMaterial({color:0x26364b,roughness:.82,metalness:.08}));simpleRoof.position.y=h+.15;g.add(simpleRoof);g.position.set(x,0,z);scene.add(g);return;}
   const roof=new THREE.Mesh(new THREE.BoxGeometry(w*1.03,.35,d*1.03),new THREE.MeshLambertMaterial({color:0x26364b}));
   roof.position.y=h+.15;g.add(roof);
   for(let y=2;y<h-1;y+=2.6){

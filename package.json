@@ -1,7 +1,7 @@
 {
   "name": "frankfurt-life",
-  "version": "0.3.0",
-  "description": "Frankfurt Life - 3D city exploration prototype with daily goals and city-life systems",
+  "version": "0.3.1",
+  "description": "Frankfurt Life - 3D city exploration prototype with persistent vehicle damage, repair shop and city-life systems",
   "main": "electron/main.cjs",
   "author": "Frankfurt Life Community",
   "license": "UNLICENSED",

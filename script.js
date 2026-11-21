@@ -32,9 +32,9 @@ const qualitySettings={
  legacy:{pixelRatio:.58,shadows:false,fog:135,exposure:.94,ambient:1.55,label:'RETRO-3D'},
  low:{pixelRatio:.5,shadows:false,fog:118,exposure:.92,ambient:1.55,label:'NIEDRIG'},
  medium:{pixelRatio:.84,shadows:false,fog:180,exposure:1.02,ambient:1.85,label:'MITTEL'},
- high:{pixelRatio:.94,shadows:false,fog:220,exposure:1.06,ambient:2,label:'HOCH'},
- maximum:{pixelRatio:1,shadows:true,fog:235,exposure:1.1,ambient:2.1,label:'MAXIMAL'},
- advanced:{pixelRatio:.92,shadows:true,fog:220,exposure:1.08,ambient:2,label:'ERWEITERT'}
+ high:{pixelRatio:1,shadows:true,shadowMapSize:1536,fog:245,exposure:1.08,ambient:1.75,label:'HOCH · ECHTZEIT-SCHATTEN'},
+ maximum:{pixelRatio:1.15,shadows:true,shadowMapSize:2048,fog:270,exposure:1.1,ambient:1.65,label:'MAXIMAL · 2K-SCHATTEN'},
+ advanced:{pixelRatio:1.05,shadows:true,shadowMapSize:2048,fog:250,exposure:1.08,ambient:1.7,label:'ERWEITERT · 2K-SCHATTEN'}
 };
 let sunLight=null,hemiLight=null,flashlight=null,flashlightTarget=null,flashlightOn=false;
 function applyQuality(){
@@ -42,9 +42,11 @@ function applyQuality(){
  const mode=qualitySelect?.value||'medium',q=qualitySettings[mode]||qualitySettings.medium;
  renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,(classicEdition?Math.min(q.pixelRatio,.68):q.pixelRatio)*autoResolutionScale));
  renderer.shadowMap.enabled=classicEdition?false:q.shadows;
+ renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+ renderer.shadowMap.autoUpdate=true;
  renderer.toneMappingExposure=classicEdition?.92:q.exposure;
  if(scene.fog)scene.fog.far=classicEdition?125:q.fog;
- if(sunLight){sunLight.intensity=classicEdition?1.2:mode==='minimum'?1.0:mode==='legacy'?1.15:mode==='low'?1.25:mode==='medium'?1.55:mode==='high'?1.9:2.05;sunLight.castShadow=q.shadows;sunLight.shadow.mapSize.set(1024,1024);sunLight.shadow.camera.left=-65;sunLight.shadow.camera.right=65;sunLight.shadow.camera.top=65;sunLight.shadow.camera.bottom=-65;sunLight.shadow.camera.near=1;sunLight.shadow.camera.far=140;sunLight.shadow.camera.updateProjectionMatrix();}
+ if(sunLight){sunLight.intensity=classicEdition?1.2:mode==='minimum'?1.0:mode==='legacy'?1.15:mode==='low'?1.25:mode==='medium'?1.55:mode==='high'?1.9:2.05;sunLight.castShadow=q.shadows;const shadowResolution=q.shadowMapSize||1024;sunLight.shadow.mapSize.set(shadowResolution,shadowResolution);sunLight.shadow.camera.left=-65;sunLight.shadow.camera.right=65;sunLight.shadow.camera.top=65;sunLight.shadow.camera.bottom=-65;sunLight.shadow.camera.near=1;sunLight.shadow.camera.far=140;sunLight.shadow.camera.updateProjectionMatrix();}
  if(hemiLight)hemiLight.intensity=q.ambient;
  scene.traverse(obj=>{if(obj.isMesh){obj.castShadow=q.shadows;obj.receiveShadow=q.shadows;}});
  const hint=document.querySelector('#graphicsHint')||document.querySelector('#qualityStatus');
@@ -1708,15 +1710,15 @@ document.addEventListener('visibilitychange',()=>{
 });
 function begin(){
   if(started)return;started=true;placeholder?.remove();
-  if(qualitySelect){const saved=localStorage.getItem('flQuality');qualitySelect.value=lowEndDevice?'legacy':(saved&&qualitySettings[saved]?saved:(saved==='ultra'?'legacy':'medium'));}
+  if(qualitySelect){const saved=localStorage.getItem('flQuality');qualitySelect.value=lowEndDevice?'legacy':(saved&&qualitySettings[saved]?saved:(saved==='ultra'?'legacy':'high'));}
   if(fpsSelect){const savedFps=localStorage.getItem('flFps');fpsSelect.value=savedFps||(lowEndDevice?'30':'60');maxFps=fpsSelect.value==='unlimited'?0:Number(fpsSelect.value);}
   if(mouseSelect){mouseSelect.value=localStorage.getItem('flMouse')||'1';mouseSensitivity=Number(mouseSelect.value)||1;}
   if(fovSelect){fovSelect.value=localStorage.getItem('flFov')||'68';cameraFov=Number(fovSelect.value)||68;}
   if(cameraSelect){cameraSelect.value=localStorage.getItem('flCamera')||'follow';cameraMode=cameraSelect.value||'follow';}
   status.textContent=lowEndDevice?'OLD-SCHOOL-MODUS · STADT BLEIBT GUT ERKENNBAR':'STADT GELADEN · KLICKE INS SPIEL';
   try{
-    renderer=new THREE.WebGLRenderer({antialias:false,powerPreference:'high-performance',stencil:false,depth:true,preserveDrawingBuffer:false});
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,classicEdition?.66:lowEndDevice?.68:.92));
+    renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance',stencil:false,depth:true,preserveDrawingBuffer:false});
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,classicEdition?.66:lowEndDevice?.68:1));
     renderer.outputColorSpace=THREE.SRGBColorSpace;
     renderer.toneMapping=THREE.ACESFilmicToneMapping;
     renderer.shadowMap.type=THREE.PCFSoftShadowMap;

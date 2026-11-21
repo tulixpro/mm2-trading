@@ -34,25 +34,14 @@
  <div class="game-frame">
   <div class="game-topline"><span><b>FRANKFURT LIFE</b> / CITY BLOCK 01</span><span id="gameStatus">BEREIT ZUM START</span></div>
   <div class="game-settings"><label>GRAFIK <select id="qualitySelect"><option value="low">Niedrig</option><option value="medium" selected>Mittel</option><option value="high">Hoch</option></select></label><label>FPS-LIMIT <select id="fpsSelect"><option value="30">30 FPS</option><option value="60" selected>60 FPS</option><option value="unlimited">Unbegrenzt</option></select></label><span id="graphicsHint">Für ältere Grafikkarten: Niedrig</span></div>
-  <div id="gameViewport"><div class="game-placeholder"><div class="crosshair">＋</div><div class="placeholder-title">DEIN FRANKFURT<br><em>WARTET.</em></div><p>Erkunde den Stadtbereich mit Fußgängern und einem Polizei-Streifenwagen.</p><button id="startGame" class="button primary">Demo starten →</button><small>WASD bewegen · Maus umsehen · Shift schneller · ESC pausieren</small></div></div>
+  <div id="gameViewport"><div class="game-placeholder"><div class="crosshair">＋</div><div class="placeholder-title">DEIN FRANKFURT<br><em>WARTET.</em></div><p>Erkunde den Stadtbereich mit Fußgängern und einem Polizei-Streifenwagen.</p><button id="startGame" class="button primary">Demo starten →</button><small>WASD bewegen · Maus umsehen · Shift schneller · J Jobs · ESC pausieren</small></div></div>
   <div class="game-controls"><span><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> Bewegen</span><span><kbd>Maus</kbd> Umsehen</span><span><kbd>Shift</kbd> Schneller</span><span><kbd>ESC</kbd> Pause</span><span id="coords">SEKTOR 01</span></div>
  </div>
 </section>
 <section class="jobs-section section-wrap" id="jobs">
- <div class="section-heading"><div><div class="eyebrow">BERUFE & FAHRZEUGE</div><h2>Dein Job. <em>Dein Auto.</em></h2></div><span class="status"><i></i> 8 JOBS</span></div>
- <div class="jobs-panel">
-  <div class="job-copy"><h3>Starte deinen Arbeitstag</h3><p>Wähle einen Beruf. Jeder Job hat ein passendes Dienstfahrzeug. Nimm den Auftrag an und das Fahrzeug erscheint in der 3D-Stadt.</p>
-   <label for="jobSelect">BERUF AUSWÄHLEN</label><select id="jobSelect" class="job-select"></select>
-   <p id="jobInfo" class="job-info">Wähle einen Beruf aus.</p><button id="acceptJob" class="button primary">Job annehmen →</button>
-  </div>
-  <div class="job-list">
-   <div><b>Paketdienst</b><span>Golf-Kompaktwagen</span></div><div><b>VIP-Chauffeur</b><span>Supersportwagen</span></div>
-   <div><b>Business-Fahrer</b><span>Premium-Limousine</span></div><div><b>Kurierdienst</b><span>Elektro-Sportback</span></div>
-   <div><b>Premium-Transport</b><span>Luxus-Coupé</span></div><div><b>Taxi-Fahrer</b><span>Taxi-Limousine</span></div>
-   <div><b>Möbeltransport</b><span>Transporter</span></div><div><b>Stadtwerke</b><span>Service-Kombi</span></div>
-  </div>
- </div>
- <p class="vehicle-note">Die Fahrzeuge sind eigenständige, prozedural erstellte 3D-Spielmodelle als erste Modellstufe – keine fertigen Hersteller-Originalmodelle.</p>
+ <div class="section-heading"><div><div class="eyebrow">DIREKT IM SPIEL</div><h2>Jobs gehören <em>in die Stadt.</em></h2></div><span class="status"><i></i> IN-GAME-MENÜ</span></div>
+ <p>Starte die 3D-Demo und drücke <kbd>J</kbd>. Dort findest du acht Berufe mit passenden Dienstfahrzeugen. Auftrag annehmen, Fahrzeug erscheint in der Spielwelt.</p>
+ <p class="vehicle-note">Fahrzeugtypen: Kompaktwagen, Supersportwagen, Limousine, Sportback, Coupé, Taxi, Transporter und Service-Kombi. Erste prozedurale 3D-Modelle – noch keine fotorealistischen Originalmodelle.</p>
 </section>
 <section class="feature-grid section-wrap">
  <article><span class="feature-no">01 / CITY</span><div class="feature-icon">⌂</div><h3>Stadt erkunden</h3><p>Ein erster Frankfurter Stadtblock mit Straßen, Gebäuden und Bäumen.</p></article>
@@ -60,10 +49,10 @@
  <article><span class="feature-no">03 / POLIZEI</span><div class="feature-icon">✦</div><h3>Polizei-Streifenwagen</h3><p>Ein sichtbarer Streifenwagen mit blinkendem Blaulicht – weitere Funktionen sind später geplant.</p></article>
 </section>
 <section class="download-section section-wrap" id="download">
- <div class="download-copy"><div class="eyebrow">WINDOWS-VERSION</div><h2>Frankfurt Life<br><em>für Windows.</em></h2><p>Die Windows-App wird über einen automatischen Build vorbereitet. Ein Download erscheint erst, wenn die Datei gebaut und auf Windows getestet wurde.</p></div>
+ <div class="download-copy"><div class="eyebrow">WINDOWS-VERSION</div><h2>Frankfurt Life<br><em>für Windows.</em></h2><p>Windows-x64-Build. Bitte beachte: Die App benötigt beim Start eine Internetverbindung für die 3D-Bibliothek.</p></div>
  <div class="download-options">
   <div class="download-card active"><div class="platform">BROWSER <span class="tag ready">PROTOTYP</span></div><h3>Web-Demo</h3><p>3D-Demo direkt im Browser – keine Installation nötig.</p><a href="#game" class="download-link">Demo öffnen <b>→</b></a></div>
-  <div class="download-card"><div class="platform">WINDOWS 11 · x64 <span class="tag planned">BUILD LÄUFT ÜBER GITHUB</span></div><h3>Windows Installer (.exe)</h3><p>Installationsassistent mit Startmenü-Eintrag. Der Download erscheint nach erfolgreichem Build.</p><span class="disabled-link">Noch kein getesteter Download</span></div>
+  <div class="download-card"><div class="platform">WINDOWS 11 · x64 <span class="tag planned">BUILD LÄUFT ÜBER GITHUB</span></div><h3>Windows Installer (.exe)</h3><p>Installationsassistent mit Startmenü-Eintrag. Der Download erscheint nach erfolgreichem Build.</p><span class="disabled-link">Build wird erstellt</span></div>
   <div class="download-card"><div class="platform">WINDOWS 11 · x64 <span class="tag planned">BUILD VORBEREITET</span></div><h3>Portable Version (.exe)</h3><p>Startet ohne Installationsassistent direkt aus dem Download-Ordner.</p><span class="disabled-link">Noch kein getesteter Download</span></div>
  </div>
 </section>

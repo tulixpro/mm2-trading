@@ -35,3 +35,7 @@
 .mission-hud{position:absolute;z-index:7;left:16px;top:16px;width:min(300px,calc(100% - 32px));padding:14px 16px;border:1px solid #49d7df88;border-radius:14px;background:#081827eF;color:#eefaff;box-shadow:0 12px 35px #0007;pointer-events:none;animation:mission-pop .25s ease}
 .mission-hud.hidden{display:none}@keyframes mission-pop{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}
 .mission-hud b{display:block;color:#72e2e5;font-size:10px;letter-spacing:1.8px}.mission-hud span{display:block;font-size:16px;font-weight:800;margin:6px 0}.mission-hud small{font-size:11px;color:#b8ccdc}.mission-track{height:5px;background:#ffffff20;border-radius:6px;margin-top:10px;overflow:hidden}.mission-track i{display:block;height:100%;width:0;background:#47d8d4;transition:width .3s}
+
+/* Damage feedback and destructible street props */
+.damage-hud{position:absolute;z-index:7;right:16px;bottom:68px;min-width:190px;padding:12px 14px;border:1px solid #ffb15b88;border-radius:12px;background:#101923eF;color:#fff;pointer-events:none;animation:mission-pop .2s ease}
+.damage-hud.hidden{display:none}.damage-hud b{display:block;color:#ffc17b;font-size:10px;letter-spacing:1.5px}.damage-hud span{display:block;font-size:12px;margin:5px 0 9px}.damage-bars{display:flex;gap:5px}.damage-bars i{height:6px;flex:1;border-radius:4px;background:#48d6b0}.damage-bars i.lost{background:#ef795d}

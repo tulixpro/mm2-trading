@@ -1,4 +1,4 @@
-import * as THREE from './node_modules/three/build/three.module.js';
+const THREE = await import('./node_modules/three/build/three.module.js').catch(()=>import('https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js'));
 
 const startButton=document.querySelector('#startGame');
 const placeholder=document.querySelector('.game-placeholder');

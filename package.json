@@ -1,7 +1,7 @@
 {
   "name": "frankfurt-life",
-  "version": "0.3.9",
-  "description": "Frankfurt Life - 3D city prototype with tire slip, drifting and progressive vehicle damage",
+  "version": "0.4.0",
+  "description": "Frankfurt Life - 3D city prototype with expanded graphics controls and low-end PC support",
   "main": "electron/main.cjs",
   "author": "Frankfurt Life Community",
   "license": "UNLICENSED",

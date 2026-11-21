@@ -1,17 +1,20 @@
 {
   "name": "frankfurt-life",
-  "version": "0.1.0",
+  "version": "0.1.2",
   "description": "Frankfurt Life - 3D city exploration prototype",
   "main": "electron/main.cjs",
-  "author": "Frankfurt Life Community",
+  "author": "F3L1X",
   "license": "UNLICENSED",
   "scripts": {
     "start": "electron .",
     "dist": "electron-builder --win nsis portable --publish never"
   },
+  "dependencies": {
+    "three": "0.160.0"
+  },
   "devDependencies": {
-    "electron": "^33.2.1",
-    "electron-builder": "^25.1.8"
+    "electron": "41.7.1",
+    "electron-builder": "26.18.0"
   },
   "build": {
     "appId": "de.frankfurtlife.game",

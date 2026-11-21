@@ -1,10 +1,11 @@
-name: Build Frankfurt Life for Windows
+name: Build and check Frankfurt Life for Windows
 
 on:
   workflow_dispatch:
   push:
     branches:
       - main
+      - frankfurt-life-security-review
     paths:
       - 'index.html'
       - 'style.css'
@@ -25,6 +26,8 @@ jobs:
           node-version: 20
       - name: Install dependencies
         run: npm install
+      - name: Check dependency advisories
+        run: npm audit --audit-level=high
       - name: Build Windows installer and portable app
         run: npm run dist
       - name: Upload Windows builds

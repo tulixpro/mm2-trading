@@ -237,3 +237,13 @@ Hinweis: NPCs bleiben stilisierte Low-Poly-Figuren. Die Shop-Sequenz ist eine ku
 - Der Browser-/PWA-Build benötigt beim ersten Start eine Internetverbindung für Three.js.
 
 Hinweis zum Teststatus: Der Windows-Build kann automatisiert gebaut werden; das beweist noch nicht, dass das Spiel auf jedem älteren Laptop startet oder dort eine bestimmte FPS-Zahl erreicht. Ein echter Test auf dem betroffenen Gerät ist weiterhin nötig.
+
+
+## Native Unreal Engine projects (in development)
+
+Two separate Unreal starter projects now live under [Unreal/](Unreal/):
+
+- [Realistic Edition – Unreal Engine 5.4](Unreal/Realistic/FrankfurtLifeRealistic.uproject) for newer gaming PCs/laptops.
+- [San Andreas Edition – Unreal Engine 4.27](Unreal/SanAndreas/FrankfurtLifeSanAndreas.uproject) for a lighter retro-styled target.
+
+These are **project scaffolds only**, not finished playable Unreal games. The existing browser/Electron game remains the playable prototype. The Unreal editions still need the city world, art assets, player/vehicle systems, missions, cutscenes, audio, packaging and hardware testing.

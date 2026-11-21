@@ -48,3 +48,10 @@ Die ursprüngliche Version bleibt auf `main`; diese Neugestaltung liegt auf `fra
 - Tastatur und Controller können parallel verwendet werden.
 - Zusätzliche Zebrastreifen, animierte Ampeln und zwei gestaltete Bushaltestellen.
 - PS5-Portierung ist nicht enthalten; dafür sind Sonys Entwicklerzugang und das PlayStation-SDK erforderlich.
+
+
+## Version 0.2.6 – Größere Stadt & Smartphone-Update
+- Stadtgebiet auf ungefähr 360 × 520 Spielmeter erweitert, mit zusätzlichen Außenbezirken, Wohnblocks, Straßen und Geschäften.
+- Bewegungsgrenzen und Straßen-/Geländeflächen an das größere Gebiet angepasst.
+- GPS-Minimap öffnet per Klick die große Stadtkarte mit Spielerposition, Geschäften, Autohaus und Missionsziel.
+- Handy-Einstellungen für Grafikqualität, FPS, Maus-Empfindlichkeit, Sichtfeld, Kamera und Minimap-Sichtbarkeit.

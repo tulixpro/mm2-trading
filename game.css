@@ -194,3 +194,11 @@ body.action-edition .controls{border-top-color:#b75b4a}
 
 /* Frankfurt Life Classic: eigenständiger Retro-3D-Look */
 .classic-edition{background:#171b20;color:#e7dfc7}.classic-edition .hud{background:#20251f;border-color:#6c694c}.classic-edition .brand{color:#e7dfc7}.classic-edition .settings select,.classic-edition .open-settings{background:#30382b;border-color:#77734c;color:#f0e7c8}.classic-edition #gameViewport{background:#7e9279}.classic-edition #gameViewport canvas{image-rendering:pixelated}.classic-edition .controls{background:#20251f;color:#d6d0b4;border-color:#77734c}.classic-edition .game-placeholder{filter:saturate(.82) contrast(1.08)}
+
+
+/* Distinct visual grading for the two 3D editions */
+.modern-edition #gameViewport{background:linear-gradient(#243f60,#a9c4d0 57%,#3d4850 58%,#101a28)}
+.modern-edition #gameViewport canvas{filter:saturate(1.12) contrast(1.045) brightness(1.025)}
+.classic-edition #gameViewport{background:linear-gradient(#b49a72,#d0b88b 57%,#514735 58%,#25251f)}
+.classic-edition #gameViewport canvas{image-rendering:pixelated;filter:sepia(.22) saturate(.84) contrast(1.1) brightness(.94)}
+.classic-edition .hud,.classic-edition .controls{box-shadow:inset 0 -1px #8c7953}

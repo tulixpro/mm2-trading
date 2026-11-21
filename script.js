@@ -367,11 +367,12 @@ function makePedestrian(x,z,index){
 function makeCar(x,z,color,police=false,model='sedan'){
   const car=new THREE.Group();
   const paint=new THREE.MeshStandardMaterial({color,roughness:.38,metalness:.28});
-  const glass=new THREE.MeshStandardMaterial({color:0x182b3a,roughness:.18,metalness:.18});
+  const glass=new THREE.MeshStandardMaterial({color:0x182b3a,roughness:.18,metalness:.18,transparent:true,opacity:.48});
   const black=new THREE.MeshStandardMaterial({color:0x10151b,roughness:.7});
   const chrome=new THREE.MeshStandardMaterial({color:0xb8c4ce,metalness:.8,roughness:.22});
   const light=new THREE.MeshBasicMaterial({color:0xfff0c8});
   const tail=new THREE.MeshBasicMaterial({color:0xff2638});
+  const headlights=[];
   const profile={
     hatch:{length:3.9,width:1.82,height:.68,cabin:1.45,roof:1.34,hood:1.25},
     super:{length:4.55,width:2.02,height:.48,cabin:1.05,roof:1.04,hood:1.8},
@@ -386,6 +387,49 @@ function makeCar(x,z,color,police=false,model='sedan'){
   const rear=new THREE.Mesh(new THREE.BoxGeometry(W*.94,.22,Math.max(.65,L-profile.hood-1.7)),paint);rear.position.set(0,.79,-L*.34);car.add(rear);
   const cabin=new THREE.Mesh(new THREE.BoxGeometry(W*.78,profile.cabin,L*.43),glass);cabin.position.set(0,1.08,-.12);car.add(cabin);
   const roof=new THREE.Mesh(new THREE.BoxGeometry(W*.72,.12,L*.32),paint);roof.position.set(0,1.08+profile.cabin/2,-.18);car.add(roof);
+  // Sichtbarer Innenraum: Sitze, Kopfstützen, Mittelkonsole und Armaturenbrett.
+  const upholstery=new THREE.MeshStandardMaterial({color:0x252b32,roughness:.92});
+  const seatAccent=new THREE.MeshStandardMaterial({color:0x46515c,roughness:.82});
+  const dashMat=new THREE.MeshStandardMaterial({color:0x171d24,roughness:.72});
+  const screenMat=new THREE.MeshBasicMaterial({color:0x4ac6d8});
+  const cabinFloor=new THREE.Mesh(new THREE.BoxGeometry(W*.68,.09,L*.34),black);
+  cabinFloor.position.set(0,.76,-.12);car.add(cabinFloor);
+  for(const side of [-1,1]){
+    for(const z of [.16,-.48]){
+      const seatBase=new THREE.Mesh(new THREE.BoxGeometry(.58,.16,.58),upholstery);
+      seatBase.position.set(side*W*.19,.91,z);car.add(seatBase);
+      const seatBack=new THREE.Mesh(new THREE.BoxGeometry(.58,.62,.17),upholstery);
+      seatBack.position.set(side*W*.19,1.19,z-.19);seatBack.rotation.x=-.08;car.add(seatBack);
+      const headrest=new THREE.Mesh(new THREE.BoxGeometry(.32,.2,.16),seatAccent);
+      headrest.position.set(side*W*.19,1.58,z-.18);car.add(headrest);
+      const seatStripe=new THREE.Mesh(new THREE.BoxGeometry(.035,.42,.025),seatAccent);
+      seatStripe.position.set(side*W*.19,1.2,z-.095);car.add(seatStripe);
+    }
+    const doorPanel=new THREE.Mesh(new THREE.BoxGeometry(.09,.22,L*.27),upholstery);
+    doorPanel.position.set(side*W*.37,.91,-.13);car.add(doorPanel);
+    const innerHandle=new THREE.Mesh(new THREE.BoxGeometry(.045,.035,.18),chrome);
+    innerHandle.position.set(side*W*.405,1.02,-.04);car.add(innerHandle);
+  }
+  const dashboard=new THREE.Mesh(new THREE.BoxGeometry(W*.72,.22,.3),dashMat);
+  dashboard.position.set(0,1.02,.48);car.add(dashboard);
+  const instrumentPanel=new THREE.Mesh(new THREE.BoxGeometry(.48,.13,.035),black);
+  instrumentPanel.position.set(-.25,1.16,.48);car.add(instrumentPanel);
+  const centerScreen=new THREE.Mesh(new THREE.BoxGeometry(.28,.17,.035),screenMat);
+  centerScreen.position.set(.12,1.17,.48);car.add(centerScreen);
+  const consoleBase=new THREE.Mesh(new THREE.BoxGeometry(.3,.12,.62),dashMat);
+  consoleBase.position.set(0,.91,-.08);car.add(consoleBase);
+  const gearLever=new THREE.Mesh(new THREE.CylinderGeometry(.035,.045,.22,8),chrome);
+  gearLever.position.set(-.02,1.08,.04);car.add(gearLever);
+  const steeringColumn=new THREE.Mesh(new THREE.CylinderGeometry(.045,.045,.32,10),black);
+  steeringColumn.rotation.x=Math.PI/2;steeringColumn.position.set(-.42,1.08,.43);car.add(steeringColumn);
+  const steeringWheel=new THREE.Mesh(new THREE.TorusGeometry(.19,.025,8,20),black);
+  steeringWheel.position.set(-.42,1.2,.59);car.add(steeringWheel);
+  const wheelHub=new THREE.Mesh(new THREE.CylinderGeometry(.055,.055,.055,10),chrome);
+  wheelHub.rotation.x=Math.PI/2;wheelHub.position.set(-.42,1.2,.59);car.add(wheelHub);
+  for(let n=0;n<3;n++){
+    const spoke=new THREE.Mesh(new THREE.BoxGeometry(.025,.32,.025),chrome);
+    spoke.position.set(-.42,1.2,.59);spoke.rotation.z=n*Math.PI/3;car.add(spoke);
+  }
   const frontGlass=new THREE.Mesh(new THREE.BoxGeometry(W*.76,.04,.58),glass);frontGlass.position.set(0,1.34,L*.16);frontGlass.rotation.x=-.42;car.add(frontGlass);
   const backGlass=new THREE.Mesh(new THREE.BoxGeometry(W*.72,.04,.48),glass);backGlass.position.set(0,1.31,-L*.34);backGlass.rotation.x=.48;car.add(backGlass);
   for(const side of [-1,1]){
@@ -413,7 +457,6 @@ function makeCar(x,z,color,police=false,model='sedan'){
   const scratches=[0,1,2,3].map(i=>{const z=-.8+i*.48;const line=new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(-W*.48,.7,z),new THREE.Vector3(-W*.49,.78,z+.22),new THREE.Vector3(-W*.48,.72,z+.38)]),scratchMat);line.visible=false;car.add(line);return line;});
   const dentMat=new THREE.MeshStandardMaterial({color:0x45464b,roughness:.9});
   const sideDents=[-1,1].map(side=>{const dent=new THREE.Mesh(new THREE.SphereGeometry(.22,8,6),dentMat);dent.scale.set(.08,.22,.48);dent.position.set(side*W*.505,.69,.12);dent.visible=false;car.add(dent);return dent;});
-  const headlights=[];
   const frontBumper=new THREE.Mesh(new THREE.BoxGeometry(W*1.02,.16,.18),black);frontBumper.position.set(0,.42,L*.52);car.add(frontBumper);
   const rearBumper=new THREE.Mesh(new THREE.BoxGeometry(W*1.02,.16,.18),black);rearBumper.position.set(0,.42,-L*.52);car.add(rearBumper);
   const hoodDent=new THREE.Mesh(new THREE.SphereGeometry(.55,12,8),new THREE.MeshStandardMaterial({color:0x20252b,roughness:.95}));hoodDent.scale.set(1,.08,.55);hoodDent.position.set(0,.94,L*.32);hoodDent.visible=false;car.add(hoodDent);

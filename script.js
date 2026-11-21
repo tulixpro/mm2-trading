@@ -19,7 +19,7 @@ const mouseSelect=document.querySelector('#mouseSelect');
 const fovSelect=document.querySelector('#fovSelect');
 let maxFps=60,lastFrame=0;
 let perfHud=null,perfFrames=[],perfLastCheck=0,autoResolutionScale=1,perfHudTimer=0;
-const legacyMode=classicEdition||new URLSearchParams(location.search).get('legacy')==='1';
+const legacyMode=new URLSearchParams(location.search).get('legacy')==='1';
 const lowEndDevice=legacyMode||(navigator.hardwareConcurrency||8)<=2||(navigator.deviceMemory||8)<=4;
 const liteMode=lowEndDevice;
 let performanceFrame=0;

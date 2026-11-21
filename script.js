@@ -213,7 +213,7 @@ function createShop(x,z,side,name,subtitle,color){
  }
  const base=new THREE.Mesh(new THREE.BoxGeometry(8.3,.24,10.3),trimMat);base.position.y=.12;g.add(base);
  g.position.set(x,0,z);scene.add(g);
- const products=name==='BÄCKEREI'?[{name:'Brot',price:4},{name:'Brezel',price:3},{name:'Croissant',price:4},{name:'Kuchen',price:5},{name:'Kaffee',price:4}]:name==='TUNINGWERK'?[{name:'Motor-Upgrade',price:850,kind:'tuning',id:'engine'},{name:'Sonderlackierung',price:280,kind:'tuning',id:'paint'},{name:'Sportfelgen',price:420,kind:'tuning',id:'wheels'}]:[{name:'Kaffee',price:4},{name:'Snack',price:3},{name:'Stadtplan',price:8}];
+ const products=name.startsWith('BÄCKEREI')?[{name:'Brot',price:4},{name:'Brezel',price:3},{name:'Croissant',price:4},{name:'Kuchen',price:5},{name:'Kaffee',price:4}]:name==='PIZZERIA ROMA'?[{name:'Pizza',price:9},{name:'Pasta',price:8},{name:'Limo',price:3}]:name==='TUNINGWERK'?[{name:'Motor-Upgrade',price:850,kind:'tuning',id:'engine'},{name:'Sonderlackierung',price:280,kind:'tuning',id:'paint'},{name:'Sportfelgen',price:420,kind:'tuning',id:'wheels'}]:[{name:'Kaffee',price:4},{name:'Snack',price:3},{name:'Stadtplan',price:8}];
  shops.push({name,subtitle,x,z,side,products});
 }
 function streetLamp(x,z){
@@ -279,6 +279,13 @@ function makeCar(x,z,color,police=false,model='sedan'){
     const rearLight=new THREE.Mesh(new THREE.BoxGeometry(.32,.14,.08),tail);rearLight.position.set(side*W*.34,.78,-L*.505);car.add(rearLight);
   }
   const grille=new THREE.Mesh(new THREE.BoxGeometry(W*.42,.18,.06),black);grille.position.set(0,.64,L*.51);car.add(grille);
+  // Kleine Karosserie-Details: Türgriffe, Seitenschweller und Auspuffrohre.
+  for(const side of [-1,1]){
+    const handle=new THREE.Mesh(new THREE.BoxGeometry(.055,.07,.28),chrome);handle.position.set(side*W*.505,.91,-.12);car.add(handle);
+    const sill=new THREE.Mesh(new THREE.BoxGeometry(.09,.16,L*.58),black);sill.position.set(side*W*.5,.39,0);car.add(sill);
+    const archTrim=new THREE.Mesh(new THREE.TorusGeometry(.39,.045,6,16,Math.PI),black);archTrim.rotation.z=Math.PI;archTrim.rotation.y=Math.PI/2;archTrim.position.set(side*W*.52,.43,L*.32);car.add(archTrim);
+  }
+  const exhaust=new THREE.Mesh(new THREE.CylinderGeometry(.075,.075,.18,10),chrome);exhaust.rotation.x=Math.PI/2;exhaust.position.set(W*.3,.36,-L*.52);car.add(exhaust);
   const bumper=new THREE.Mesh(new THREE.BoxGeometry(W*1.02,.16,.16),chrome);bumper.position.set(0,.39,L*.51);car.add(bumper);
   const crackMat=new THREE.LineBasicMaterial({color:0xd9f4ff,transparent:true,opacity:.85});
   const crackPoints=[new THREE.Vector3(-.45,1.34,.19),new THREE.Vector3(-.1,1.15,.2),new THREE.Vector3(.1,1.3,.2),new THREE.Vector3(.42,1.17,.2)];
@@ -610,6 +617,8 @@ function makeCity(){
     const rz=z-7,right=rightShops.get(rz);if(right)createShop(15,rz,1,...right);else building(15,rz,8,12,15+Math.random()*25,0x77828c);
   }
   createShop(-15,52,-1,'TUNINGWERK','FAHRWERK · FELGEN · LACK',0x4d718c);
+  createShop(15,72,1,'BÄCKEREI AM MAIN','BRÖTCHEN · BREZELN · KUCHEN',0xc58b43);
+  createShop(-15,92,-1,'PIZZERIA ROMA','PIZZA · PASTA · LIEFERDIENST',0xb94d3c);
   // Wohnviertel mit Mehrfamilienhäusern, Balkonen und Hauseingängen
   const homeColors=[0xc5b9a5,0xb8c2c5,0xd1c3ae,0x9daeb4,0xc8b6a6,0xb4b9aa];
   for(let i=0;i<6;i++){

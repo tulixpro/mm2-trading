@@ -1,0 +1,35 @@
+name: Build Frankfurt Life for Windows
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - frankfurt-life-redesign
+    paths:
+      - 'index.html'
+      - 'style.css'
+      - 'script.js'
+      - 'package.json'
+      - 'electron/**'
+      - '.github/workflows/windows-build.yml'
+
+jobs:
+  windows-build:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install dependencies
+        run: npm install
+      - name: Build Windows installer and portable app
+        run: npm run dist
+      - name: Upload Windows builds
+        uses: actions/upload-artifact@v4
+        with:
+          name: Frankfurt-Life-Windows-x64
+          path: dist/*
+          if-no-files-found: error

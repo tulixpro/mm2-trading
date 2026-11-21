@@ -11,6 +11,9 @@ on:
     paths:
       - 'index.html'
       - 'game.html'
+      - 'manifest.webmanifest'
+      - 'sw.js'
+      - 'electron-builder-legacy.yml'
       - 'game.css'
       - 'style.css'
       - 'script.js'
@@ -43,6 +46,11 @@ jobs:
         env:
           CSC_LINK: ${{ secrets.WINDOWS_CERTIFICATE }}
           CSC_KEY_PASSWORD: ${{ secrets.WINDOWS_CERTIFICATE_PASSWORD }}
+      - name: Build legacy laptop edition
+        run: npm run dist:legacy
+        env:
+          CSC_LINK: ${{ secrets.WINDOWS_CERTIFICATE }}
+          CSC_KEY_PASSWORD: ${{ secrets.WINDOWS_CERTIFICATE_PASSWORD }}
       - name: Upload Windows builds
         uses: actions/upload-artifact@v4
         with:
@@ -50,6 +58,7 @@ jobs:
           path: |
             dist/*
             dist-action/*
+            dist-legacy/*
           if-no-files-found: error
           retention-days: 7
 
@@ -65,5 +74,6 @@ jobs:
           files: |
             dist/*.exe
             dist-action/*.exe
+            dist-legacy/*.exe
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

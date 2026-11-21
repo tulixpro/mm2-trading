@@ -1,7 +1,7 @@
 {
   "name": "frankfurt-life",
-  "version": "0.5.0",
-  "description": "Frankfurt Life - optimized desktop city game with camera and MainFeed",
+  "version": "0.5.1",
+  "description": "Frankfurt Life - Windows desktop game packaged with Electron",
   "main": "electron/main.cjs",
   "author": "Frankfurt Life Community",
   "license": "UNLICENSED",

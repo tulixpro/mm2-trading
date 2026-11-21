@@ -97,9 +97,9 @@ const dealerCars=[
  {id:'alpina',name:'Luxury Coupé',model:'coupe',color:0x075b45,price:5200,desc:'Elegantes Oberklasse-Coupé.'},
  {id:'super',name:'Super Sport',model:'super',color:0xd7ed12,price:9500,desc:'Für schnelle Ausfahrten.'},
  {id:'van',name:'Cargo Van',model:'van',color:0xe6e8e8,price:2400,desc:'Viel Platz für Transportjobs.'},
- {id:'bmw-xm-label',name:'XM Label · 748 PS',model:'suv',color:0x263b35,price:185000,desc:'Großes Performance-SUV · 748 PS · prozedurales Platzhaltermodell, kein Original-3D-Scan.'},
- {id:'bmw-m3-touring',name:'BMW M3 Competition Touring · 530 PS',model:'sedan',color:0x1c3548,price:118000,desc:'530 PS · 650 Nm · 0–100 km/h: 3,6 s · generische Platzhalter-Karosserie, kein lizenziertes BMW-3D-Modell.'},
- {id:'porsche-911-gts',name:'Porsche 911 Carrera GTS · 541 PS',model:'super',color:0x8f171d,price:165000,desc:'541 PS Systemleistung · 610 Nm Systemdrehmoment · 0–100 km/h: 3,0 s · generische Platzhalter-Karosserie, kein lizenziertes Porsche-3D-Modell.'}
+ {id:'bmw-xm-label',name:'XM Label · 748 PS',model:'suv',color:0x263b35,price:185000,performance:{top:250,power:1.58},desc:'Großes Performance-SUV · 748 PS · prozedurales Platzhaltermodell, kein Original-3D-Scan.'},
+ {id:'bmw-m3-touring',name:'BMW M3 Competition Touring · 530 PS',model:'sedan',color:0x1c3548,price:118000,performance:{top:250,power:1.42},desc:'530 PS · 650 Nm · 0–100 km/h: 3,6 s · generische Platzhalter-Karosserie, kein lizenziertes BMW-3D-Modell.'},
+ {id:'porsche-911-gts',name:'Porsche 911 Carrera GTS · 541 PS',model:'super',color:0x8f171d,price:165000,performance:{top:312,power:1.5},desc:'541 PS Systemleistung · 610 Nm Systemdrehmoment · 0–100 km/h: 3,0 s · generische Platzhalter-Karosserie, kein lizenziertes Porsche-3D-Modell.'}
 ];
 let dealerPanel=null,dealership={x:-28,z:82,name:'Frankfurt Motors'};
 /* 0.2.9 gameplay systems */
@@ -267,7 +267,7 @@ function openDealer(){
    const msg=dealerPanel.querySelector('#dealerMessage');
    if(!owned&&careerMoney<car.price){msg.textContent='Nicht genug Geld. Verdiene Geld mit Missionen.';return;}
    if(!owned){careerMoney-=car.price;ownedCars.push(car.id);if(careerHud)careerHud.innerHTML='KONTO: '+careerMoney.toLocaleString('de-DE')+' €<br>AUFTRÄGE: '+completedJobs+'<br>★ RUF: '+Math.min(5,1+Math.floor(completedJobs/2))+'/5';msg.textContent=car.name+' gekauft! Es steht jetzt in deiner Garage.';button.querySelector('span').textContent=car.desc+' · IN GARAGE';}
-   else{if(jobCar)scene.remove(jobCar);jobCar=makeCar(camera.position.x+3,camera.position.z-5,car.color,false,car.model);jobCar.rotation.y=yaw;applyCarTuning(jobCar);damageLevel=flSavedDamage;applyCarDamage(jobCar,damageLevel);if(damageLevel)refreshDamageHud();msg.textContent=car.name+' bereitgestellt. Gehe hin und drücke F.';}
+   else{if(jobCar)scene.remove(jobCar);jobCar=makeCar(camera.position.x+3,camera.position.z-5,car.color,false,car.model,car.performance);jobCar.rotation.y=yaw;applyCarTuning(jobCar);damageLevel=flSavedDamage;applyCarDamage(jobCar,damageLevel);if(damageLevel)refreshDamageHud();msg.textContent=car.name+' bereitgestellt. Gehe hin und drücke F.';}
   });list.appendChild(button);
  }
  dealerPanel.classList.remove('hidden');document.exitPointerLock?.();
@@ -478,10 +478,10 @@ function makePedestrian(x,z,index){
   if(index%7===0){const cap=new THREE.Mesh(new THREE.CylinderGeometry(.19,.2,.07,10),new THREE.MeshStandardMaterial({color:shirts[(index+3)%shirts.length]}));cap.position.y=2.08;group.add(cap);}
   group.position.set(x,0,z);group.userData={originX:x,originZ:z,phase:index*.8,speed:.35+(index%4)*.09,arms,legs,torso,head};pedestrians.push(group);scene.add(group);
 }
-function makeCar(x,z,color,police=false,model='sedan'){
+function makeCar(x,z,color,police=false,model='sedan',performanceOverride=null){
   const car=new THREE.Group();
-  const paint=new THREE.MeshStandardMaterial({color,roughness:.38,metalness:.28});
-  const glass=new THREE.MeshStandardMaterial({color:0x182b3a,roughness:.12,metalness:.08,transparent:true,opacity:.13,depthWrite:false});
+  const paint=new THREE.MeshPhysicalMaterial({color,roughness:.24,metalness:.52,clearcoat:.95,clearcoatRoughness:.14,envMapIntensity:1.15});
+  const glass=new THREE.MeshPhysicalMaterial({color:0x182b3a,roughness:.075,metalness:.03,clearcoat:1,clearcoatRoughness:.08,transparent:true,opacity:.2,depthWrite:false,envMapIntensity:1.2});
   const black=new THREE.MeshStandardMaterial({color:0x10151b,roughness:.7});
   const chrome=new THREE.MeshStandardMaterial({color:0xb8c4ce,metalness:.8,roughness:.22});
   const light=new THREE.MeshBasicMaterial({color:0xfff0c8});
@@ -503,6 +503,7 @@ function makeCar(x,z,color,police=false,model='sedan'){
     super:{top:335,power:1.55},van:{top:155,power:.72},
     suv:{top:250,power:1.58}
   }[model]||{top:190,power:.95};
+  if(performanceOverride){vehiclePerformance.top=performanceOverride.top||vehiclePerformance.top;vehiclePerformance.power=performanceOverride.power||vehiclePerformance.power;}
   car.userData.maxSpeedKmh=vehiclePerformance.top;
   car.userData.enginePower=vehiclePerformance.power;
   car.userData.maxForwardSpeed=.47*(vehiclePerformance.top/240)*vehiclePerformance.power;
@@ -905,9 +906,9 @@ function toggleShop(){
     else if(item.id==='turbo'){if(turboLevel>=2){careerMoney+=item.price;message.textContent='Turbo bereits auf Maximalstufe.';}else{turboLevel++;message.textContent='Turbo-Kit installiert · Stufe '+turboLevel+'/2';}}
     else if(item.id==='paint'){paintLevel++;const colors=[0x1687d9,0x19a875,0xd4a62a,0x9b58bd,0xb51e2b,0xf0f0e8,0x171b22,0x6d202b];const color=colors[paintLevel%colors.length];if(jobCar.userData.damageParts){jobCar.userData.damageParts.originalColor=color;jobCar.userData.damageParts.paint.color.setHex(color);}message.textContent='Neue Lackierung montiert · Farbton '+(paintLevel%colors.length+1)+'/8';}
     else if(item.id==='wheels'){tuningMods.rims=true;applyCarTuning(jobCar);message.textContent='Sportfelgen montiert!';}
-    else if(item.id==='spoiler'){tuningMods.spoiler=true;applyCarTuning(jobCar);message.textContent='Heckspoiler montiert!';}
-    else if(item.id==='lowered'){tuningMods.lowered=true;applyCarTuning(jobCar);message.textContent='Sportfahrwerk montiert · Fahrzeug tiefergelegt.';}
-    else if(item.id==='tint'){tuningMods.tinted=true;applyCarTuning(jobCar);message.textContent='Scheiben dezent getönt.';}
+    else if(item.id==='spoiler'){if(tuningMods.spoiler){careerMoney+=item.price;message.textContent='Heckspoiler bereits montiert.';}else{tuningMods.spoiler=true;applyCarTuning(jobCar);message.textContent='Heckspoiler montiert!';}}
+    else if(item.id==='lowered'){if(tuningMods.lowered){careerMoney+=item.price;message.textContent='Sportfahrwerk bereits eingebaut.';}else{tuningMods.lowered=true;applyCarTuning(jobCar);message.textContent='Sportfahrwerk montiert · Fahrzeug tiefergelegt.';}}
+    else if(item.id==='tint'){if(tuningMods.tinted){careerMoney+=item.price;message.textContent='Scheiben sind bereits getönt.';}else{tuningMods.tinted=true;applyCarTuning(jobCar);message.textContent='Scheiben dezent getönt.';}}
    }else{inventory[item.name]=(inventory[item.name]||0)+1;message.textContent=item.name+' gekauft! Im Inventar: '+inventory[item.name];}
    if(careerHud)careerHud.innerHTML='KONTO: '+careerMoney.toLocaleString('de-DE')+' €<br>AUFTRÄGE: '+completedJobs+'<br>★ RUF: '+Math.min(5,1+Math.floor(completedJobs/2))+'/5';
   });

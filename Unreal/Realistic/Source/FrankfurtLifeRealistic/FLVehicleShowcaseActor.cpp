@@ -30,7 +30,16 @@ void AFLVehicleShowcaseActor::AddPart(UStaticMesh* Mesh, const FVector& Location
     Part->SetRelativeLocation(Location);
     Part->SetRelativeRotation(Rotation);
     Part->SetRelativeScale3D(Scale);
-    if (UMaterialInterface* BaseMaterial = Part->GetMaterial(0))\n    {\n        if (UMaterialInstanceDynamic* DynamicMaterial = UMaterialInstanceDynamic::Create(BaseMaterial, this))\n        {\n            DynamicMaterial->SetVectorParameterValue(TEXT("Color"), Tint);\n            DynamicMaterial->SetVectorParameterValue(TEXT("BaseColor"), Tint);\n            Part->SetMaterial(0, DynamicMaterial);\n        }\n    }\n    Part->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+    if (UMaterialInterface* BaseMaterial = Part->GetMaterial(0))
+    {
+        if (UMaterialInstanceDynamic* DynamicMaterial = UMaterialInstanceDynamic::Create(BaseMaterial, this))
+        {
+            DynamicMaterial->SetVectorParameterValue(TEXT("Color"), Tint);
+            DynamicMaterial->SetVectorParameterValue(TEXT("BaseColor"), Tint);
+            Part->SetMaterial(0, DynamicMaterial);
+        }
+    }
+    Part->SetCollisionEnabled(ECollisionEnabled::NoCollision);
     Part->SetMobility(EComponentMobility::Movable);
     Part->RegisterComponent();
 }

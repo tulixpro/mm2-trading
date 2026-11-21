@@ -29,11 +29,11 @@ void AFLRealisticGameMode::StartPlay()
             Params);
 
         const FVector VehicleSpots[] = {
-            FVector(-220, -1450, 0),
-            FVector(220, 1450, 0),
-            FVector(-1450, 220, 0),
-            FVector(1450, -220, 0),
-            FVector(0, -1150, 0)
+            FVector(-220, -1450, 85),
+            FVector(220, 1450, 85),
+            FVector(-1450, 220, 85),
+            FVector(1450, -220, 85),
+            FVector(0, -1150, 85)
         };
         const float VehicleYaw[] = { 0.0f, 180.0f, 90.0f, -90.0f, 180.0f };
         for (int32 Index = 0; Index < 5; ++Index)

@@ -10,7 +10,7 @@
 <body>
 <header class="topbar">
   <a class="brand" href="#"><span class="brand-mark">FL</span><span>FRANKFURT <b>LIFE</b></span></a>
-  <nav><a href="#game">Spiel testen</a><a href="#features">Features</a><a href="#download">Download</a></nav>
+  <nav><a href="#game">Spiel testen</a><a href="#jobs">Jobs & Autos</a><a href="#features">Features</a><a href="#download">Download</a></nav>
   <a class="top-cta" href="#download">Spiel holen <span>↗</span></a>
 </header>
 <main>
@@ -37,6 +37,22 @@
   <div id="gameViewport"><div class="game-placeholder"><div class="crosshair">＋</div><div class="placeholder-title">DEIN FRANKFURT<br><em>WARTET.</em></div><p>Erkunde den Stadtbereich mit Fußgängern und einem Polizei-Streifenwagen.</p><button id="startGame" class="button primary">Demo starten →</button><small>WASD bewegen · Maus umsehen · Shift schneller · ESC pausieren</small></div></div>
   <div class="game-controls"><span><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> Bewegen</span><span><kbd>Maus</kbd> Umsehen</span><span><kbd>Shift</kbd> Schneller</span><span><kbd>ESC</kbd> Pause</span><span id="coords">SEKTOR 01</span></div>
  </div>
+</section>
+<section class="jobs-section section-wrap" id="jobs">
+ <div class="section-heading"><div><div class="eyebrow">BERUFE & FAHRZEUGE</div><h2>Dein Job. <em>Dein Auto.</em></h2></div><span class="status"><i></i> 8 JOBS</span></div>
+ <div class="jobs-panel">
+  <div class="job-copy"><h3>Starte deinen Arbeitstag</h3><p>Wähle einen Beruf. Jeder Job hat ein passendes Dienstfahrzeug. Nimm den Auftrag an und das Fahrzeug erscheint in der 3D-Stadt.</p>
+   <label for="jobSelect">BERUF AUSWÄHLEN</label><select id="jobSelect" class="job-select"></select>
+   <p id="jobInfo" class="job-info">Wähle einen Beruf aus.</p><button id="acceptJob" class="button primary">Job annehmen →</button>
+  </div>
+  <div class="job-list">
+   <div><b>Paketdienst</b><span>Golf-Kompaktwagen</span></div><div><b>VIP-Chauffeur</b><span>Supersportwagen</span></div>
+   <div><b>Business-Fahrer</b><span>Premium-Limousine</span></div><div><b>Kurierdienst</b><span>Elektro-Sportback</span></div>
+   <div><b>Premium-Transport</b><span>Luxus-Coupé</span></div><div><b>Taxi-Fahrer</b><span>Taxi-Limousine</span></div>
+   <div><b>Möbeltransport</b><span>Transporter</span></div><div><b>Stadtwerke</b><span>Service-Kombi</span></div>
+  </div>
+ </div>
+ <p class="vehicle-note">Die Fahrzeuge sind eigenständige, prozedural erstellte 3D-Spielmodelle als erste Modellstufe – keine fertigen Hersteller-Originalmodelle.</p>
 </section>
 <section class="feature-grid section-wrap">
  <article><span class="feature-no">01 / CITY</span><div class="feature-icon">⌂</div><h3>Stadt erkunden</h3><p>Ein erster Frankfurter Stadtblock mit Straßen, Gebäuden und Bäumen.</p></article>

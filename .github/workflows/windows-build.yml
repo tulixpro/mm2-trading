@@ -10,6 +10,8 @@ on:
       - main
     paths:
       - 'index.html'
+      - 'game.html'
+      - 'game.css'
       - 'style.css'
       - 'script.js'
       - 'package.json'

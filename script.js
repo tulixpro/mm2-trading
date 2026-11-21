@@ -38,7 +38,8 @@ const policeCars=[];
 const trafficCars=[];
 const streetLights=[];
 const shops=[];
-const inventory={Kaffee:0,Snack:0,Stadtplan:0};
+const inventory={Kaffee:0,Snack:0,Stadtplan:0,Brot:0,Brezel:0,Croissant:0,Kuchen:0};
+let miniMapCanvas=null,miniMapCtx=null,tuningLevel=0,paintLevel=0,mouseSensitivity=1,cameraFov=68;
 let shopPanel=null,currentShop=null;
 const clock=new THREE.Clock();
 let missionHud=null,jobStops=[],jobStopIndex=0;
@@ -77,7 +78,7 @@ function openPhoneApp(app){
  grid.classList.add('hidden');page.classList.remove('hidden');
  const pos=camera?Math.round(camera.position.x)+' / '+Math.round(camera.position.z):'–';
  const pages={
- map:'<div class="phone-page-head">Stadtkarte</div><div class="phone-map"><span>● Dein Standort</span><i>▦</i><i>▦</i><i>▦</i><b>MAIN</b></div><p>Position: '+pos+'</p>',
+ map:'<div class="phone-page-head">Stadtkarte</div><div class="phone-map"><canvas id="phoneMapCanvas" width="520" height="420"></canvas></div><p>GPS-Position: '+pos+'</p>',
  jobs:'<div class="phone-page-head">Missionen</div><div class="phone-stat">Aktive Aufträge <b>'+(jobActive?'1':'0')+'</b></div><div class="phone-stat">Erledigt <b>'+completedJobs+'</b></div><p>Öffne die Jobzentrale und wähle deinen nächsten Auftrag.</p><button data-action="jobs">Jobzentrale öffnen</button>',
  bank:'<div class="phone-page-head">Frankfurt Bank</div><div class="phone-balance">'+careerMoney.toLocaleString('de-DE')+' €</div><p>Dein Kontostand</p><div class="phone-stat">Abgeschlossene Jobs <b>'+completedJobs+'</b></div>',
  garage:'<div class="phone-page-head">Meine Garage</div><p>Eigene Fahrzeuge: '+ownedCars.length+'</p>'+ownedCars.map(id=>'<div class="phone-stat">'+(dealerCars.find(v=>v.id===id)?.name||id)+' <b>✓</b></div>').join('')+'<button data-action="dealer">Autohändler öffnen</button>',
@@ -91,6 +92,7 @@ function openPhoneApp(app){
  help:'<div class="phone-page-head">Hilfe & Steuerung</div><p>WASD bewegen · Maus umsehen · Shift sprinten · J Missionen · F Auto · E Interaktion · F1 Handy.</p>'
  };
  page.innerHTML='<button class="phone-back" data-action="home">‹ Apps</button>'+(pages[app]||'');
+ if(app==='map'){const mc=page.querySelector('#phoneMapCanvas');if(mc){const cx=mc.getContext('2d');cx.fillStyle='#324c51';cx.fillRect(0,0,520,420);cx.strokeStyle='#a6aaa0';cx.lineWidth=18;for(let x=35;x<520;x+=95){cx.beginPath();cx.moveTo(x,0);cx.lineTo(x,420);cx.stroke();}for(let y=35;y<420;y+=85){cx.beginPath();cx.moveTo(0,y);cx.lineTo(520,y);cx.stroke();}cx.fillStyle='#397f98';cx.fillRect(0,345,520,45);cx.fillStyle='#e7e1cc';cx.font='bold 18px Arial';cx.fillText('MAIN',25,374);cx.fillStyle='#f0c65b';cx.font='bold 15px Arial';cx.fillText('BANKENVIERTEL',270,80);cx.fillText('INNENSTADT',40,220);cx.fillStyle='#68e7ff';cx.beginPath();cx.arc(260,210,9,0,Math.PI*2);cx.fill();}}
  page.querySelectorAll('[data-action]').forEach(b=>b.addEventListener('click',()=>{const action=b.dataset.action;if(action==='home')showPhoneHome();if(action==='jobs'){phonePanel.classList.add('hidden');toggleJobs();}if(action==='dealer'){phonePanel.classList.add('hidden');openDealer();}}));
 }
 function togglePhone(){
@@ -127,7 +129,7 @@ function openDealer(){
   button.addEventListener('click',()=>{
    const msg=dealerPanel.querySelector('#dealerMessage');
    if(!owned&&careerMoney<car.price){msg.textContent='Nicht genug Geld. Verdiene Geld mit Missionen.';return;}
-   if(!owned){careerMoney-=car.price;ownedCars.push(car.id);if(careerHud)careerHud.innerHTML='KONTO: '+careerMoney.toLocaleString('de-DE')+' €<br>AUFTRÄGE: '+completedJobs;msg.textContent=car.name+' gekauft! Es steht jetzt in deiner Garage.';button.querySelector('span').textContent=car.desc+' · IN GARAGE';}
+   if(!owned){careerMoney-=car.price;ownedCars.push(car.id);if(careerHud)careerHud.innerHTML='KONTO: '+careerMoney.toLocaleString('de-DE')+' €<br>AUFTRÄGE: '+completedJobs+'<br>★ RUF: '+Math.min(5,1+Math.floor(completedJobs/2))+'/5';msg.textContent=car.name+' gekauft! Es steht jetzt in deiner Garage.';button.querySelector('span').textContent=car.desc+' · IN GARAGE';}
    else{if(jobCar)scene.remove(jobCar);jobCar=makeCar(camera.position.x+3,camera.position.z-5,car.color,false,car.model);jobCar.rotation.y=yaw;msg.textContent=car.name+' bereitgestellt. Gehe hin und drücke F.';}
   });list.appendChild(button);
  }
@@ -207,7 +209,8 @@ function createShop(x,z,side,name,subtitle,color){
  }
  const base=new THREE.Mesh(new THREE.BoxGeometry(8.3,.24,10.3),trimMat);base.position.y=.12;g.add(base);
  g.position.set(x,0,z);scene.add(g);
- shops.push({name,subtitle,x,z,side,products:[{name:'Kaffee',price:4},{name:'Snack',price:3},{name:'Stadtplan',price:8}]});
+ const products=name==='BÄCKEREI'?[{name:'Brot',price:4},{name:'Brezel',price:3},{name:'Croissant',price:4},{name:'Kuchen',price:5},{name:'Kaffee',price:4}]:name==='TUNINGWERK'?[{name:'Motor-Upgrade',price:850,kind:'tuning',id:'engine'},{name:'Sonderlackierung',price:280,kind:'tuning',id:'paint'},{name:'Sportfelgen',price:420,kind:'tuning',id:'wheels'}]:[{name:'Kaffee',price:4},{name:'Snack',price:3},{name:'Stadtplan',price:8}];
+ shops.push({name,subtitle,x,z,side,products});
 }
 function streetLamp(x,z){
  const pole=new THREE.Mesh(new THREE.CylinderGeometry(.07,.11,5.2,7),new THREE.MeshStandardMaterial({color:0x27323b,metalness:.55,roughness:.5}));
@@ -326,7 +329,7 @@ function buildInGameJobs(){
  jobPanel=document.createElement('div');jobPanel.id='inGameJobs';jobPanel.className='ingame-jobs hidden';
  jobPanel.innerHTML='<div class="ingame-jobs-head"><b>FRANKFURT LIFE / JOBZENTRALE</b><button id="closeJobs" aria-label="Schließen">×</button></div><h3>Wähle deinen Beruf</h3><p class="ingame-jobs-hint">Dein Auftrag und das passende Dienstfahrzeug starten direkt in der 3D-Stadt.</p><div id="ingameJobChoices"></div><div id="ingameJobDetail">Wähle einen Job aus.</div><button id="startJob" class="ingame-start" disabled>AUFTRAG ANNEHMEN</button><small>J oder ESC · Menü schließen</small>';
  viewport.appendChild(jobPanel);
- careerHud=document.createElement('div');careerHud.id='careerHud';careerHud.style.cssText='position:absolute;top:14px;right:14px;z-index:8;padding:10px 14px;border:1px solid #ffffff30;border-radius:10px;background:#101b2ddd;color:#fff;font:700 13px/1.6 system-ui;pointer-events:none;';careerHud.innerHTML='KONTO: 0 €<br>AUFTRÄGE: 0';viewport.appendChild(careerHud);
+ careerHud=document.createElement('div');careerHud.id='careerHud';careerHud.style.cssText='position:absolute;top:14px;right:14px;z-index:8;padding:10px 14px;border:1px solid #ffffff30;border-radius:10px;background:#101b2ddd;color:#fff;font:700 13px/1.6 system-ui;pointer-events:none;';careerHud.innerHTML='KONTO: 0 €<br>AUFTRÄGE: 0<br>★ RUF: 1/5';viewport.appendChild(careerHud);
  missionHud=document.createElement('div');missionHud.id='missionHud';missionHud.className='mission-hud hidden';viewport.appendChild(missionHud);
  damageHud=document.createElement('div');damageHud.id='damageHud';damageHud.className='damage-hud hidden';viewport.appendChild(damageHud);
  const choices=jobPanel.querySelector('#ingameJobChoices'),detail=jobPanel.querySelector('#ingameJobDetail'),accept=jobPanel.querySelector('#startJob');
@@ -372,6 +375,23 @@ function toggleJobs(){
  if(!jobPanel.classList.contains('hidden'))document.exitPointerLock?.();
 }
 
+function buildMiniMap(){
+ const wrap=document.createElement('div');wrap.id='miniMap';wrap.innerHTML='<div class="mini-map-title">FRANKFURT · GPS</div><canvas id="miniMapCanvas" width="220" height="220"></canvas><div class="mini-map-coords" id="miniMapCoords">SEKTOR 01</div>';viewport.appendChild(wrap);
+ miniMapCanvas=wrap.querySelector('canvas');miniMapCtx=miniMapCanvas.getContext('2d');
+}
+function drawMiniMap(){
+ if(!miniMapCtx||!camera)return;
+ const c=miniMapCtx,w=220,h=220;c.clearRect(0,0,w,h);c.fillStyle='#243b45';c.fillRect(0,0,w,h);
+ c.strokeStyle='#71877f';c.lineWidth=9;
+ for(let x=24;x<220;x+=42){c.beginPath();c.moveTo(x,0);c.lineTo(x,220);c.stroke();}
+ for(let y=12;y<220;y+=42){c.beginPath();c.moveTo(0,y);c.lineTo(220,y);c.stroke();}
+ c.strokeStyle='#d4c9a7';c.lineWidth=2;c.setLineDash([7,7]);c.beginPath();c.moveTo(110,0);c.lineTo(110,220);c.stroke();c.setLineDash([]);
+ c.fillStyle='#397d91';c.fillRect(0,184,220,17);c.fillStyle='#b8d9e5';c.font='bold 9px Arial';c.fillText('MAIN',8,196);
+ const px=Math.max(8,Math.min(212,110+camera.position.x*.72)),py=Math.max(8,Math.min(212,110+camera.position.z*.55));
+ c.save();c.translate(px,py);c.rotate(-yaw);c.fillStyle='#65e6ff';c.strokeStyle='#06141d';c.lineWidth=2;c.beginPath();c.moveTo(0,-10);c.lineTo(7,8);c.lineTo(0,5);c.lineTo(-7,8);c.closePath();c.fill();c.stroke();c.restore();
+ if(jobDestination){const dx=px+(jobDestination.x-camera.position.x)*.72,dy=py+(jobDestination.z-camera.position.z)*.55;c.fillStyle='#ffd36b';c.beginPath();c.arc(Math.max(5,Math.min(215,dx)),Math.max(5,Math.min(215,dy)),5,0,Math.PI*2);c.fill();}
+ const label=document.querySelector('#miniMapCoords');if(label)label.textContent=Math.round(camera.position.x)+' / '+Math.round(camera.position.z);
+}
 function buildShopInteraction(){
  shopPanel=document.createElement('div');shopPanel.id='shopPanel';shopPanel.className='ingame-jobs hidden';
  shopPanel.innerHTML='<div class="ingame-jobs-head"><b id="shopTitle">FRANKFURT LIFE / GESCHÄFT</b><button id="closeShop" aria-label="Schließen">×</button></div><h3 id="shopName">Geschäft</h3><p id="shopSubtitle" class="ingame-jobs-hint"></p><div id="shopProducts"></div><div id="shopMessage" role="status">Wähle etwas aus.</div><small>E oder ESC · Schließen</small>';
@@ -403,9 +423,14 @@ function toggleShop(){
   button.addEventListener('click',()=>{
    const message=shopPanel.querySelector('#shopMessage');
    if(careerMoney<item.price){message.textContent='Dafür fehlt dir noch Geld. Erledige einen Auftrag mit J.';return;}
-   careerMoney-=item.price;inventory[item.name]=(inventory[item.name]||0)+1;
-   if(careerHud)careerHud.innerHTML='KONTO: '+careerMoney.toLocaleString('de-DE')+' €<br>AUFTRÄGE: '+completedJobs+'<br>INVENTAR: '+Object.values(inventory).reduce((a,b)=>a+b,0);
-   message.textContent=item.name+' gekauft! Im Inventar: '+inventory[item.name];
+   careerMoney-=item.price;
+   if(item.kind==='tuning'){
+    if(!jobCar){message.textContent='Wähle zuerst ein Auto über die Garage oder einen Auftrag.';careerMoney+=item.price;return;}
+    if(item.id==='engine'){tuningLevel=Math.min(3,tuningLevel+1);message.textContent='Motor-Upgrade eingebaut · Leistungsstufe '+tuningLevel;}
+    else if(item.id==='paint'){paintLevel++;const colors=[0x1687d9,0x19a875,0xd4a62a,0x9b58bd,0xb51e2b];jobCar.userData.damageParts?.paint.color.setHex(colors[paintLevel%colors.length]);message.textContent='Neue Lackierung montiert!';}
+    else{jobCar.traverse(o=>{if(o.isMesh&&o.geometry?.type==='CylinderGeometry'&&o.position.y<.6)o.material=new THREE.MeshStandardMaterial({color:0x9da8b3,metalness:.8,roughness:.2});});message.textContent='Sportfelgen montiert!';}
+   }else{inventory[item.name]=(inventory[item.name]||0)+1;message.textContent=item.name+' gekauft! Im Inventar: '+inventory[item.name];}
+   if(careerHud)careerHud.innerHTML='KONTO: '+careerMoney.toLocaleString('de-DE')+' €<br>AUFTRÄGE: '+completedJobs+'<br>★ RUF: '+Math.min(5,1+Math.floor(completedJobs/2))+'/5';
   });
   products.appendChild(button);
  }
@@ -563,7 +588,7 @@ function buildEmergencyServices(){
 }
 function makeCity(){
   scene=new THREE.Scene();scene.background=new THREE.Color(0x91b1c8);scene.fog=new THREE.Fog(0x91b1c8,115,390);
-  camera=new THREE.PerspectiveCamera(68,viewport.clientWidth/viewport.clientHeight,.1,620);camera.position.set(0,2.1,14);
+  camera=new THREE.PerspectiveCamera(cameraFov,viewport.clientWidth/viewport.clientHeight,.1,620);camera.position.set(0,2.1,14);
   flashlight=new THREE.SpotLight(0xddeeff,0,48,Math.PI/7,.42,1.35);
   flashlight.position.set(0,0,0);flashlightTarget=new THREE.Object3D();flashlightTarget.position.set(0,0,-1);
   camera.add(flashlight,flashlightTarget);flashlight.target=flashlightTarget;
@@ -580,6 +605,7 @@ function makeCity(){
     const left=leftShops.get(z);if(left)createShop(-15,z,-1,...left);else building(-15,z,8,12,12+Math.random()*22,0x6c7885);
     const rz=z-7,right=rightShops.get(rz);if(right)createShop(15,rz,1,...right);else building(15,rz,8,12,15+Math.random()*25,0x77828c);
   }
+  createShop(-15,52,-1,'TUNINGWERK','FAHRWERK · FELGEN · LACK',0x4d718c);
   // Wohnviertel mit Mehrfamilienhäusern, Balkonen und Hauseingängen
   const homeColors=[0xc5b9a5,0xb8c2c5,0xd1c3ae,0x9daeb4,0xc8b6a6,0xb4b9aa];
   for(let i=0;i<6;i++){
@@ -636,6 +662,7 @@ function resize(){
 }
 function updateWorld(dt){
   const t=clock.elapsedTime;
+  drawMiniMap();
   for(const car of trafficCars){
     const traffic=car.userData.traffic;
     car.position.z+=traffic.direction*traffic.speed*dt*60;
@@ -725,7 +752,7 @@ function updateBreakableCollisions(dt){
 function move(){
   if(driving&&jobCar){
     const accelerating=keys.KeyW||keys.ArrowUp, braking=keys.KeyS||keys.ArrowDown;
-    if(accelerating)carSpeed=Math.min(0.42,carSpeed+0.012);
+    if(accelerating)carSpeed=Math.min(0.42+tuningLevel*.055,carSpeed+0.012+tuningLevel*.002);
     else if(braking)carSpeed=Math.max(-0.18,carSpeed-0.014);
     else carSpeed*=0.975;
     const steer=(keys.KeyA||keys.ArrowLeft?1:0)-(keys.KeyD||keys.ArrowRight?1:0);
@@ -808,12 +835,12 @@ function begin(){
     renderer.shadowMap.type=THREE.PCFSoftShadowMap;
     renderer.shadowMap.enabled=false;
     sunLight=null;hemiLight=null;
-    makeCity();buildBreakableProps();buildInGameJobs();buildShopInteraction();buildPhone();buildDealerPanel();applyQuality();viewport.appendChild(renderer.domElement);resize();loop();
+    makeCity();buildBreakableProps();buildInGameJobs();buildShopInteraction();buildPhone();buildDealerPanel();buildMiniMap();applyQuality();viewport.appendChild(renderer.domElement);resize();loop();
     renderer.domElement.tabIndex=0;
     renderer.domElement.addEventListener('click',()=>{renderer.domElement.focus();if(!phonePanel||phonePanel.classList.contains('hidden')){try{const result=renderer.domElement.requestPointerLock?.();if(result?.catch)result.catch(()=>{status.textContent='MAUSZIEHEN ZUM UMSEHEN';});}catch(_){status.textContent='MAUSZIEHEN ZUM UMSEHEN';}}});
     renderer.domElement.addEventListener('pointerdown',e=>{if(e.button!==0||locked)return;lookDrag=true;lastPointerX=e.clientX;lastPointerY=e.clientY;});
     document.addEventListener('pointerup',()=>lookDrag=false);
-    const applyMouseLook=(dx,dy)=>{yaw-=dx*.0045;if(driving)cameraLookOffset-=dx*.0045;pitch=Math.max(-1.15,Math.min(1.15,pitch-dy*.0045));};
+    const applyMouseLook=(dx,dy)=>{yaw-=dx*.0045*mouseSensitivity;if(driving)cameraLookOffset-=dx*.0045*mouseSensitivity;pitch=Math.max(-1.15,Math.min(1.15,pitch-dy*.0045*mouseSensitivity));};
     viewport.addEventListener('pointerdown',e=>{if(e.button!==0||e.target.closest('button,select,input,.phone-overlay,.ingame-jobs'))return;lookDrag=true;lastPointerX=e.clientX;lastPointerY=e.clientY;});
     document.addEventListener('pointermove',e=>{if(!lookDrag||locked)return;const dx=e.clientX-lastPointerX,dy=e.clientY-lastPointerY;lastPointerX=e.clientX;lastPointerY=e.clientY;applyMouseLook(dx,dy);});
     document.addEventListener('pointerlockerror',()=>{locked=false;status.textContent='MAUSZIEHEN ZUM UMSEHEN';});

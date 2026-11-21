@@ -157,3 +157,10 @@ Hinweis: Das ist ein stilisiertes Low-Poly-Schadensmodell, keine realistische Ka
 - Die Logo-Dateien werden beim Windows-Build mit in die App aufgenommen.
 
 Hinweis: Die Grafikprofile reduzieren vor allem die GPU-Last. Die tatsächliche Bildrate hängt weiterhin von CPU, GPU und Treibern ab.
+
+
+## Version 0.4.1 – Flughafen & Busverkehr
+- Neues Flughafenareal am Stadtrand mit Terminal, Vorfeld und geparktem Passagierflugzeug.
+- Drei fahrende Stadtbusse auf einer vereinfachten Nord-Süd-Linie.
+- Flughafen-Haltestelle und Flughafen-Express im ÖPNV-Menü.
+- Hinweis: Flugzeug ist zunächst ein statisches 3D-Modell; Busse fahren auf einer einfachen Schleifenroute. Keine realistische Flug- oder Fahrplan-Simulation.

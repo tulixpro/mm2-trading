@@ -1,0 +1,9 @@
+{
+  "FileVersion": 3,
+  "EngineAssociation": "5.4",
+  "Category": "Games",
+  "Description": "Frankfurt Life - Realistic Edition (UE 5.4 starter project)",
+  "Modules": [
+    { "Name": "FrankfurtLifeRealistic", "Type": "Runtime", "LoadingPhase": "Default" }
+  ]
+}

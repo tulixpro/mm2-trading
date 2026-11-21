@@ -1560,10 +1560,12 @@ function loop(now=0){
   const frameMs=lastFrame?now-lastFrame:0;
   if(frameMs>0){perfFrames.push(frameMs);if(perfFrames.length>45)perfFrames.shift();}
   lastFrame=now;const dt=Math.min(clock.getDelta(),.05);
-  if(now-perfLastCheck>2500&&perfFrames.length>=20){
+  if(now-perfLastCheck>3000&&perfFrames.length>=20){
     perfLastCheck=now;const avgMs=perfFrames.reduce((a,b)=>a+b,0)/perfFrames.length;
-    if(avgMs>38&&autoResolutionScale>.18){autoResolutionScale=Math.max(.18,autoResolutionScale*.72);applyQuality();}
+    if(avgMs>34&&autoResolutionScale>.2){autoResolutionScale=Math.max(.2,autoResolutionScale*.78);applyQuality();}
+    else if(avgMs<23&&autoResolutionScale<1){autoResolutionScale=Math.min(1,autoResolutionScale+.06);applyQuality();}
   }
+  if(gamePaused){renderer.render(scene,camera);return;}
   perfHudTimer+=dt;
   if(perfHud&&perfHudTimer>.5){perfHudTimer=0;const avg=perfFrames.length?perfFrames.reduce((a,b)=>a+b,0)/perfFrames.length:0;const fps=avg>0?Math.round(1000/avg):0;perfHud.textContent='FPS: '+(fps||'--')+'\nRender-Skalierung: '+Math.round(autoResolutionScale*100)+'%';}
   move(dt);updateWorld(dt);renderer.render(scene,camera);

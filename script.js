@@ -485,8 +485,12 @@ function makeCar(x,z,color,police=false,model='sedan',performanceOverride=null){
   const glass=new THREE.MeshPhysicalMaterial({color:0x182b3a,roughness:.075,metalness:.03,clearcoat:1,clearcoatRoughness:.08,transparent:true,opacity:.2,depthWrite:false,envMapIntensity:1.2});
   const black=new THREE.MeshStandardMaterial({color:0x10151b,roughness:.7});
   const chrome=new THREE.MeshStandardMaterial({color:0xb8c4ce,metalness:.8,roughness:.22});
-  const light=new THREE.MeshBasicMaterial({color:0xfff0c8});
-  const tail=new THREE.MeshBasicMaterial({color:0xff2638});
+  const light=new THREE.MeshStandardMaterial({color:0xfff1d2,emissive:0xffd58a,emissiveIntensity:.65,roughness:.2,metalness:.08});
+  const tail=new THREE.MeshStandardMaterial({color:0xff2638,emissive:0x9d0718,emissiveIntensity:.8,roughness:.25});
+  const lens=new THREE.MeshPhysicalMaterial({color:0xd9e6ed,transparent:true,opacity:.34,roughness:.08,metalness:.12,clearcoat:1});
+  const badgeDark=new THREE.MeshStandardMaterial({color:0x101820,metalness:.78,roughness:.2});
+  const badgeBlue=new THREE.MeshStandardMaterial({color:0x1678c8,metalness:.42,roughness:.28});
+  const badgeWhite=new THREE.MeshStandardMaterial({color:0xeaf2f6,metalness:.22,roughness:.32});
   const headlights=[],customRims=[];
   const profile={
     hatch:{length:3.9,width:1.82,height:.68,cabin:1.45,roof:1.34,hood:1.25},
@@ -570,13 +574,27 @@ function makeCar(x,z,color,police=false,model='sedan',performanceOverride=null){
   for(const side of [-1,1]){
     const mirror=new THREE.Mesh(new THREE.BoxGeometry(.2,.13,.24),black);mirror.position.set(side*W*.53,1.03,.48);car.add(mirror);
     for(const zw of [-L*.32,L*.32]){
-      const wheel=new THREE.Mesh(new THREE.CylinderGeometry(.37,.37,.2,16),black);wheel.rotation.z=Math.PI/2;wheel.position.set(side*(W*.51),.42,zw);car.add(wheel);
-      const rim=new THREE.Mesh(new THREE.CylinderGeometry(.22,.22,.205,12),chrome);rim.rotation.z=Math.PI/2;rim.position.copy(wheel.position);car.add(rim);customRims.push(rim);
+      const wheel=new THREE.Mesh(new THREE.CylinderGeometry(.37,.37,.24,32),black);wheel.rotation.z=Math.PI/2;wheel.position.set(side*(W*.51),.42,zw);car.add(wheel);
+      const tyreShoulder=new THREE.Mesh(new THREE.TorusGeometry(.315,.055,10,32),rubber);tyreShoulder.rotation.y=Math.PI/2;tyreShoulder.position.copy(wheel.position);car.add(tyreShoulder);
+      const rim=new THREE.Mesh(new THREE.CylinderGeometry(.235,.235,.245,24),chrome);rim.rotation.z=Math.PI/2;rim.position.copy(wheel.position);car.add(rim);customRims.push(rim);
     }
-    const head=new THREE.Mesh(new THREE.BoxGeometry(.36,.13,.08),light);head.position.set(side*W*.34,.78,L*.505);car.add(head);headlights.push(head);
-    const rearLight=new THREE.Mesh(new THREE.BoxGeometry(.32,.14,.08),tail);rearLight.position.set(side*W*.34,.78,-L*.505);car.add(rearLight);
+    const head=new THREE.Mesh(new THREE.BoxGeometry(.42,.15,.09),light);head.position.set(side*W*.34,.78,L*.512);car.add(head);headlights.push(head);
+    const headLens=new THREE.Mesh(new THREE.BoxGeometry(.44,.17,.035),lens);headLens.position.set(side*W*.34,.78,L*.535);car.add(headLens);
+    const drl=new THREE.Mesh(new THREE.BoxGeometry(.34,.025,.018),new THREE.MeshBasicMaterial({color:0xffffff}));drl.position.set(side*W*.34,.735,L*.556);car.add(drl);
+    const rearLight=new THREE.Mesh(new THREE.BoxGeometry(.38,.15,.09),tail);rearLight.position.set(side*W*.34,.78,-L*.512);car.add(rearLight);
+    const rearLens=new THREE.Mesh(new THREE.BoxGeometry(.4,.17,.025),lens);rearLens.position.set(side*W*.34,.78,-L*.54);car.add(rearLens);
   }
-  const grille=new THREE.Mesh(new THREE.BoxGeometry(W*.42,.18,.06),black);grille.position.set(0,.64,L*.51);car.add(grille);
+  const grille=new THREE.Mesh(new THREE.BoxGeometry(W*.48,.2,.075),black);grille.position.set(0,.64,L*.51);car.add(grille);
+  for(let slat=0;slat<7;slat++){const bar=new THREE.Mesh(new THREE.BoxGeometry(.025,.15,.025),rimDark);bar.position.set((slat-3)*W*.055,.64,L*.535);car.add(bar);}
+  // Eigenständiges Frankfurt-Life-Roundel statt eines kopierten Herstellerlogos.
+  const badge=new THREE.Group();
+  const badgeBase=new THREE.Mesh(new THREE.CylinderGeometry(.105,.105,.035,32),badgeDark);badgeBase.rotation.x=Math.PI/2;badge.add(badgeBase);
+  const badgeFace=new THREE.Mesh(new THREE.CircleGeometry(.082,32),badgeBlue);badgeFace.position.z=.02;badge.add(badgeFace);
+  const badgeCrossV=new THREE.Mesh(new THREE.BoxGeometry(.025,.15,.009),badgeWhite);badgeCrossV.position.z=.028;badge.add(badgeCrossV);
+  const badgeCrossH=new THREE.Mesh(new THREE.BoxGeometry(.15,.025,.009),badgeWhite);badgeCrossH.position.z=.028;badge.add(badgeCrossH);
+  const badgeRing=new THREE.Mesh(new THREE.TorusGeometry(.097,.009,8,32),chrome);badgeRing.position.z=.024;badge.add(badgeRing);
+  badge.position.set(0,.79,L*.548);car.add(badge);
+  const rearBadge=badge.clone();rearBadge.position.set(0,.82,-L*.548);rearBadge.rotation.y=Math.PI;car.add(rearBadge);
   // Kleine Karosserie-Details: Türgriffe, Seitenschweller und Auspuffrohre.
   for(const side of [-1,1]){
     const handle=new THREE.Mesh(new THREE.BoxGeometry(.055,.07,.28),chrome);handle.position.set(side*W*.505,.91,-.12);car.add(handle);
@@ -623,6 +641,12 @@ function makeCar(x,z,color,police=false,model='sedan',performanceOverride=null){
     indicator.position.set(side*W*.505,.86,L*.18);car.add(indicator);
     const lowerSill=new THREE.Mesh(new THREE.BoxGeometry(.11,.12,L*.62),trim);
     lowerSill.position.set(side*W*.49,.35,0);car.add(lowerSill);
+  }
+  // Präzisere Haubenkanten, seitliche Luftauslässe und dunkle Diffusor-Akzente.
+  for(const side of [-1,1]){
+    const hoodCrease=new THREE.Mesh(new THREE.BoxGeometry(.025,.018,L*.27),chrome);hoodCrease.position.set(side*W*.31,.94,L*.31);car.add(hoodCrease);
+    const fenderVent=new THREE.Mesh(new THREE.BoxGeometry(.035,.16,.3),black);fenderVent.position.set(side*W*.505,.77,.63);car.add(fenderVent);
+    for(let vent=0;vent<3;vent++){const fin=new THREE.Mesh(new THREE.BoxGeometry(.018,.012,.22),chrome);fin.position.set(side*W*.526,.76,.55+vent*.065);car.add(fin);}
   }
   const frontIntake=new THREE.Mesh(new THREE.BoxGeometry(W*.62,.13,.045),trim);
   frontIntake.position.set(0,.48,L*.525);car.add(frontIntake);

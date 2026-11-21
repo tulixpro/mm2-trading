@@ -39,6 +39,7 @@ const cameraSelect=document.querySelector('#cameraSelect');
 cameraSelect?.addEventListener('change',()=>{cameraMode=cameraSelect.value||'follow';status.textContent='KAMERA: '+({follow:'VERFOLGER',close:'NAH',hood:'MOTORHAUBE'}[cameraMode]||'VERFOLGER');});
 let renderer,scene,camera,raf,started=false,yaw=0,pitch=0,locked=false;
 const keys={};
+const keyboardKeys={};
 const pedestrians=[];
 const policeCars=[];
 const trafficCars=[];
@@ -792,17 +793,19 @@ function pollGamepad(){
  if(!gp){
   if(gamepadWasConnected&&gamepadStatus)gamepadStatus.textContent='CONTROLLER GETRENNT';
   gamepadWasConnected=false;
+  for(const code of ['KeyW','KeyS','KeyA','KeyD','ArrowUp','ArrowDown','ArrowLeft','ArrowRight','ShiftLeft'])keys[code]=!!keyboardKeys[code];
+  gamepadPrevButtons=[];
   return;
  }
  gamepadWasConnected=true;
  if(gamepadStatus)gamepadStatus.textContent='CONTROLLER VERBUNDEN · '+(gp.mapping==='standard'?'STANDARD':'ERKANNT');
  const axis=(i)=>{const v=gp.axes[i]||0;return Math.abs(v)<.16?0:v;};
  const lx=axis(0),ly=axis(1),rx=axis(2),ry=axis(3);
- keys.KeyW=ly<-.22;keys.KeyS=ly>.22;keys.KeyA=lx<-.22;keys.KeyD=lx>.22;
+ keys.KeyW=!!keyboardKeys.KeyW||ly<-.22;keys.KeyS=!!keyboardKeys.KeyS||ly>.22;keys.KeyA=!!keyboardKeys.KeyA||lx<-.22;keys.KeyD=!!keyboardKeys.KeyD||lx>.22;
  // Rechte Achse: Kamera drehen; im Auto bleibt die Fahrtrichtung unabhängig davon.
  if(Math.abs(rx)>.12){if(driving)cameraLookOffset-=rx*.045;else yaw-=rx*.045;}
  if(Math.abs(ry)>.12)pitch=Math.max(-1.15,Math.min(1.15,pitch+ry*.035));
- keys.ShiftLeft=gamepadButton(gp,10);
+ keys.ShiftLeft=!!keyboardKeys.ShiftLeft||gamepadButton(gp,10);
  // Trigger funktionieren auch bei Gamepads, die analoge Werte melden.
  keys.KeyW=keys.KeyW||((gp.buttons[7]?.value||0)>.18);
  keys.KeyS=keys.KeyS||((gp.buttons[6]?.value||0)>.18);
@@ -815,7 +818,7 @@ function pollGamepad(){
  if(pressed(5))toggleFlashlight();
  if(pressed(9)){if(jobPanel&&!jobPanel.classList.contains('hidden'))jobPanel.classList.add('hidden');else if(shopPanel&&!shopPanel.classList.contains('hidden'))shopPanel.classList.add('hidden');else if(phonePanel&&!phonePanel.classList.contains('hidden'))phonePanel.classList.add('hidden');else if(dealerPanel&&!dealerPanel.classList.contains('hidden'))dealerPanel.classList.add('hidden');}
  // D-Pad als alternative Bewegung bzw. Lenkung.
- keys.ArrowUp=gamepadButton(gp,12);keys.ArrowDown=gamepadButton(gp,13);keys.ArrowLeft=gamepadButton(gp,14);keys.ArrowRight=gamepadButton(gp,15);
+ keys.ArrowUp=!!keyboardKeys.ArrowUp||gamepadButton(gp,12);keys.ArrowDown=!!keyboardKeys.ArrowDown||gamepadButton(gp,13);keys.ArrowLeft=!!keyboardKeys.ArrowLeft||gamepadButton(gp,14);keys.ArrowRight=!!keyboardKeys.ArrowRight||gamepadButton(gp,15);
  gamepadPrevButtons=gp.buttons.map(b=>!!b.pressed);
 }
 function toggleShopOrDealer(){
@@ -941,6 +944,6 @@ function begin(){
 startButton?.addEventListener('click',begin);
 // In der eigenständigen Windows-Spielansicht direkt in die 3D-Stadt starten.
 if(document.body.classList.contains('game-app')) begin();
-document.addEventListener('keydown',e=>{keys[e.code]=true;if(e.code==='F1'){e.preventDefault();if(!e.repeat)togglePhone();return;}if(e.code==='KeyE'&&!e.repeat){toggleShopOrDealer();}if(e.code==='KeyF'&&!e.repeat)toggleVehicle();if(e.code==='KeyJ'&&!e.repeat)toggleJobs();if(e.code==='KeyL'&&!e.repeat)toggleFlashlight();if(e.code==='KeyC'&&!e.repeat)cycleCamera();if(e.code==='Escape'&&jobPanel&&!jobPanel.classList.contains('hidden'))jobPanel.classList.add('hidden');if(e.code==='Escape'&&shopPanel&&!shopPanel.classList.contains('hidden'))shopPanel.classList.add('hidden');if(e.code==='Escape'&&phonePanel&&!phonePanel.classList.contains('hidden'))phonePanel.classList.add('hidden');if(e.code==='Escape'&&dealerPanel&&!dealerPanel.classList.contains('hidden'))dealerPanel.classList.add('hidden');if(['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code))e.preventDefault();});
-document.addEventListener('keyup',e=>keys[e.code]=false);
+document.addEventListener('keydown',e=>{keys[e.code]=true;keyboardKeys[e.code]=true;if(e.code==='F1'){e.preventDefault();if(!e.repeat)togglePhone();return;}if(e.code==='KeyE'&&!e.repeat){toggleShopOrDealer();}if(e.code==='KeyF'&&!e.repeat)toggleVehicle();if(e.code==='KeyJ'&&!e.repeat)toggleJobs();if(e.code==='KeyL'&&!e.repeat)toggleFlashlight();if(e.code==='KeyC'&&!e.repeat)cycleCamera();if(e.code==='Escape'&&jobPanel&&!jobPanel.classList.contains('hidden'))jobPanel.classList.add('hidden');if(e.code==='Escape'&&shopPanel&&!shopPanel.classList.contains('hidden'))shopPanel.classList.add('hidden');if(e.code==='Escape'&&phonePanel&&!phonePanel.classList.contains('hidden'))phonePanel.classList.add('hidden');if(e.code==='Escape'&&dealerPanel&&!dealerPanel.classList.contains('hidden'))dealerPanel.classList.add('hidden');if(['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code))e.preventDefault();});
+document.addEventListener('keyup',e=>{keys[e.code]=false;keyboardKeys[e.code]=false;});
 window.addEventListener('resize',resize);

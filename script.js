@@ -79,7 +79,7 @@ const taxiVehicles=[];
 const streetLights=[];
 const shops=[];
 const inventory={Kaffee:0,Snack:0,Stadtplan:0,Brot:0,Brezel:0,Croissant:0,Kuchen:0};
-let miniMapCanvas=null,miniMapCtx=null,tuningLevel=0,paintLevel=0,mouseSensitivity=1,cameraFov=68;
+let miniMapCanvas=null,miniMapCtx=null,tuningLevel=0,paintLevel=0,turboLevel=0,tuningMods={spoiler:false,lowered:false,tinted:false,rims:false},mouseSensitivity=1,cameraFov=68;
 let appetite=65;
 let invertCameraY=localStorage.getItem('flInvertY')==='on';
 let cameraMode='follow',cutscene=null,cutsceneOverlay=null,cutsceneElapsed=0,introTutorial=null;
@@ -106,8 +106,8 @@ let dealerPanel=null,dealership={x:-28,z:82,name:'Frankfurt Motors'};
 let flFuel=100,flGameHour=12,flWeather='Klar',flWeatherTimer=0,flSaveTimer=0,flHomeOwned=false,flHomeFurniture=0,flOutfit=0,flTransitTrips=0,flDailyJobs=0,flDailyRides=0,flDailyClaimed=false,flDailyDate='';
 let flWeatherLabel=null,flFuelLabel=null,flLightingStep=-1,flStatusTimer=0;
 let flRainPoints=null,flRainPositions=null,flWetRoadMaterials=[];
-function flSaveGame(showMessage=false){try{localStorage.setItem('frankfurtLifeSave',JSON.stringify({version:1,money:careerMoney,jobs:completedJobs,position:camera?{x:camera.position.x,z:camera.position.z}:null,ownedCars,inventory,appetite,tuningLevel,paintLevel,fuel:flFuel,hour:flGameHour,weather:flWeather,homeOwned:flHomeOwned,homeFurniture:flHomeFurniture,outfit:flOutfit,transitTrips:flTransitTrips,dailyJobs:flDailyJobs,dailyRides:flDailyRides,dailyClaimed:flDailyClaimed,dailyDate:flDailyDate,vehicleDamage:damageLevel,bankHistory:flBankHistory}));if(showMessage&&status)status.textContent='SPIELSTAND GESPEICHERT';}catch(_){if(showMessage&&status)status.textContent='SPEICHERN NICHT VERFÜGBAR';}}
-function flLoadGame(){try{const d=JSON.parse(localStorage.getItem('frankfurtLifeSave')||'null');if(!d||d.version!==1)return;careerMoney=Math.max(0,Number(d.money)||0);completedJobs=Math.max(0,Number(d.jobs)||0);if(Array.isArray(d.bankHistory))flBankHistory=d.bankHistory.slice(0,12);if(Array.isArray(d.ownedCars))ownedCars.splice(0,ownedCars.length,...d.ownedCars.filter(id=>dealerCars.some(c=>c.id===id)));if(d.inventory&&typeof d.inventory==='object')Object.assign(inventory,d.inventory);appetite=Number.isFinite(Number(d.appetite))?Math.max(0,Math.min(100,Number(d.appetite))):65;tuningLevel=Math.max(0,Number(d.tuningLevel)||0);paintLevel=Math.max(0,Number(d.paintLevel)||0);flFuel=Number.isFinite(Number(d.fuel))?Math.max(0,Math.min(100,Number(d.fuel))):100;flGameHour=Number.isFinite(d.hour)?d.hour:12;flWeather=['Klar','Bewölkt','Regen','Nebel'].includes(d.weather)?d.weather:'Klar';flHomeOwned=!!d.homeOwned;flHomeFurniture=Math.max(0,Number(d.homeFurniture)||0);flOutfit=Math.max(0,Number(d.outfit)||0);flTransitTrips=Math.max(0,Number(d.transitTrips)||0);flDailyJobs=Math.max(0,Number(d.dailyJobs)||0);flDailyRides=Math.max(0,Number(d.dailyRides)||0);flDailyClaimed=!!d.dailyClaimed;flDailyDate=typeof d.dailyDate==='string'?d.dailyDate:'';flSavedDamage=Math.max(0,Math.min(4,Number(d.vehicleDamage)||0));flCheckDailyDate();if(d.position&&camera)camera.position.set(Number.isFinite(Number(d.position.x))?Number(d.position.x):0,2.1,Number.isFinite(Number(d.position.z))?Number(d.position.z):14);if(careerHud)flRefreshCareerHud();}catch(_){}}
+function flSaveGame(showMessage=false){try{localStorage.setItem('frankfurtLifeSave',JSON.stringify({version:1,money:careerMoney,jobs:completedJobs,position:camera?{x:camera.position.x,z:camera.position.z}:null,ownedCars,inventory,appetite,tuningLevel,paintLevel,fuel:flFuel,hour:flGameHour,weather:flWeather,homeOwned:flHomeOwned,homeFurniture:flHomeFurniture,outfit:flOutfit,transitTrips:flTransitTrips,dailyJobs:flDailyJobs,dailyRides:flDailyRides,dailyClaimed:flDailyClaimed,dailyDate:flDailyDate,vehicleDamage:damageLevel,bankHistory:flBankHistory,turboLevel,tuningMods}));if(showMessage&&status)status.textContent='SPIELSTAND GESPEICHERT';}catch(_){if(showMessage&&status)status.textContent='SPEICHERN NICHT VERFÜGBAR';}}
+function flLoadGame(){try{const d=JSON.parse(localStorage.getItem('frankfurtLifeSave')||'null');if(!d||d.version!==1)return;careerMoney=Math.max(0,Number(d.money)||0);completedJobs=Math.max(0,Number(d.jobs)||0);if(Array.isArray(d.bankHistory))flBankHistory=d.bankHistory.slice(0,12);if(Array.isArray(d.ownedCars))ownedCars.splice(0,ownedCars.length,...d.ownedCars.filter(id=>dealerCars.some(c=>c.id===id)));if(d.inventory&&typeof d.inventory==='object')Object.assign(inventory,d.inventory);appetite=Number.isFinite(Number(d.appetite))?Math.max(0,Math.min(100,Number(d.appetite))):65;tuningLevel=Math.max(0,Math.min(3,Number(d.tuningLevel)||0));paintLevel=Math.max(0,Number(d.paintLevel)||0);turboLevel=Math.max(0,Math.min(2,Number(d.turboLevel)||0));if(d.tuningMods&&typeof d.tuningMods==='object')tuningMods={...tuningMods,...d.tuningMods};flFuel=Number.isFinite(Number(d.fuel))?Math.max(0,Math.min(100,Number(d.fuel))):100;flGameHour=Number.isFinite(d.hour)?d.hour:12;flWeather=['Klar','Bewölkt','Regen','Nebel'].includes(d.weather)?d.weather:'Klar';flHomeOwned=!!d.homeOwned;flHomeFurniture=Math.max(0,Number(d.homeFurniture)||0);flOutfit=Math.max(0,Number(d.outfit)||0);flTransitTrips=Math.max(0,Number(d.transitTrips)||0);flDailyJobs=Math.max(0,Number(d.dailyJobs)||0);flDailyRides=Math.max(0,Number(d.dailyRides)||0);flDailyClaimed=!!d.dailyClaimed;flDailyDate=typeof d.dailyDate==='string'?d.dailyDate:'';flSavedDamage=Math.max(0,Math.min(4,Number(d.vehicleDamage)||0));flCheckDailyDate();if(d.position&&camera)camera.position.set(Number.isFinite(Number(d.position.x))?Number(d.position.x):0,2.1,Number.isFinite(Number(d.position.z))?Number(d.position.z):14);if(careerHud)flRefreshCareerHud();}catch(_){}}
 
 function flCheckDailyDate(){const today=new Date().toLocaleDateString('en-CA');if(flDailyDate!==today){flDailyDate=today;flDailyJobs=0;flDailyRides=0;flDailyClaimed=false;}}
 function flClaimDaily(){flCheckDailyDate();if(flDailyClaimed){status.textContent='TAGESBONUS BEREITS ABGEHOLT';return;}if(flDailyJobs<1||flDailyRides<1){status.textContent='ERLEDIGE BEIDE TAGESZIELE ZUERST';openPhoneApp('daily');return;}flDailyClaimed=true;careerMoney+=250;if(careerHud)flRefreshCareerHud();flSaveGame();status.textContent='TAGESBONUS · +250 €';openPhoneApp('daily');}
@@ -267,7 +267,7 @@ function openDealer(){
    const msg=dealerPanel.querySelector('#dealerMessage');
    if(!owned&&careerMoney<car.price){msg.textContent='Nicht genug Geld. Verdiene Geld mit Missionen.';return;}
    if(!owned){careerMoney-=car.price;ownedCars.push(car.id);if(careerHud)careerHud.innerHTML='KONTO: '+careerMoney.toLocaleString('de-DE')+' €<br>AUFTRÄGE: '+completedJobs+'<br>★ RUF: '+Math.min(5,1+Math.floor(completedJobs/2))+'/5';msg.textContent=car.name+' gekauft! Es steht jetzt in deiner Garage.';button.querySelector('span').textContent=car.desc+' · IN GARAGE';}
-   else{if(jobCar)scene.remove(jobCar);jobCar=makeCar(camera.position.x+3,camera.position.z-5,car.color,false,car.model);jobCar.rotation.y=yaw;damageLevel=flSavedDamage;applyCarDamage(jobCar,damageLevel);if(damageLevel)refreshDamageHud();msg.textContent=car.name+' bereitgestellt. Gehe hin und drücke F.';}
+   else{if(jobCar)scene.remove(jobCar);jobCar=makeCar(camera.position.x+3,camera.position.z-5,car.color,false,car.model);jobCar.rotation.y=yaw;applyCarTuning(jobCar);damageLevel=flSavedDamage;applyCarDamage(jobCar,damageLevel);if(damageLevel)refreshDamageHud();msg.textContent=car.name+' bereitgestellt. Gehe hin und drücke F.';}
   });list.appendChild(button);
  }
  dealerPanel.classList.remove('hidden');document.exitPointerLock?.();
@@ -367,7 +367,7 @@ function createShop(x,z,side,name,subtitle,color){
  }
  const base=new THREE.Mesh(new THREE.BoxGeometry(8.3,.24,10.3),trimMat);base.position.y=.12;g.add(base);
  g.position.set(x,0,z);scene.add(g);
- const products=name.startsWith('TANKSTELLE')?[{name:'Benzin 25%',price:90,kind:'fuel'},{name:'Benzin 50%',price:170,kind:'fuel'},{name:'Benzin 100%',price:300,kind:'fuel'}]:name.startsWith('BÄCKEREI')?[{name:'Brot',price:4},{name:'Brezel',price:3},{name:'Croissant',price:4},{name:'Kuchen',price:5},{name:'Kaffee',price:4}]:name.startsWith('PIZZERIA')?[{name:'Pizza',price:9},{name:'Pasta',price:8},{name:'Limo',price:3}]:name.startsWith('RESTAURANT')?[{name:'Burger-Menü',price:12},{name:'Schnitzel',price:16},{name:'Salat',price:9},{name:'Cola',price:3},{name:'Kaffee',price:4}]:name==='TUNINGWERK'?[{name:'Motor-Upgrade',price:850,kind:'tuning',id:'engine'},{name:'Sonderlackierung',price:280,kind:'tuning',id:'paint'},{name:'Sportfelgen',price:420,kind:'tuning',id:'wheels'},{name:'Unfallschäden reparieren',price:Math.max(120,damageLevel*260),kind:'tuning',id:'repair'}]:[{name:'Kaffee',price:4},{name:'Snack',price:3},{name:'Stadtplan',price:8}];
+ const products=name.startsWith('TANKSTELLE')?[{name:'Benzin 25%',price:90,kind:'fuel'},{name:'Benzin 50%',price:170,kind:'fuel'},{name:'Benzin 100%',price:300,kind:'fuel'}]:name.startsWith('BÄCKEREI')?[{name:'Brot',price:4},{name:'Brezel',price:3},{name:'Croissant',price:4},{name:'Kuchen',price:5},{name:'Kaffee',price:4}]:name.startsWith('PIZZERIA')?[{name:'Pizza',price:9},{name:'Pasta',price:8},{name:'Limo',price:3}]:name.startsWith('RESTAURANT')?[{name:'Burger-Menü',price:12},{name:'Schnitzel',price:16},{name:'Salat',price:9},{name:'Cola',price:3},{name:'Kaffee',price:4}]:name==='TUNINGWERK'?[{name:'Motor-Upgrade · Stufe 1–3',price:850,kind:'tuning',id:'engine'},{name:'Turbo-Kit',price:1450,kind:'tuning',id:'turbo'},{name:'Sonderlackierung',price:280,kind:'tuning',id:'paint'},{name:'Sportfelgen',price:420,kind:'tuning',id:'wheels'},{name:'Heckspoiler',price:620,kind:'tuning',id:'spoiler'},{name:'Sportfahrwerk · tieferlegen',price:780,kind:'tuning',id:'lowered'},{name:'Scheibentönung',price:340,kind:'tuning',id:'tint'},{name:'Unfallschäden reparieren',price:Math.max(120,damageLevel*260),kind:'tuning',id:'repair'}]:[{name:'Kaffee',price:4},{name:'Snack',price:3},{name:'Stadtplan',price:8}];
  shops.push({name,subtitle,x,z,side,products});
 }
 
@@ -486,7 +486,7 @@ function makeCar(x,z,color,police=false,model='sedan'){
   const chrome=new THREE.MeshStandardMaterial({color:0xb8c4ce,metalness:.8,roughness:.22});
   const light=new THREE.MeshBasicMaterial({color:0xfff0c8});
   const tail=new THREE.MeshBasicMaterial({color:0xff2638});
-  const headlights=[];
+  const headlights=[],customRims=[];
   const profile={
     hatch:{length:3.9,width:1.82,height:.68,cabin:1.45,roof:1.34,hood:1.25},
     super:{length:4.55,width:2.02,height:.48,cabin:1.05,roof:1.04,hood:1.8},
@@ -569,7 +569,7 @@ function makeCar(x,z,color,police=false,model='sedan'){
     const mirror=new THREE.Mesh(new THREE.BoxGeometry(.2,.13,.24),black);mirror.position.set(side*W*.53,1.03,.48);car.add(mirror);
     for(const zw of [-L*.32,L*.32]){
       const wheel=new THREE.Mesh(new THREE.CylinderGeometry(.37,.37,.2,16),black);wheel.rotation.z=Math.PI/2;wheel.position.set(side*(W*.51),.42,zw);car.add(wheel);
-      const rim=new THREE.Mesh(new THREE.CylinderGeometry(.22,.22,.205,12),chrome);rim.rotation.z=Math.PI/2;rim.position.copy(wheel.position);car.add(rim);
+      const rim=new THREE.Mesh(new THREE.CylinderGeometry(.22,.22,.205,12),chrome);rim.rotation.z=Math.PI/2;rim.position.copy(wheel.position);car.add(rim);customRims.push(rim);
     }
     const head=new THREE.Mesh(new THREE.BoxGeometry(.36,.13,.08),light);head.position.set(side*W*.34,.78,L*.505);car.add(head);headlights.push(head);
     const rearLight=new THREE.Mesh(new THREE.BoxGeometry(.32,.14,.08),tail);rearLight.position.set(side*W*.34,.78,-L*.505);car.add(rearLight);
@@ -691,6 +691,8 @@ function makeCar(x,z,color,police=false,model='sedan'){
     red.position.set(-.28,1.6,-.12);blue.position.set(.28,1.6,-.12);car.add(red,blue);
     car.userData.lights=[red,blue];policeCars.push(car);
   }
+  const tuningSpoiler=new THREE.Group();const spoilerWing=new THREE.Mesh(new THREE.BoxGeometry(W*.76,.075,.25),new THREE.MeshStandardMaterial({color:0x111820,metalness:.48,roughness:.32}));spoilerWing.position.y=1.38; tuningSpoiler.add(spoilerWing);for(const side of [-1,1]){const support=new THREE.Mesh(new THREE.BoxGeometry(.07,.25,.08),black);support.position.set(side*W*.24,1.25,0);tuningSpoiler.add(support);}tuningSpoiler.position.z=-L*.47;tuningSpoiler.visible=false;car.add(tuningSpoiler);
+  car.userData.tuningParts={spoiler:tuningSpoiler,glass,rims:customRims};
   car.position.set(x,0,z);scene.add(car);return car;
 }
 const fleet=[
@@ -799,7 +801,7 @@ function buildInGameJobs(){
   const job=jobs[selected],vehicle=fleet.find(v=>v.id===job.vehicle);
   if(jobCar){scene.remove(jobCar);if(jobCar.userData.jobMarker)scene.remove(jobCar.userData.jobMarker);}
   jobCar=makeCar(camera.position.x+3,camera.position.z-5,vehicle.color,false,vehicle.model);
-  jobCar.rotation.y=yaw;damageLevel=flSavedDamage;applyCarDamage(jobCar,damageLevel);if(damageLevel)refreshDamageHud();
+  jobCar.rotation.y=yaw;applyCarTuning(jobCar);damageLevel=flSavedDamage;applyCarDamage(jobCar,damageLevel);if(damageLevel)refreshDamageHud();
   const startX=camera.position.x,startZ=camera.position.z;
   jobStops=selected===0?[[startX+24,startZ-45],[startX-28,startZ-75],[startX+35,startZ-105]]:[[startX+26,startZ-48],[startX-32,startZ-82]];
   jobStops=jobStops.map(([x,z])=>new THREE.Vector3(Math.max(-105,Math.min(105,x)),0,Math.max(-205,Math.min(105,z))));
@@ -899,9 +901,13 @@ function toggleShop(){
    else if(item.kind==='fuel'){flFuel=Math.min(100,flFuel+(item.name.includes('25')?25:item.name.includes('50')?50:100));message.textContent='Getankt · Tankfüllung '+Math.round(flFuel)+'%';flUpdateStatus();}
    else if(item.kind==='tuning'){
     if(!jobCar){message.textContent='Wähle zuerst ein Auto über die Garage oder einen Auftrag.';careerMoney+=item.price;return;}
-    if(item.id==='repair'){if(damageLevel===0){message.textContent='Dein Fahrzeug ist bereits unbeschädigt.';careerMoney+=item.price;}else{damageLevel=0;applyCarDamage(jobCar,0);flSavedDamage=0;message.textContent='Reparatur abgeschlossen · Fahrzeugzustand 100 %';flSaveGame();}}else if(item.id==='engine'){tuningLevel=Math.min(3,tuningLevel+1);message.textContent='Motor-Upgrade eingebaut · Leistungsstufe '+tuningLevel;}
-    else if(item.id==='paint'){paintLevel++;const colors=[0x1687d9,0x19a875,0xd4a62a,0x9b58bd,0xb51e2b];jobCar.userData.damageParts?.paint.color.setHex(colors[paintLevel%colors.length]);message.textContent='Neue Lackierung montiert!';}
-    else{jobCar.traverse(o=>{if(o.isMesh&&o.geometry?.type==='CylinderGeometry'&&o.position.y<.6)o.material=new THREE.MeshStandardMaterial({color:0x9da8b3,metalness:.8,roughness:.2});});message.textContent='Sportfelgen montiert!';}
+    if(item.id==='repair'){if(damageLevel===0){message.textContent='Dein Fahrzeug ist bereits unbeschädigt.';careerMoney+=item.price;}else{damageLevel=0;applyCarDamage(jobCar,0);flSavedDamage=0;message.textContent='Reparatur abgeschlossen · Fahrzeugzustand 100 %';flSaveGame();}}else if(item.id==='engine'){if(tuningLevel>=3){careerMoney+=item.price;message.textContent='Motor bereits auf Maximalstufe.';}else{tuningLevel++;message.textContent='Motor-Upgrade eingebaut · Leistungsstufe '+tuningLevel+'/3';}}
+    else if(item.id==='turbo'){if(turboLevel>=2){careerMoney+=item.price;message.textContent='Turbo bereits auf Maximalstufe.';}else{turboLevel++;message.textContent='Turbo-Kit installiert · Stufe '+turboLevel+'/2';}}
+    else if(item.id==='paint'){paintLevel++;const colors=[0x1687d9,0x19a875,0xd4a62a,0x9b58bd,0xb51e2b,0xf0f0e8,0x171b22,0x6d202b];const color=colors[paintLevel%colors.length];if(jobCar.userData.damageParts){jobCar.userData.damageParts.originalColor=color;jobCar.userData.damageParts.paint.color.setHex(color);}message.textContent='Neue Lackierung montiert · Farbton '+(paintLevel%colors.length+1)+'/8';}
+    else if(item.id==='wheels'){tuningMods.rims=true;applyCarTuning(jobCar);message.textContent='Sportfelgen montiert!';}
+    else if(item.id==='spoiler'){tuningMods.spoiler=true;applyCarTuning(jobCar);message.textContent='Heckspoiler montiert!';}
+    else if(item.id==='lowered'){tuningMods.lowered=true;applyCarTuning(jobCar);message.textContent='Sportfahrwerk montiert · Fahrzeug tiefergelegt.';}
+    else if(item.id==='tint'){tuningMods.tinted=true;applyCarTuning(jobCar);message.textContent='Scheiben dezent getönt.';}
    }else{inventory[item.name]=(inventory[item.name]||0)+1;message.textContent=item.name+' gekauft! Im Inventar: '+inventory[item.name];}
    if(careerHud)careerHud.innerHTML='KONTO: '+careerMoney.toLocaleString('de-DE')+' €<br>AUFTRÄGE: '+completedJobs+'<br>★ RUF: '+Math.min(5,1+Math.floor(completedJobs/2))+'/5';
   });
@@ -1402,6 +1408,16 @@ function buildBreakableProps(){
   g.position.set(x,.02,z);scene.add(g);breakableProps.push({group:g,type,radius:type==='sign'?.9:.8,active:true,velocity:0});
  }
 }
+function applyCarTuning(car){
+ if(!car?.userData?.tuningParts)return;
+ const parts=car.userData.tuningParts;
+ if(parts.spoiler)parts.spoiler.visible=!!tuningMods.spoiler;
+ if(parts.glass){parts.glass.opacity=tuningMods.tinted?.09:.24;parts.glass.color.setHex(tuningMods.tinted?0x101820:0x182b3a);}
+ if(parts.rims)for(const rim of parts.rims){rim.material=tuningMods.rims?new THREE.MeshStandardMaterial({color:0xaab6c2,metalness:.92,roughness:.18}):new THREE.MeshStandardMaterial({color:0xb8c4ce,metalness:.8,roughness:.22});}
+ car.position.y=tuningMods.lowered?-.075:0;
+ const palette=[0x1687d9,0x19a875,0xd4a62a,0x9b58bd,0xb51e2b,0xf0f0e8,0x171b22,0x6d202b];
+ if(paintLevel>0&&car.userData.damageParts){const color=palette[paintLevel%palette.length];car.userData.damageParts.originalColor=color;car.userData.damageParts.paint.color.setHex(color);}
+}
 function applyCarDamage(car,level){
  if(!car)return;
  const d=car.userData.damageParts;if(!d)return;
@@ -1525,8 +1541,8 @@ function move(dt=1/60){
     const weatherGrip=flWeather==='Regen'?.68:flWeather==='Nebel'?.88:flWeather==='Bewölkt'?.94:1;
     const damageGrip=damageLevel>=4?.72:damageLevel===3?.84:damageLevel===2?.93:1;
     const tireGrip=weatherGrip*damageGrip;
-    const vehiclePower=jobCar.userData.enginePower||1;
-    const maxForward=((jobCar.userData.maxForwardSpeed||.47)+tuningLevel*.012)*(damageLevel>=4?.62:damageLevel===3?.78:1),maxReverse=.16;
+    const vehiclePower=(jobCar.userData.enginePower||1)*(1+turboLevel*.12);
+    const maxForward=((jobCar.userData.maxForwardSpeed||.47)+tuningLevel*.012+turboLevel*.018)*(damageLevel>=4?.62:damageLevel===3?.78:1),maxReverse=.16;
     if(accelerating&&flFuel>0){
       if(carSpeed<0)carSpeed=Math.min(0,carSpeed+.022*frameScale);
       else carSpeed=Math.min(maxForward,carSpeed+(.0038*vehiclePower+Math.max(0,1-carSpeed/maxForward)*.0035*vehiclePower)*frameScale);

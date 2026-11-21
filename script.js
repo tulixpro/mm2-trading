@@ -27,7 +27,8 @@ const qualitySettings={
  low:{pixelRatio:.45,shadows:false,fog:88,exposure:.86,ambient:1.5,label:'NIEDRIG'},
  medium:{pixelRatio:.72,shadows:false,fog:145,exposure:1,ambient:1.85,label:'MITTEL'},
  high:{pixelRatio:1,shadows:true,fog:205,exposure:1.08,ambient:2.05,label:'HOCH'},
- maximum:{pixelRatio:1.25,shadows:true,fog:260,exposure:1.12,ambient:2.2,label:'MAXIMAL'}
+ maximum:{pixelRatio:1.25,shadows:true,fog:260,exposure:1.12,ambient:2.2,label:'MAXIMAL'},
+ advanced:{pixelRatio:1.1,shadows:true,fog:245,exposure:1.12,ambient:2.25,label:'ERWEITERT'}
 };
 let sunLight=null,hemiLight=null,flashlight=null,flashlightTarget=null,flashlightOn=false;
 function applyQuality(){

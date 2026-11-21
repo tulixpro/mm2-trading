@@ -11,7 +11,8 @@ Two native Unreal Engine projects are maintained alongside the existing Three.js
 
 - Native C++ first-person character and keyboard/mouse movement
 - Dedicated GameMode
-- Runtime-generated greybox district: road grid, sidewalk strips, placeholder building masses and simple tree shapes
+- Runtime-generated greybox district: nine city blocks, road grid, sidewalk strips, facade/window rhythm, shopfront placeholders, streetlights and simple tree shapes
+- Primitive-mesh vehicle silhouettes: sedan, van and police-car display props placed along the roads (not drivable)
 - Lumen, virtual shadow maps, Nanite project support, anti-aliasing and texture-streaming configuration
 - Sky-atmosphere and volumetric-fog project support
 
@@ -21,7 +22,7 @@ The district currently uses Unreal's basic primitive meshes. It is a **greybox/b
 
 ## Honest project status
 
-This is an early development prototype, not a finished open-world game. There is no authored Frankfurt landmark set, finished landscape, drivable vehicle system, traffic, NPC AI, jobs, missions, interiors, multiplayer, voice chat, save system, final UI, audio package or installer. The Unreal C++ project has **not** been compiled or launched in this environment. Compatibility with UE 5.8 and the Visual Studio toolchain must be confirmed locally.
+This is an early development prototype, not a finished open-world game. There is no authored Frankfurt landmark set, finished landscape, drivable vehicle physics, traffic AI, NPC AI, jobs, missions, interiors, multiplayer, voice chat, save system, final UI, audio package or installer. The current sedan/van/police-car shapes are static visual blockout props built from engine primitives; they are not production vehicle assets. The Unreal C++ project has **not** been compiled or launched in this environment. Compatibility with UE 5.8 and the Visual Studio toolchain must be confirmed locally.
 
 ## Open and build
 
@@ -60,7 +61,7 @@ These are internal targets, not tested requirements. UE4.27 does not guarantee s
 
 1. Compile and launch both projects in their exact engine versions.
 2. Replace the greybox with realistic modular Frankfurt streets, architecture, trees and interiors.
-3. Add drivable vehicles and safe traffic/pedestrian AI.
+3. Replace the vehicle silhouettes with licensed/high-quality vehicle meshes, PBR materials, interiors, wheels and lights; then implement Chaos vehicle physics and safe traffic/pedestrian AI.
 4. Add jobs, missions, save/load, audio and UI.
 5. Profile packaged builds on low-, mid- and high-spec hardware before publishing installers.
 

@@ -100,3 +100,10 @@ Hinweis: Das ist ein stilisiertes Low-Poly-Schadensmodell, keine realistische Ka
 ## Teststatus 0.3.2
 - Quellcode und Windows-Build werden durch GitHub Actions geprüft.
 - Der echte Laufzeittest auf der GT 555M steht weiterhin aus.
+
+
+## Version 0.3.3 – Tankstelle & Tanken
+- Drei sichtbare Zapfsäulen an der Tankstelle MAIN.
+- Mit dem Auto an die Zapfsäulen fahren, anhalten und **E** drücken, um bis zu 25 % Benzin zu tanken.
+- Jede Tankfüllung kostet 2,20 € pro Prozent; Geld, Tankfüllung und Kontostand werden direkt aktualisiert und gespeichert.
+- Tanken funktioniert nur im Auto und im Stillstand; bei zu wenig Geld oder vollem Tank erscheint eine Meldung.

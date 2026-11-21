@@ -137,3 +137,6 @@ body.action-edition .brand b{color:#e47a61}
 body.action-edition #gameViewport{background:radial-gradient(ellipse at 50% 30%,#27313c,#080b12 75%)}
 body.action-edition #gameViewport canvas{filter:contrast(1.12) saturate(.78)}
 body.action-edition .controls{border-top-color:#b75b4a}
+
+/* Flight and cinematic vehicle interaction HUD */
+.takeover-hud{position:absolute;z-index:12;left:50%;bottom:76px;transform:translateX(-50%);width:min(340px,calc(100% - 36px));padding:14px 16px;border:1px solid #77c9e5aa;border-radius:12px;background:#071522ed;box-shadow:0 12px 40px #0009;color:#eef8ff;font:12px/1.5 system-ui;text-align:center}.takeover-hud.hidden{display:none}.takeover-hud b,.takeover-hud span{display:block}.takeover-hud span{color:#9bb7c9;margin:3px 0 9px}.takeover-hud div{height:7px;border-radius:9px;background:#263b4d;overflow:hidden}.takeover-hud i{display:block;width:0;height:100%;background:linear-gradient(90deg,#49c6d9,#b0f1ff);transition:width .08s linear}

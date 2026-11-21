@@ -648,13 +648,13 @@ function makeCar(x,z,color,police=false,model='sedan',performanceOverride=null){
     const fenderVent=new THREE.Mesh(new THREE.BoxGeometry(.035,.16,.3),black);fenderVent.position.set(side*W*.505,.77,.63);car.add(fenderVent);
     for(let vent=0;vent<3;vent++){const fin=new THREE.Mesh(new THREE.BoxGeometry(.018,.012,.22),chrome);fin.position.set(side*W*.526,.76,.55+vent*.065);car.add(fin);}
   }
-  const frontIntake=new THREE.Mesh(new THREE.BoxGeometry(W*.62,.13,.045),trim);
+  const frontIntake=new THREE.Mesh(new THREE.BoxGeometry(W*.62,.13,.045),black);
   frontIntake.position.set(0,.48,L*.525);car.add(frontIntake);
   for(const side of [-1,1]){
     const intakeFin=new THREE.Mesh(new THREE.BoxGeometry(.045,.11,.05),chrome);
     intakeFin.position.set(side*W*.22,.49,L*.53);car.add(intakeFin);
   }
-  const rearDiffuser=new THREE.Mesh(new THREE.BoxGeometry(W*.7,.12,.22),trim);
+  const rearDiffuser=new THREE.Mesh(new THREE.BoxGeometry(W*.7,.12,.22),black);
   rearDiffuser.position.set(0,.34,-L*.52);car.add(rearDiffuser);
   for(const side of [-1,1]){
     const exhaustTip=new THREE.Mesh(new THREE.CylinderGeometry(.07,.07,.12,12),chrome);

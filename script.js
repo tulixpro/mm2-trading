@@ -51,6 +51,7 @@ const trafficCars=[];
 const airportBuses=[];
 const airportHelicopters=[];
 const militaryEscorts=[];
+const boats=[];let activeBoat=null,boatSpeed=0,boatHeading=0,waterSurface=null,beachFoam=[];
 let airportPlane=null,planeFlying=false,planeSpeed=0,planeHeading=0,planeAltitude=0;
 let takeoverTarget=null,takeoverProgress=0,takeoverHud=null;
 const actionEdition=new URLSearchParams(location.search).get('edition')==='action';
@@ -646,7 +647,7 @@ function buildInGameJobs(){
  buildIntroTutorialUI();
  careerHud=document.createElement('div');careerHud.id='careerHud';careerHud.style.cssText='position:absolute;top:14px;right:14px;z-index:8;padding:10px 14px;border:1px solid #ffffff30;border-radius:10px;background:#101b2ddd;color:#fff;font:700 13px/1.6 system-ui;pointer-events:none;';careerHud.innerHTML='KONTO: 0 €<br>AUFTRÄGE: 0<br>★ RUF: 1/5';viewport.appendChild(careerHud);
  missionHud=document.createElement('div');missionHud.id='missionHud';missionHud.className='mission-hud hidden';viewport.appendChild(missionHud);
- takeoverHud=document.createElement('div');takeoverHud.id='takeoverHud';takeoverHud.className='takeover-hud hidden';takeoverHud.innerHTML='<b>FAHRZEUG-INTERAKTION</b><span>Animation läuft …</span><div><i></i></div>';viewport.appendChild(takeoverHud);
+ takeoverHud=document.createElement('div');takeoverHud.id='takeoverHud';takeoverHud.className='takeover-hud hidden';takeoverHud.innerHTML='<b>FILMISCHE EINSTIEGSSEQUENZ</b><span>Kurzer, nicht-grafischer Filmschnitt: Die Person steigt aus und geht zur Seite …</span><div><i></i></div>';viewport.appendChild(takeoverHud);
  damageHud=document.createElement('div');damageHud.id='damageHud';damageHud.className='damage-hud hidden';viewport.appendChild(damageHud);
  const choices=jobPanel.querySelector('#ingameJobChoices'),detail=jobPanel.querySelector('#ingameJobDetail'),accept=jobPanel.querySelector('#startJob');
  let selected=0;
@@ -697,8 +698,8 @@ function buildMiniMap(){
 }
 function drawCityMap(ctx,w,h,large=false){
  if(!ctx)return;
- const c=ctx;c.clearRect(0,0,w,h);c.fillStyle='#314b48';c.fillRect(0,0,w,h);
- const px=x=>(x+180)/360*w,py=z=>(z+300)/520*h;
+ const c=ctx;c.clearRect(0,0,w,h);c.fillStyle='#197fa5';c.fillRect(0,0,w,h);c.fillStyle='#314b48';c.fillRect(0,0,w,py(320));c.fillStyle='#d8c18d';c.fillRect(0,py(250),w,py(320)-py(250));
+ const px=x=>(x+180)/360*w,py=z=>(z+300)/660*h;
  // Blocks and local streets across the expanded playable district.
  c.fillStyle='#3b5650';
  for(let x=-165;x<180;x+=24)for(let z=-286;z<220;z+=30){c.fillRect(px(x+2),py(z+2),Math.max(2,px(x+21)-px(x+2)),Math.max(2,py(z+27)-py(z+2)));}
@@ -711,12 +712,12 @@ function drawCityMap(ctx,w,h,large=false){
  c.fillStyle='#d9e6dc';c.font='bold '+(large?15:11)+'px Arial';
  c.fillText('MAIN',px(8),py(119));
  c.fillStyle='#e4d8ad';c.font='bold '+(large?12:9)+'px Arial';
- c.fillText('INNENSTADT',px(-165),py(-90));c.fillText('WOHNVIERTEL',px(95),py(-210));c.fillText('WESTEND',px(-160),py(35));c.fillText('OSTEND',px(105),py(35));c.fillText('SÜDQUARTIER',px(-45),py(175));
+ c.fillText('INNENSTADT',px(-165),py(-90));c.fillText('WOHNVIERTEL',px(95),py(-210));c.fillText('WESTEND',px(-160),py(35));c.fillText('OSTEND',px(105),py(35));c.fillText('SÜDQUARTIER',px(-45),py(175));c.fillText('STRAND & BUCHT',px(-55),py(285));
  // Shops and major destinations.
  c.fillStyle='#f1bd59';
  for(const shop of shops){c.beginPath();c.arc(px(shop.x),py(shop.z),large?4:2.5,0,Math.PI*2);c.fill();}
  c.fillStyle='#c8a4f5';c.fillRect(px(dealership.x)-4,py(dealership.z)-4,8,8);
- if(jobDestination){c.fillStyle='#ffd36b';c.beginPath();c.arc(px(jobDestination.x),py(jobDestination.z),large?6:4,0,Math.PI*2);c.fill();}
+ if(activeBoat){c.fillStyle='#f4e7ad';c.beginPath();c.arc(px(activeBoat.position.x),py(activeBoat.position.z),large?5:3,0,Math.PI*2);c.fill();}if(jobDestination){c.fillStyle='#ffd36b';c.beginPath();c.arc(px(jobDestination.x),py(jobDestination.z),large?6:4,0,Math.PI*2);c.fill();}
  const player=driving&&jobCar?jobCar.position:camera?.position;
  if(player){c.save();c.translate(px(player.x),py(player.z));c.rotate(-yaw);c.fillStyle='#65e6ff';c.strokeStyle='#081522';c.lineWidth=2;c.beginPath();c.moveTo(0,-(large?10:7));c.lineTo(large?7:5,large?8:5);c.lineTo(0,large?5:3);c.lineTo(large?-7:-5,large?8:5);c.closePath();c.fill();c.stroke();c.restore();}
 }
@@ -1082,6 +1083,29 @@ function buildRoadSigns(){
  }
 }
 
+
+function buildCoastAndBoats(){
+ // Fiktive Strandbucht südlich der Stadt – bewusst als neues Küstengebiet gestaltet.
+ const sand=new THREE.MeshStandardMaterial({color:0xd8c18d,roughness:1});
+ const wetSand=new THREE.MeshStandardMaterial({color:0xbca77d,roughness:1});
+ const waterMat=new THREE.MeshStandardMaterial({color:0x197fa5,roughness:.24,metalness:.12,transparent:true,opacity:.88});
+ const ocean=new THREE.Mesh(new THREE.PlaneGeometry(900,520),waterMat);ocean.rotation.x=-Math.PI/2;ocean.position.set(0,-.18,510);scene.add(ocean);waterSurface=ocean;
+ const beach=new THREE.Mesh(new THREE.PlaneGeometry(360,105),sand);beach.rotation.x=-Math.PI/2;beach.position.set(0,-.035,270);scene.add(beach);
+ const wet=new THREE.Mesh(new THREE.PlaneGeometry(360,12),wetSand);wet.rotation.x=-Math.PI/2;wet.position.set(0,-.02,320);scene.add(wet);
+ for(let i=0;i<18;i++){const foam=new THREE.Mesh(new THREE.BoxGeometry(7+Math.random()*10,.035,.22),new THREE.MeshBasicMaterial({color:0xe8f6f3,transparent:true,opacity:.5}));foam.position.set(-165+i*19,.015,326+Math.sin(i)*2);scene.add(foam);beachFoam.push(foam);}
+ const palmMat=new THREE.MeshStandardMaterial({color:0x795638}),leafMat=new THREE.MeshStandardMaterial({color:0x39845a});
+ for(const x of [-145,-95,95,145]){const trunk=new THREE.Mesh(new THREE.CylinderGeometry(.22,.34,5,7),palmMat);trunk.position.set(x,2.5,252+(Math.abs(x)%3)*7);scene.add(trunk);for(let j=0;j<5;j++){const leaf=new THREE.Mesh(new THREE.ConeGeometry(.45,4,5),leafMat);leaf.position.set(x+Math.cos(j*1.256)*1.35,5.1,252+Math.sin(j*1.256)*1.35);leaf.rotation.z=Math.cos(j*1.256)*.9;leaf.rotation.x=Math.sin(j*1.256)*.8;scene.add(leaf);}}
+ for(let i=0;i<9;i++){const umbrella=new THREE.Group();const pole=new THREE.Mesh(new THREE.CylinderGeometry(.055,.055,2,6),new THREE.MeshStandardMaterial({color:0xf3eee0}));pole.position.y=1;umbrella.add(pole);const canopy=new THREE.Mesh(new THREE.ConeGeometry(1.55,.48,10),new THREE.MeshStandardMaterial({color:i%2?0xe05e4f:0x3e9dbb}));canopy.position.y=2;canopy.rotation.x=Math.PI;umbrella.add(canopy);umbrella.position.set(-120+i*30,0,278+(i%2)*14);scene.add(umbrella);}
+ // Kleine Motorboote als Arcade-Fahrzeuge. F in der Nähe steigt ein/aus.
+ for(let i=0;i<3;i++){const boat=new THREE.Group();const hullMat=new THREE.MeshStandardMaterial({color:[0xf2f2ec,0x225a83,0xc34d38][i],roughness:.42});const hull=new THREE.Mesh(new THREE.ConeGeometry(1.35,6.2,4),hullMat);hull.rotation.x=-Math.PI/2;hull.rotation.z=Math.PI/4;hull.scale.set(1,.58,1);hull.position.y=.25;boat.add(hull);const deck=new THREE.Mesh(new THREE.BoxGeometry(1.8,.25,2.4),new THREE.MeshStandardMaterial({color:0xe6e4d9}));deck.position.set(0,.65,-.15);boat.add(deck);const windshield=new THREE.Mesh(new THREE.BoxGeometry(1.35,.75,.12),new THREE.MeshStandardMaterial({color:0x6db6d0,transparent:true,opacity:.6}));windshield.position.set(0,1.05,.5);boat.add(windshield);const seat=new THREE.Mesh(new THREE.BoxGeometry(.9,.45,.65),new THREE.MeshStandardMaterial({color:0x303943}));seat.position.set(0,.78,-.75);boat.add(seat);boat.position.set(-55+i*55,.05,355+i*7);boat.rotation.y=i*.25;scene.add(boat);boats.push(boat);}
+ const label=new THREE.Mesh(new THREE.BoxGeometry(24,2.1,.35),new THREE.MeshStandardMaterial({color:0x12394a}));label.position.set(0,4,242);scene.add(label);
+}
+function tryStartBoat(){
+ if(activeBoat){activeBoat=null;boatSpeed=0;status.textContent='BOOT VERLASSEN · STRAND';camera.position.set(0,2.1,285);return true;}
+ if(driving||planeFlying)return false;let nearest=null,dist=12;for(const boat of boats){const d=camera.position.distanceTo(boat.position);if(d<dist){dist=d;nearest=boat;}}
+ if(!nearest)return false;activeBoat=nearest;boatSpeed=0;boatHeading=nearest.rotation.y;status.textContent='MOTORBOOT · W/S GAS/BREMSE · A/D LENKEN · F AUSSTEIGEN';return true;
+}
+
 function makeCity(){
   scene=new THREE.Scene();scene.background=new THREE.Color(0x91b1c8);scene.fog=new THREE.Fog(0x91b1c8,115,390);
   camera=new THREE.PerspectiveCamera(cameraFov,viewport.clientWidth/viewport.clientHeight,.1,620);camera.position.set(0,2.1,14);
@@ -1095,7 +1119,7 @@ function makeCity(){
   for(let z=-300;z<225;z+=12){const line=new THREE.Mesh(new THREE.PlaneGeometry(.18,5),new THREE.MeshBasicMaterial({color:0xe5dfc5}));line.rotation.x=-Math.PI/2;line.position.set(0,.015,z);scene.add(line);}
   const sidewalkMat=new THREE.MeshLambertMaterial({color:0x92999b});
   for(const x of [-9.2,9.2]){const s=new THREE.Mesh(new THREE.BoxGeometry(3.5,.25,520),sidewalkMat);s.position.set(x,.08,-45);scene.add(s);}
-  buildStreetInfrastructure();buildTransitStops();buildAirportAndBuses();buildRoadSigns();
+  buildStreetInfrastructure();buildTransitStops();buildAirportAndBuses();buildCoastAndBoats();buildRoadSigns();
   const leftShops=new Map([[-87,['SUPERMARKT','MARKT · FRISCHE WAREN',0x3c966c]],[ -51,['BÄCKEREI','BROT · KAFFEE · KUCHEN',0xc58b43]],[ -15,['MODEHAUS','MODE FÜR JEDEN TAG',0x8a638e]],[21,['ELEKTRO','TECHNIK & ZUBEHÖR',0x397ca5]]]);
   const rightShops=new Map([[-94,['CAFÉ AM MAIN','KAFFEE · SNACKS',0x9b6547]],[ -58,['AUTOWELT','FAHRZEUGE & SERVICE',0x397a91]],[ -22,['SPORTTREFF','SPORT · OUTDOOR',0x62884f]],[14,['KIOSK 24','ZEITUNGEN · GETRÄNKE',0xb68a39]]]);
   for(let z=-105;z<35;z+=18){
@@ -1183,11 +1207,11 @@ function updateWorld(dt){
   flUpdateSystems(dt);
   for(const signal of trafficSignals){const phase=(t+signal.phase*1.7)%8;const active=phase<5?0:phase<6.2?1:2;signal.lamps.forEach((lamp,i)=>lamp.material.emissiveIntensity=i===active?.9:.04);}
   if((performanceFrame++%4)===0)drawMiniMap();
-  for(const heli of airportHelicopters){heli.rotor.rotation.y+=dt*18;heli.tailRotor.rotation.x+=dt*20;}
+  for(const heli of airportHelicopters){heli.rotor.rotation.y+=dt*18;heli.tailRotor.rotation.x+=dt*20;}for(let i=0;i<beachFoam.length;i++){beachFoam[i].position.x+=Math.sin(t*.5+i)*dt*.7;beachFoam[i].material.opacity=.35+Math.sin(t*1.8+i)*.15;}if(waterSurface)waterSurface.position.y=-.18+Math.sin(t*.65)*.025;
   if(planeFlying&&airportPlane){for(let i=0;i<militaryEscorts.length;i++){const escort=militaryEscorts[i];const side=i===0?-1:1;const tx=airportPlane.position.x-Math.sin(planeHeading)*22+Math.cos(planeHeading)*side*10;const tz=airportPlane.position.z-Math.cos(planeHeading)*22-Math.sin(planeHeading)*side*10;escort.position.x+=(tx-escort.position.x)*Math.min(1,dt*1.2);escort.position.z+=(tz-escort.position.z)*Math.min(1,dt*1.2);escort.position.y=planeAltitude+2+Math.sin(t*2+i)*.35;escort.rotation.y=planeHeading;}}
   for(const bus of airportBuses){bus.group.position.z+=bus.direction*bus.speed*dt*60;if(bus.group.position.z>bus.to&&bus.direction>0)bus.group.position.z=bus.from;if(bus.group.position.z<bus.from&&bus.direction<0)bus.group.position.z=bus.to;}
   for(const taxi of taxiVehicles){if(taxi.state!=='approach')continue;const dx=camera.position.x-taxi.group.position.x,dz=camera.position.z-taxi.group.position.z,dist=Math.hypot(dx,dz);if(dist<5){taxi.state='arrived';status.textContent='TAXI ANGEKOMMEN · STEIGE EIN';}else{taxi.group.position.x+=dx/dist*taxi.speed*dt*60;taxi.group.position.z+=dz/dist*taxi.speed*dt*60;taxi.group.rotation.y=Math.atan2(dx,dz);}}
-  if(takeoverTarget){takeoverProgress=Math.min(1,takeoverProgress+dt/1.8);if(takeoverHud){const bar=takeoverHud.querySelector('i');if(bar)bar.style.width=(takeoverProgress*100)+'%';}if(takeoverProgress>=1){const target=takeoverTarget;takeoverTarget=null;takeoverProgress=0;if(takeoverHud)takeoverHud.classList.add('hidden');const idx=trafficCars.indexOf(target);if(idx>=0)trafficCars.splice(idx,1);target.userData.traffic=null;jobCar=target;driving=true;carSpeed=0;carSlip=0;carYawRate=0;cameraLookOffset=0;damageLevel=0;yaw=jobCar.rotation.y-Math.PI;status.textContent='FAHRZEUG ÜBERNOMMEN · FILMISCHE POLIZEI-VERFOLGUNG';}}
+  if(takeoverTarget){takeoverProgress=Math.min(1,takeoverProgress+dt/1.8);if(takeoverHud){const bar=takeoverHud.querySelector('i');if(bar)bar.style.width=(takeoverProgress*100)+'%';}if(takeoverProgress>=1){const target=takeoverTarget;takeoverTarget=null;takeoverProgress=0;if(takeoverHud)takeoverHud.classList.add('hidden');const idx=trafficCars.indexOf(target);if(idx>=0)trafficCars.splice(idx,1);target.userData.traffic=null;jobCar=target;driving=true;carSpeed=0;carSlip=0;carYawRate=0;cameraLookOffset=0;damageLevel=0;yaw=jobCar.rotation.y-Math.PI;status.textContent='SZENE ABGESCHLOSSEN · FAHRZEUG STEHT JETZT ZUR VERFÜGUNG';}}
   for(const car of trafficCars){
     const traffic=car.userData.traffic;
     car.position.z+=traffic.direction*traffic.speed*dt*60;
@@ -1337,6 +1361,7 @@ function buildGamepadStatus(){
 }
 
 function move(dt=1/60){
+  if(activeBoat){const fs=Math.min(3,Math.max(.25,dt*60));if(keys.KeyW||keys.ArrowUp)boatSpeed=Math.min(.62,boatSpeed+.004*fs);else if(keys.KeyS||keys.ArrowDown)boatSpeed=Math.max(-.18,boatSpeed-.006*fs);else boatSpeed*=Math.pow(.994,fs);const steer=(keys.KeyA||keys.ArrowLeft?1:0)-(keys.KeyD||keys.ArrowRight?1:0);boatHeading+=steer*(.009+Math.abs(boatSpeed)*.018)*fs;activeBoat.rotation.y=boatHeading;activeBoat.position.x+=Math.sin(boatHeading)*boatSpeed*fs;activeBoat.position.z+=Math.cos(boatHeading)*boatSpeed*fs;activeBoat.position.x=Math.max(-165,Math.min(165,activeBoat.position.x));activeBoat.position.z=Math.max(333,Math.min(720,activeBoat.position.z));activeBoat.position.y=.05+Math.sin(clock.elapsedTime*3)*.07;camera.position.set(activeBoat.position.x-Math.sin(boatHeading)*8,activeBoat.position.y+4,activeBoat.position.z-Math.cos(boatHeading)*8);camera.lookAt(activeBoat.position.x,1,activeBoat.position.z+Math.cos(boatHeading)*5);coords.textContent='MOTORBOOT · '+Math.round(Math.abs(boatSpeed)*95)+' KM/H';return;}
   if(planeFlying&&airportPlane){
     const frameScale=Math.min(3,Math.max(.25,dt*60));
     if(keys.KeyW||keys.ArrowUp)planeSpeed=Math.min(.72,planeSpeed+.0025*frameScale);else if(keys.KeyS||keys.ArrowDown)planeSpeed=Math.max(0,planeSpeed-.004*frameScale);else planeSpeed*=Math.pow(.997,frameScale);
@@ -1428,7 +1453,7 @@ function move(dt=1/60){
     if(keys.KeyA||keys.ArrowLeft)camera.position.addScaledVector(right,-speed);
     if(keys.KeyD||keys.ArrowRight)camera.position.addScaledVector(right,speed);
     camera.position.x=Math.max(-178,Math.min(178,camera.position.x));
-    camera.position.z=Math.max(-298,Math.min(218,camera.position.z));
+    camera.position.z=Math.max(-298,Math.min(360,camera.position.z));
     camera.position.y=2.1;
   }
   camera.rotation.order='YXZ';camera.rotation.set(pitch,yaw,0);
@@ -1455,6 +1480,7 @@ function toggleFlashlight(){
 }
 function cycleCamera(){cameraMode=cameraMode==='follow'?'close':cameraMode==='close'?'hood':cameraMode==='hood'?'ego':'follow';status.textContent='KAMERA: '+({follow:'VERFOLGER',close:'NAH',hood:'MOTORHAUBE',ego:'EGO-PERSPEKTIVE'}[cameraMode]);}
 function toggleVehicle(){
+  if(activeBoat){tryStartBoat();return;}
   if(planeFlying){planeFlying=false;planeSpeed=0;status.textContent='FLUG BEENDET · ZURÜCK AM FLUGHAFEN';if(takeoverHud)takeoverHud.classList.add('hidden');camera.position.set(airportPlane.position.x+5,2.1,airportPlane.position.z+5);return;}
   if(!jobCar){status.textContent='WÄHLE ZUERST EINEN JOB MIT J';return;}
   if(!driving){
@@ -1528,6 +1554,6 @@ function begin(){
 startButton?.addEventListener('click',begin);
 // In der eigenständigen Windows-Spielansicht direkt in die 3D-Stadt starten.
 if(document.body.classList.contains('game-app')) begin();
-document.addEventListener('keydown',e=>{keys[e.code]=true;keyboardKeys[e.code]=true;if(e.code==='F1'){e.preventDefault();if(!e.repeat)togglePhone();return;}if(e.code==='KeyQ'&&!e.repeat){e.preventDefault();toggleQuickAccessWheel();return;}if(e.code==='KeyE'&&!e.repeat){if(!tryRefuelAtPump())toggleShopOrDealer();}if(e.code==='KeyF'&&!e.repeat){if(!tryStartFlight())toggleVehicle();}if(e.code==='KeyG'&&!e.repeat)tryTakeoverVehicle();if(e.code==='KeyJ'&&!e.repeat)toggleJobs();if(e.code==='KeyL'&&!e.repeat)toggleFlashlight();if(e.code==='F5'&&!e.repeat){e.preventDefault();flSaveGame(true);}if(e.code==='KeyC'&&!e.repeat)cycleCamera();if(e.code==='Escape'&&jobPanel&&!jobPanel.classList.contains('hidden'))jobPanel.classList.add('hidden');if(e.code==='Escape'&&shopPanel&&!shopPanel.classList.contains('hidden'))shopPanel.classList.add('hidden');if(e.code==='Escape'&&phonePanel&&!phonePanel.classList.contains('hidden'))phonePanel.classList.add('hidden');if(e.code==='Escape')document.querySelector('#quickAccessWheel')?.classList.add('hidden');if(e.code==='Escape'&&dealerPanel&&!dealerPanel.classList.contains('hidden'))dealerPanel.classList.add('hidden');if(['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code))e.preventDefault();});
+document.addEventListener('keydown',e=>{keys[e.code]=true;keyboardKeys[e.code]=true;if(e.code==='F1'){e.preventDefault();if(!e.repeat)togglePhone();return;}if(e.code==='KeyQ'&&!e.repeat){e.preventDefault();toggleQuickAccessWheel();return;}if(e.code==='KeyE'&&!e.repeat){if(!tryRefuelAtPump())toggleShopOrDealer();}if(e.code==='KeyF'&&!e.repeat){if(!tryStartBoat()&&!tryStartFlight())toggleVehicle();}if(e.code==='KeyG'&&!e.repeat)tryTakeoverVehicle();if(e.code==='KeyJ'&&!e.repeat)toggleJobs();if(e.code==='KeyL'&&!e.repeat)toggleFlashlight();if(e.code==='F5'&&!e.repeat){e.preventDefault();flSaveGame(true);}if(e.code==='KeyC'&&!e.repeat)cycleCamera();if(e.code==='Escape'&&jobPanel&&!jobPanel.classList.contains('hidden'))jobPanel.classList.add('hidden');if(e.code==='Escape'&&shopPanel&&!shopPanel.classList.contains('hidden'))shopPanel.classList.add('hidden');if(e.code==='Escape'&&phonePanel&&!phonePanel.classList.contains('hidden'))phonePanel.classList.add('hidden');if(e.code==='Escape')document.querySelector('#quickAccessWheel')?.classList.add('hidden');if(e.code==='Escape'&&dealerPanel&&!dealerPanel.classList.contains('hidden'))dealerPanel.classList.add('hidden');if(['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code))e.preventDefault();});
 document.addEventListener('keyup',e=>{keys[e.code]=false;keyboardKeys[e.code]=false;});
 window.addEventListener('resize',resize);

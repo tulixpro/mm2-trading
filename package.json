@@ -1,7 +1,7 @@
 {
   "name": "frankfurt-life",
-  "version": "0.4.0",
-  "description": "Frankfurt Life - 3D city prototype with expanded graphics controls and low-end PC support",
+  "version": "0.4.1",
+  "description": "Frankfurt Life - 3D city prototype with airport, buses and expanded graphics controls",
   "main": "electron/main.cjs",
   "author": "Frankfurt Life Community",
   "license": "UNLICENSED",

@@ -13,7 +13,7 @@ const qualitySettings={
  medium:{pixelRatio:.9,shadows:false,fog:165,exposure:1,ambient:2,label:'MITTEL'},
  high:{pixelRatio:1.25,shadows:true,fog:215,exposure:1.12,ambient:2.15,label:'HOCH'}
 };
-let sunLight=null,hemiLight=null;
+let sunLight=null,hemiLight=null,flashlight=null,flashlightTarget=null,flashlightOn=false;
 function applyQuality(){
  if(!renderer||!scene)return;
  const mode=qualitySelect?.value||'medium',q=qualitySettings[mode];
@@ -45,9 +45,19 @@ function building(x,z,w,d,h,color){
   body.position.y=h/2;g.add(body);
   const roof=new THREE.Mesh(new THREE.BoxGeometry(w*1.03,.35,d*1.03),new THREE.MeshLambertMaterial({color:0x26364b}));
   roof.position.y=h+.15;g.add(roof);
-  for(let y=2;y<h-1;y+=2.6) for(let xx=-w/2+.8;xx<w/2-.4;xx+=1.5){
-    const win=new THREE.Mesh(new THREE.BoxGeometry(.55,.8,.06),new THREE.MeshBasicMaterial({color:Math.random()>.3?0x9ac9e7:0x34465b}));
-    win.position.set(xx,y,d/2+.04);g.add(win);
+  for(let y=2;y<h-1;y+=2.6){
+    for(let xx=-w/2+.8;xx<w/2-.4;xx+=1.5){
+      const lit=Math.random()>.3;
+      const winMat=new THREE.MeshStandardMaterial({color:lit?0x9ac9e7:0x34465b,emissive:lit?0x28475c:0x080e16,emissiveIntensity:.28,roughness:.3,metalness:.12});
+      const win=new THREE.Mesh(new THREE.BoxGeometry(.55,.8,.06),winMat);
+      win.position.set(xx,y,d/2+.04);g.add(win);
+      const sideWin=new THREE.Mesh(new THREE.BoxGeometry(.06,.8,.55),winMat);
+      sideWin.position.set(w/2+.04,y,xx/w*d*.72);g.add(sideWin);
+      if(y>3&&Math.abs(xx)<w*.42){
+        const balcony=new THREE.Mesh(new THREE.BoxGeometry(.82,.08,.28),new THREE.MeshStandardMaterial({color:0x77838b,metalness:.35,roughness:.7}));
+        balcony.position.set(xx,y-.52,d/2+.2);g.add(balcony);
+      }
+    }
   }
   g.position.set(x,0,z);scene.add(g);
 }
@@ -212,6 +222,9 @@ function createTraffic(){
 function makeCity(){
   scene=new THREE.Scene();scene.background=new THREE.Color(0x91b1c8);scene.fog=new THREE.Fog(0x91b1c8,65,185);
   camera=new THREE.PerspectiveCamera(72,viewport.clientWidth/viewport.clientHeight,.1,260);camera.position.set(0,2.1,14);
+  flashlight=new THREE.SpotLight(0xddeeff,0,48,Math.PI/7,.42,1.35);
+  flashlight.position.set(0,0,0);flashlightTarget=new THREE.Object3D();flashlightTarget.position.set(0,0,-1);
+  camera.add(flashlight,flashlightTarget);flashlight.target=flashlightTarget;
   hemiLight=new THREE.HemisphereLight(0xd7ecff,0x4a5260,2);scene.add(hemiLight);
   sunLight=new THREE.DirectionalLight(0xffe0b4,1.5);sunLight.position.set(-25,45,25);sunLight.castShadow=false;scene.add(sunLight);
   const ground=new THREE.Mesh(new THREE.PlaneGeometry(240,240),new THREE.MeshLambertMaterial({color:0x58636b}));ground.rotation.x=-Math.PI/2;ground.position.y=-.12;scene.add(ground);
@@ -297,6 +310,11 @@ function move(){
   camera.rotation.order='YXZ';camera.rotation.set(pitch,yaw,0);
   coords.textContent=(driving?'FAHRZEUG ':'POSITION ')+Math.round(camera.position.x)+' / '+Math.round(camera.position.z)+(jobActive&&jobDestination?' · ZIEL '+Math.round((driving?jobCar.position:camera.position).distanceTo(jobDestination))+' M':'');
 }
+function toggleFlashlight(){
+  if(!flashlight)return;
+  flashlightOn=!flashlightOn;flashlight.intensity=flashlightOn?3.2:0;
+  status.textContent=flashlightOn?'TASCHENLAMPE AN · L ZUM AUSSCHALTEN':'TASCHENLAMPE AUS · L ZUM EINSCHALTEN';
+}
 function toggleVehicle(){
   if(!jobCar){status.textContent='WÄHLE ZUERST EINEN JOB MIT J';return;}
   if(!driving){
@@ -344,6 +362,6 @@ function begin(){
 startButton?.addEventListener('click',begin);
 // In der eigenständigen Windows-Spielansicht direkt in die 3D-Stadt starten.
 if(document.body.classList.contains('game-app')) begin();
-document.addEventListener('keydown',e=>{keys[e.code]=true;if(e.code==='KeyF'&&!e.repeat)toggleVehicle();if(e.code==='KeyJ'&&!e.repeat)toggleJobs();if(e.code==='Escape'&&jobPanel&&!jobPanel.classList.contains('hidden'))jobPanel.classList.add('hidden');if(['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code))e.preventDefault();});
+document.addEventListener('keydown',e=>{keys[e.code]=true;if(e.code==='KeyF'&&!e.repeat)toggleVehicle();if(e.code==='KeyJ'&&!e.repeat)toggleJobs();if(e.code==='KeyL'&&!e.repeat)toggleFlashlight();if(e.code==='Escape'&&jobPanel&&!jobPanel.classList.contains('hidden'))jobPanel.classList.add('hidden');if(['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code))e.preventDefault();});
 document.addEventListener('keyup',e=>keys[e.code]=false);
 window.addEventListener('resize',resize);

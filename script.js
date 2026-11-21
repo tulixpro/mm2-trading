@@ -466,6 +466,7 @@ function makeCar(x,z,color,police=false,model='sedan'){
   }[model]||{top:190,power:.95};
   car.userData.maxSpeedKmh=vehiclePerformance.top;
   car.userData.enginePower=vehiclePerformance.power;
+  car.userData.maxForwardSpeed=.47*(vehiclePerformance.top/240)*vehiclePerformance.power;
   const lower=new THREE.Mesh(new THREE.BoxGeometry(W,.48,L),paint);lower.position.y=.58;car.add(lower);
   const hood=new THREE.Mesh(new THREE.BoxGeometry(W*.96,.2,profile.hood),paint);hood.position.set(0,.83,L*.34);car.add(hood);
   const rear=new THREE.Mesh(new THREE.BoxGeometry(W*.94,.22,Math.max(.65,L-profile.hood-1.7)),paint);rear.position.set(0,.79,-L*.34);car.add(rear);
@@ -1485,7 +1486,7 @@ function move(dt=1/60){
     const damageGrip=damageLevel>=4?.72:damageLevel===3?.84:damageLevel===2?.93:1;
     const tireGrip=weatherGrip*damageGrip;
     const vehiclePower=jobCar.userData.enginePower||1;
-    const maxForward=((jobCar.userData.maxSpeedKmh?(.47*jobCar.userData.maxSpeedKmh/240):.47)+tuningLevel*.012)*vehiclePower*(damageLevel>=4?.62:damageLevel===3?.78:1),maxReverse=.16;
+    const maxForward=((jobCar.userData.maxForwardSpeed||.47)+tuningLevel*.012)*(damageLevel>=4?.62:damageLevel===3?.78:1),maxReverse=.16;
     if(accelerating&&flFuel>0){
       if(carSpeed<0)carSpeed=Math.min(0,carSpeed+.022*frameScale);
       else carSpeed=Math.min(maxForward,carSpeed+(.0038*vehiclePower+Math.max(0,1-carSpeed/maxForward)*.0035*vehiclePower)*frameScale);

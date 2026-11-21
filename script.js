@@ -16,6 +16,7 @@ let renderer,scene,camera,raf,started=false,yaw=0,pitch=0,locked=false;
 const keys={};
 const pedestrians=[];
 const policeCars=[];
+const trafficCars=[];
 const clock=new THREE.Clock();
 
 function building(x,z,w,d,h,color){
@@ -164,6 +165,21 @@ function toggleJobs(){
  if(!jobPanel.classList.contains('hidden'))document.exitPointerLock?.();
 }
 
+function createTraffic(){
+  const trafficSpecs=[
+    [0xb9c5d0,'hatch'],[0x253e59,'sedan'],[0xc6a83a,'hatch'],[0xeeeeea,'van'],[0x7b3034,'sportback'],
+    [0x374d43,'coupe'],[0x8d969d,'sedan'],[0x1d2732,'hatch'],[0xe0e4e6,'van'],[0x5b6d84,'sportback']
+  ];
+  for(let i=0;i<trafficSpecs.length;i++){
+    const lane=i<5?-3.2:3.2;
+    const direction=i<5?1:-1;
+    const [color,model]=trafficSpecs[i];
+    const car=makeCar(lane,-112+(i%5)*31,color,false,model);
+    car.rotation.y=direction===1?0:Math.PI;
+    car.userData.traffic={direction,speed:.055+(i%4)*.012};
+    trafficCars.push(car);
+  }
+}
 function makeCity(){
   scene=new THREE.Scene();scene.background=new THREE.Color(0x91b1c8);scene.fog=new THREE.Fog(0x91b1c8,65,185);
   camera=new THREE.PerspectiveCamera(72,viewport.clientWidth/viewport.clientHeight,.1,260);camera.position.set(0,2.1,14);
@@ -179,6 +195,7 @@ function makeCity(){
   for(let z=-95;z<25;z+=14)for(const x of [-11,11])tree(x,z);
   makeCar(4,-8,0x1c354d,false,'sportback');
   makeCar(-3,-35,0xffffff,true,'sedan');
+  createTraffic();
   for(let i=0;i<14;i++){
     const side=i%2===0?-1:1;
     makePedestrian(side*(9.1+(i%3)*.65),-88+(i*13)%112,i);
@@ -191,6 +208,12 @@ function resize(){
 }
 function updateWorld(dt){
   const t=clock.elapsedTime;
+  for(const car of trafficCars){
+    const traffic=car.userData.traffic;
+    car.position.z+=traffic.direction*traffic.speed*dt*60;
+    if(traffic.direction>0&&car.position.z>52)car.position.z=-122;
+    if(traffic.direction<0&&car.position.z<-122)car.position.z=52;
+  }
   for(const p of pedestrians){
     const u=p.userData;
     p.position.z=u.originZ+Math.sin(t*u.speed+u.phase)*2.6;

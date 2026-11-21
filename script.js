@@ -34,6 +34,7 @@ const qualitySettings={
  medium:{pixelRatio:.84,shadows:false,fog:180,exposure:1.02,ambient:1.85,label:'MITTEL'},
  high:{pixelRatio:1,shadows:true,shadowMapSize:1536,fog:245,exposure:1.08,ambient:1.75,label:'HOCH · ECHTZEIT-SCHATTEN'},
  maximum:{pixelRatio:1.15,shadows:true,shadowMapSize:2048,fog:270,exposure:1.1,ambient:1.65,label:'MAXIMAL · 2K-SCHATTEN'},
+ ultra:{pixelRatio:1.45,shadows:true,shadowMapSize:4096,fog:340,exposure:1.12,ambient:1.55,label:'ULTRA · 4K-SCHATTEN'},
  advanced:{pixelRatio:1.05,shadows:true,shadowMapSize:2048,fog:250,exposure:1.08,ambient:1.7,label:'ERWEITERT · 2K-SCHATTEN'}
 };
 let sunLight=null,hemiLight=null,flashlight=null,flashlightTarget=null,flashlightOn=false;
@@ -46,7 +47,7 @@ function applyQuality(){
  renderer.shadowMap.autoUpdate=true;
  renderer.toneMappingExposure=classicEdition?.92:q.exposure;
  if(scene.fog)scene.fog.far=classicEdition?125:q.fog;
- if(sunLight){sunLight.intensity=classicEdition?1.2:mode==='minimum'?1.0:mode==='legacy'?1.15:mode==='low'?1.25:mode==='medium'?1.55:mode==='high'?1.9:2.05;sunLight.castShadow=q.shadows;const shadowResolution=q.shadowMapSize||1024;sunLight.shadow.mapSize.set(shadowResolution,shadowResolution);sunLight.shadow.camera.left=-65;sunLight.shadow.camera.right=65;sunLight.shadow.camera.top=65;sunLight.shadow.camera.bottom=-65;sunLight.shadow.camera.near=1;sunLight.shadow.camera.far=140;sunLight.shadow.camera.updateProjectionMatrix();}
+ if(sunLight){sunLight.intensity=classicEdition?1.2:mode==='minimum'?1.0:mode==='legacy'?1.15:mode==='low'?1.25:mode==='medium'?1.55:mode==='high'?1.9:mode==='ultra'?2.15:2.05;sunLight.castShadow=q.shadows;const shadowResolution=q.shadowMapSize||1024;sunLight.shadow.mapSize.set(shadowResolution,shadowResolution);sunLight.shadow.camera.left=-65;sunLight.shadow.camera.right=65;sunLight.shadow.camera.top=65;sunLight.shadow.camera.bottom=-65;sunLight.shadow.camera.near=1;sunLight.shadow.camera.far=140;sunLight.shadow.camera.updateProjectionMatrix();}
  if(hemiLight)hemiLight.intensity=q.ambient;
  scene.traverse(obj=>{if(obj.isMesh){obj.castShadow=q.shadows;obj.receiveShadow=q.shadows;}});
  const hint=document.querySelector('#graphicsHint')||document.querySelector('#qualityStatus');

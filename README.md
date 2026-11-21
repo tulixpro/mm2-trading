@@ -147,3 +147,13 @@ Hinweis: Das ist ein stilisiertes Low-Poly-Schadensmodell, keine realistische Ka
 - Lenkreaktion und seitlicher Reifenschlupf reagieren stärker auf Tempo, Fahrbahnzustand und Handbremse.
 - Kollisionen unterscheiden leichte und stärkere Aufpralle; stärkere Treffer verursachen mehr Fahrzeugschaden und beeinflussen die Fahrstabilität.
 - Weiterhin eine Arcade-/Prototyp-Physik, keine vollständige Reifen-, Federungs- oder Crashsimulation.
+
+
+## Version 0.4.0 – Grafik & App-Design
+- Neues Frankfurt-Life-App-Logo in der Spieloberfläche und auf der Website.
+- Grafikprofile von Minimal bis Maximal mit stark reduzierter Render-Auflösung, kürzerer Sichtweite und deaktivierten Schatten im Sparmodus.
+- Einstellungen sind direkt im Windows-Spiel über die Schaltfläche **Einstellungen** oder **F1 → Einstellungen** erreichbar.
+- Grafik, FPS-Limit, Maus-Empfindlichkeit, Sichtfeld und Kameraperspektive werden lokal gespeichert.
+- Die Logo-Dateien werden beim Windows-Build mit in die App aufgenommen.
+
+Hinweis: Die Grafikprofile reduzieren vor allem die GPU-Last. Die tatsächliche Bildrate hängt weiterhin von CPU, GPU und Treibern ab.

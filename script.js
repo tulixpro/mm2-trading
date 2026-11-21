@@ -110,12 +110,16 @@ function buildPhone(){
  phonePanel=document.createElement('section');phonePanel.id='phonePanel';phonePanel.className='phone-overlay hidden';
  phonePanel.innerHTML='<div class="phone-device"><div class="phone-notch"></div><div class="phone-status"><span>● FRANKFURT MOBILE</span><span>5G ▰ 100%</span></div><div class="phone-clock" id="phoneClock">12:00</div><div class="phone-date">SAMSTAG · FRANKFURT AM MAIN</div><div class="phone-appgrid" id="phoneApps"></div><div class="phone-page hidden" id="phonePage"></div><div class="phone-dock"><button data-open="map">⌖<small>Karte</small></button><button data-open="jobs">▣<small>Jobs</small></button><button data-open="garage">🚘<small>Garage</small></button><button data-open="bank">€<small>Bank</small></button></div><button class="phone-home" id="phoneHome" aria-label="Startbildschirm"></button><button class="phone-exit" id="phoneExit">Schließen ×</button></div>';
  viewport.appendChild(phonePanel);
+ buildQuickAccessWheel();
  phonePanel.querySelectorAll('[data-open]').forEach(b=>b.addEventListener('click',()=>openPhoneApp(b.dataset.open)));
  phonePanel.querySelector('#phoneHome').addEventListener('click',()=>showPhoneHome());
  phonePanel.querySelector('#phoneExit').addEventListener('click',()=>phonePanel.classList.add('hidden'));
  showPhoneHome();
 }
 function showPhoneHome(){
+ const clockEl=phonePanel?.querySelector('#phoneClock');
+ const dateEl=phonePanel?.querySelector('.phone-date');
+ if(clockEl&&dateEl){const now=new Date();clockEl.textContent=now.toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'});dateEl.textContent=now.toLocaleDateString('de-DE',{weekday:'long',day:'2-digit',month:'long'}).toUpperCase()+' · FRANKFURT AM MAIN';}
  phonePage='home';const grid=phonePanel.querySelector('#phoneApps'),page=phonePanel.querySelector('#phonePage');
  page.classList.add('hidden');grid.classList.remove('hidden');
  const apps=[['map','🗺️','Karte'],['jobs','💼','Missionen'],['bank','🏦','Bank'],['garage','🚘','Garage'],['housing','🏠','Wohnen'],['transit','🚋','ÖPNV'],['news','📰','News'],['camera','📷','Kamera'],['services','🛠️','Service'],['settings','⚙️','Einstellungen'],['inventory','🎒','Inventar'],['customize','👕','Outfit'],['daily','🎯','Tagesziele'],['save','💾','Speichern'],['help','❔','Hilfe'],['dealer','🚗','Autohändler'],['taxi','🚕','Taxi rufen']];
@@ -166,6 +170,24 @@ function togglePhone(){
  if(!started||!phonePanel)return;
  phonePanel.classList.toggle('hidden');
  if(!phonePanel.classList.contains('hidden')){showPhoneHome();document.exitPointerLock?.();}
+}
+function buildQuickAccessWheel(){
+ const wheel=document.createElement('div');wheel.id='quickAccessWheel';wheel.className='quick-wheel hidden';
+ wheel.innerHTML='<div class="quick-wheel-core"><b>FRANKFURT</b><small>QUICK ACCESS · Q</small></div><button data-quick="phone"><b>📱</b><span>Handy</span></button><button data-quick="map"><b>🗺️</b><span>Karte</span></button><button data-quick="light"><b>🔦</b><span>Licht</span></button><button data-quick="camera"><b>🎥</b><span>Kamera</span></button><button class="quick-wheel-close" data-quick="close" aria-label="Schließen">×</button>';
+ viewport.appendChild(wheel);
+ wheel.querySelectorAll('[data-quick]').forEach(btn=>btn.addEventListener('click',()=>{
+  const action=btn.dataset.quick;wheel.classList.add('hidden');
+  if(action==='phone')togglePhone();
+  if(action==='map'){if(phonePanel?.classList.contains('hidden'))togglePhone();openPhoneApp('map');}
+  if(action==='light')toggleFlashlight();
+  if(action==='camera')cycleCamera();
+ }));
+}
+function toggleQuickAccessWheel(){
+ const wheel=document.querySelector('#quickAccessWheel');
+ if(!wheel||!started||!phonePanel?.classList.contains('hidden'))return;
+ wheel.classList.toggle('hidden');
+ if(!wheel.classList.contains('hidden'))document.exitPointerLock?.();
 }
 function buildDealership(){
  const g=new THREE.Group();
@@ -1403,6 +1425,6 @@ function begin(){
 startButton?.addEventListener('click',begin);
 // In der eigenständigen Windows-Spielansicht direkt in die 3D-Stadt starten.
 if(document.body.classList.contains('game-app')) begin();
-document.addEventListener('keydown',e=>{keys[e.code]=true;keyboardKeys[e.code]=true;if(e.code==='F1'){e.preventDefault();if(!e.repeat)togglePhone();return;}if(e.code==='KeyE'&&!e.repeat){if(!tryRefuelAtPump())toggleShopOrDealer();}if(e.code==='KeyF'&&!e.repeat)toggleVehicle();if(e.code==='KeyJ'&&!e.repeat)toggleJobs();if(e.code==='KeyL'&&!e.repeat)toggleFlashlight();if(e.code==='F5'&&!e.repeat){e.preventDefault();flSaveGame(true);}if(e.code==='KeyC'&&!e.repeat)cycleCamera();if(e.code==='Escape'&&jobPanel&&!jobPanel.classList.contains('hidden'))jobPanel.classList.add('hidden');if(e.code==='Escape'&&shopPanel&&!shopPanel.classList.contains('hidden'))shopPanel.classList.add('hidden');if(e.code==='Escape'&&phonePanel&&!phonePanel.classList.contains('hidden'))phonePanel.classList.add('hidden');if(e.code==='Escape'&&dealerPanel&&!dealerPanel.classList.contains('hidden'))dealerPanel.classList.add('hidden');if(['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code))e.preventDefault();});
+document.addEventListener('keydown',e=>{keys[e.code]=true;keyboardKeys[e.code]=true;if(e.code==='F1'){e.preventDefault();if(!e.repeat)togglePhone();return;}if(e.code==='KeyQ'&&!e.repeat){e.preventDefault();toggleQuickAccessWheel();return;}if(e.code==='KeyE'&&!e.repeat){if(!tryRefuelAtPump())toggleShopOrDealer();}if(e.code==='KeyF'&&!e.repeat)toggleVehicle();if(e.code==='KeyJ'&&!e.repeat)toggleJobs();if(e.code==='KeyL'&&!e.repeat)toggleFlashlight();if(e.code==='F5'&&!e.repeat){e.preventDefault();flSaveGame(true);}if(e.code==='KeyC'&&!e.repeat)cycleCamera();if(e.code==='Escape'&&jobPanel&&!jobPanel.classList.contains('hidden'))jobPanel.classList.add('hidden');if(e.code==='Escape'&&shopPanel&&!shopPanel.classList.contains('hidden'))shopPanel.classList.add('hidden');if(e.code==='Escape'&&phonePanel&&!phonePanel.classList.contains('hidden'))phonePanel.classList.add('hidden');if(e.code==='Escape')document.querySelector('#quickAccessWheel')?.classList.add('hidden');if(e.code==='Escape'&&dealerPanel&&!dealerPanel.classList.contains('hidden'))dealerPanel.classList.add('hidden');if(['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code))e.preventDefault();});
 document.addEventListener('keyup',e=>{keys[e.code]=false;keyboardKeys[e.code]=false;});
 window.addEventListener('resize',resize);

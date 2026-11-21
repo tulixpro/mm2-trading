@@ -13,17 +13,20 @@
 AFLVehicleShowcaseActor::AFLVehicleShowcaseActor()
 {
     PrimaryActorTick.bCanEverTick = false;
-    SceneRoot = CreateDefaultSubobject<UBoxComponent>(TEXT("VehicleCollision"));
-    RootComponent = SceneRoot;
-    SceneRoot->SetBoxExtent(FVector(230.0f, 105.0f, 85.0f));
-    SceneRoot->SetCollisionProfileName(TEXT("Pawn"));
-    SceneRoot->SetSimulatePhysics(false);
+    CollisionRoot = CreateDefaultSubobject<UBoxComponent>(TEXT("VehicleCollision"));
+    RootComponent = CollisionRoot;
+    CollisionRoot->SetBoxExtent(FVector(230.0f, 105.0f, 85.0f));
+    CollisionRoot->SetCollisionProfileName(TEXT("Pawn"));
+    CollisionRoot->SetSimulatePhysics(false);
+    SceneRoot = CreateDefaultSubobject<USceneComponent>(TEXT("VisualRoot"));
+    SceneRoot->SetupAttachment(CollisionRoot);
+    SceneRoot->SetRelativeLocation(FVector(0.0f, 0.0f, -85.0f));
     DriverCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("DriverCamera"));
     DriverCamera->SetupAttachment(SceneRoot);
-    DriverCamera->SetRelativeLocation(FVector(35.0f, 0.0f, 150.0f));
+    DriverCamera->SetRelativeLocation(FVector(35.0f, 0.0f, 235.0f));
     DriverCamera->bUsePawnControlRotation = true;
     VehicleMovement = CreateDefaultSubobject<UFloatingPawnMovement>(TEXT("VehicleMovement"));
-    VehicleMovement->UpdatedComponent = SceneRoot;
+    VehicleMovement->SetUpdatedComponent(CollisionRoot);
     VehicleMovement->MaxSpeed = 2400.0f;
     VehicleMovement->Acceleration = 1800.0f;
     VehicleMovement->Deceleration = 2200.0f;

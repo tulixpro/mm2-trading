@@ -41,6 +41,99 @@ const shops=[];
 const inventory={Kaffee:0,Snack:0,Stadtplan:0};
 let shopPanel=null,currentShop=null;
 const clock=new THREE.Clock();
+let missionHud=null,jobStops=[],jobStopIndex=0;
+
+// FRANKFURT MOBILE – Smartphone mit Homescreen und animierten App-Seiten
+let phonePanel=null,phonePage='home';
+const ownedCars=['golf'];
+const dealerCars=[
+ {id:'golf',name:'City Compact',model:'hatch',color:0xb51e2b,price:0,desc:'Zuverlässig für den Alltag.'},
+ {id:'mercedes',name:'Business Sedan',model:'sedan',color:0x9f101d,price:1800,desc:'Komfort für lange Strecken.'},
+ {id:'audi',name:'E-Sportback',model:'sportback',color:0xc72d24,price:3200,desc:'Sportlich und modern.'},
+ {id:'alpina',name:'Luxury Coupé',model:'coupe',color:0x075b45,price:5200,desc:'Elegantes Oberklasse-Coupé.'},
+ {id:'super',name:'Super Sport',model:'super',color:0xd7ed12,price:9500,desc:'Für schnelle Ausfahrten.'},
+ {id:'van',name:'Cargo Van',model:'van',color:0xe6e8e8,price:2400,desc:'Viel Platz für Transportjobs.'}
+];
+let dealerPanel=null,dealership={x:-28,z:82,name:'Frankfurt Motors'};
+function buildPhone(){
+ phonePanel=document.createElement('section');phonePanel.id='phonePanel';phonePanel.className='phone-overlay hidden';
+ phonePanel.innerHTML='<div class="phone-device"><div class="phone-notch"></div><div class="phone-status"><span>● FRANKFURT MOBILE</span><span>5G ▰ 100%</span></div><div class="phone-clock" id="phoneClock">12:00</div><div class="phone-date">SAMSTAG · FRANKFURT AM MAIN</div><div class="phone-appgrid" id="phoneApps"></div><div class="phone-page hidden" id="phonePage"></div><div class="phone-dock"><button data-open="map">⌖<small>Karte</small></button><button data-open="jobs">▣<small>Jobs</small></button><button data-open="garage">🚘<small>Garage</small></button><button data-open="bank">€<small>Bank</small></button></div><button class="phone-home" id="phoneHome" aria-label="Startbildschirm"></button><button class="phone-exit" id="phoneExit">Schließen ×</button></div>';
+ viewport.appendChild(phonePanel);
+ phonePanel.querySelectorAll('[data-open]').forEach(b=>b.addEventListener('click',()=>openPhoneApp(b.dataset.open)));
+ phonePanel.querySelector('#phoneHome').addEventListener('click',()=>showPhoneHome());
+ phonePanel.querySelector('#phoneExit').addEventListener('click',()=>phonePanel.classList.add('hidden'));
+ showPhoneHome();
+}
+function showPhoneHome(){
+ phonePage='home';const grid=phonePanel.querySelector('#phoneApps'),page=phonePanel.querySelector('#phonePage');
+ page.classList.add('hidden');grid.classList.remove('hidden');
+ const apps=[['map','🗺️','Karte'],['jobs','💼','Missionen'],['bank','🏦','Bank'],['garage','🚘','Garage'],['housing','🏠','Wohnen'],['transit','🚋','ÖPNV'],['news','📰','News'],['camera','📷','Kamera'],['services','🛠️','Service'],['settings','⚙️','Einstellungen'],['help','❔','Hilfe'],['dealer','🚗','Autohändler']];
+ grid.innerHTML=apps.map(a=>'<button class="phone-app" data-app="'+a[0]+'"><b>'+a[1]+'</b><span>'+a[2]+'</span></button>').join('');
+ grid.querySelectorAll('[data-app]').forEach(b=>b.addEventListener('click',()=>openPhoneApp(b.dataset.app)));
+}
+function openPhoneApp(app){
+ if(!phonePanel)return;
+ phonePage=app;const grid=phonePanel.querySelector('#phoneApps'),page=phonePanel.querySelector('#phonePage');
+ grid.classList.add('hidden');page.classList.remove('hidden');
+ const pos=camera?Math.round(camera.position.x)+' / '+Math.round(camera.position.z):'–';
+ const pages={
+ map:'<div class="phone-page-head">Stadtkarte</div><div class="phone-map"><span>● Dein Standort</span><i>▦</i><i>▦</i><i>▦</i><b>MAIN</b></div><p>Position: '+pos+'</p>',
+ jobs:'<div class="phone-page-head">Missionen</div><div class="phone-stat">Aktive Aufträge <b>'+(jobActive?'1':'0')+'</b></div><div class="phone-stat">Erledigt <b>'+completedJobs+'</b></div><p>Öffne die Jobzentrale und wähle deinen nächsten Auftrag.</p><button data-action="jobs">Jobzentrale öffnen</button>',
+ bank:'<div class="phone-page-head">Frankfurt Bank</div><div class="phone-balance">'+careerMoney.toLocaleString('de-DE')+' €</div><p>Dein Kontostand</p><div class="phone-stat">Abgeschlossene Jobs <b>'+completedJobs+'</b></div>',
+ garage:'<div class="phone-page-head">Meine Garage</div><p>Eigene Fahrzeuge: '+ownedCars.length+'</p>'+ownedCars.map(id=>'<div class="phone-stat">'+(dealerCars.find(v=>v.id===id)?.name||id)+' <b>✓</b></div>').join('')+'<button data-action="dealer">Autohändler öffnen</button>',
+ dealer:'<div class="phone-page-head">Frankfurt Motors</div><p>Fahrzeuge ansehen und kaufen – besuche auch den Showroom in der Stadt.</p><button data-action="dealer">Showroom öffnen</button>',
+ housing:'<div class="phone-page-head">Wohnen</div><div class="phone-stat">Wohnviertel <b>Erreichbar</b></div><p>Entdecke Wohnungen und Mehrfamilienhäuser in der Stadt.</p>',
+ transit:'<div class="phone-page-head">ÖPNV</div><div class="phone-stat">Linie 1 <b>Innenstadt</b></div><div class="phone-stat">Linie 2 <b>Wohnviertel</b></div><p>Fahrpläne sind eine Spiel-Demo.</p>',
+ news:'<div class="phone-page-head">Stadt-News</div><div class="phone-stat">Neue Jobs in der Innenstadt</div><div class="phone-stat">Frankfurt Motors eröffnet</div><p>Bleib auf dem Laufenden.</p>',
+ camera:'<div class="phone-page-head">Kamera</div><p>Fotomodus – richte die Kamera in der Stadt aus und mach einen Screenshot mit Windows.</p>',
+ services:'<div class="phone-page-head">Stadtservice</div><div class="phone-stat">Mängel melden <b>Online</b></div><div class="phone-stat">Fundbüro <b>Offen</b></div>',
+ settings:'<div class="phone-page-head">Einstellungen</div><p>Grafikqualität und FPS kannst du oben im Spiel ändern.</p>',
+ help:'<div class="phone-page-head">Hilfe & Steuerung</div><p>WASD bewegen · Maus umsehen · Shift sprinten · J Missionen · F Auto · E Interaktion · F1 Handy.</p>'
+ };
+ page.innerHTML='<button class="phone-back" data-action="home">‹ Apps</button>'+(pages[app]||'');
+ page.querySelectorAll('[data-action]').forEach(b=>b.addEventListener('click',()=>{const action=b.dataset.action;if(action==='home')showPhoneHome();if(action==='jobs'){phonePanel.classList.add('hidden');toggleJobs();}if(action==='dealer'){phonePanel.classList.add('hidden');openDealer();}}));
+}
+function togglePhone(){
+ if(!started||!phonePanel)return;
+ phonePanel.classList.toggle('hidden');
+ if(!phonePanel.classList.contains('hidden')){showPhoneHome();document.exitPointerLock?.();}
+}
+function buildDealership(){
+ const g=new THREE.Group();
+ const wall=new THREE.MeshStandardMaterial({color:0x263d50,roughness:.45,metalness:.25});
+ const glass=new THREE.MeshStandardMaterial({color:0x8fc8dc,transparent:true,opacity:.36,metalness:.25,roughness:.18});
+ const base=new THREE.Mesh(new THREE.BoxGeometry(24,8,16),wall);base.position.y=4;g.add(base);
+ const front=new THREE.Mesh(new THREE.BoxGeometry(.15,5,14),glass);front.position.set(12.1,3.3,0);g.add(front);
+ const canopy=new THREE.Mesh(new THREE.BoxGeometry(2, .35,17),new THREE.MeshStandardMaterial({color:0x28b8c6,metalness:.3}));canopy.position.set(12.7,6.2,0);g.add(canopy);
+ const signCanvas=document.createElement('canvas');signCanvas.width=900;signCanvas.height=180;
+ const ctx=signCanvas.getContext('2d');ctx.fillStyle='#10283a';ctx.fillRect(0,0,900,180);ctx.fillStyle='#6de6ed';ctx.font='bold 82px Arial';ctx.textAlign='center';ctx.fillText('FRANKFURT MOTORS',450,115);
+ const sign=new THREE.Mesh(new THREE.BoxGeometry(.2,2.6,13),new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(signCanvas)}));sign.position.set(12.3,8.4,0);g.add(sign);
+ g.position.set(dealership.x,0,dealership.z);scene.add(g);
+ for(let i=0;i<3;i++){const car=makeCar(dealership.x-5+i*5,dealership.z-2,[0xb51e2b,0x075b45,0xd7ed12][i],false,['hatch','coupe','super'][i]);car.rotation.y=Math.PI/2;dealerDisplayCars.push(car);}
+}
+const dealerDisplayCars=[];
+function nearestDealer(){return camera&&!driving&&Math.hypot(camera.position.x-dealership.x,camera.position.z-dealership.z)<16;}
+function buildDealerPanel(){
+ dealerPanel=document.createElement('div');dealerPanel.id='dealerPanel';dealerPanel.className='ingame-jobs hidden';
+ dealerPanel.innerHTML='<div class="ingame-jobs-head"><b>FRANKFURT MOTORS / SHOWROOM</b><button id="dealerClose">×</button></div><h3>Finde dein Auto</h3><p class="ingame-jobs-hint">Kaufe Fahrzeuge mit deinem verdienten Geld. Dein Startwagen ist kostenlos.</p><div id="dealerCars"></div><div id="dealerMessage">Willkommen bei Frankfurt Motors.</div><small>E oder ESC · Schließen</small>';
+ viewport.appendChild(dealerPanel);dealerPanel.querySelector('#dealerClose').addEventListener('click',()=>dealerPanel.classList.add('hidden'));
+}
+function openDealer(){
+ if(!dealerPanel)return;
+ const list=dealerPanel.querySelector('#dealerCars');list.replaceChildren();
+ for(const car of dealerCars){
+  const owned=ownedCars.includes(car.id),button=document.createElement('button');button.className='ingame-job-choice';
+  button.innerHTML='<b>'+car.name+' · '+(car.price?car.price.toLocaleString('de-DE')+' €':'GRATIS')+'</b><span>'+car.desc+(owned?' · IN GARAGE':'')+'</span>';
+  button.addEventListener('click',()=>{
+   const msg=dealerPanel.querySelector('#dealerMessage');
+   if(!owned&&careerMoney<car.price){msg.textContent='Nicht genug Geld. Verdiene Geld mit Missionen.';return;}
+   if(!owned){careerMoney-=car.price;ownedCars.push(car.id);if(careerHud)careerHud.innerHTML='KONTO: '+careerMoney.toLocaleString('de-DE')+' €<br>AUFTRÄGE: '+completedJobs;msg.textContent=car.name+' gekauft! Es steht jetzt in deiner Garage.';button.querySelector('span').textContent=car.desc+' · IN GARAGE';}
+   else{if(jobCar)scene.remove(jobCar);jobCar=makeCar(camera.position.x+3,camera.position.z-5,car.color,false,car.model);jobCar.rotation.y=yaw;msg.textContent=car.name+' bereitgestellt. Gehe hin und drücke F.';}
+  });list.appendChild(button);
+ }
+ dealerPanel.classList.remove('hidden');document.exitPointerLock?.();
+}
+
 
 function building(x,z,w,d,h,color){
   const g=new THREE.Group();
@@ -222,6 +315,7 @@ function buildInGameJobs(){
  jobPanel.innerHTML='<div class="ingame-jobs-head"><b>FRANKFURT LIFE / JOBZENTRALE</b><button id="closeJobs" aria-label="Schließen">×</button></div><h3>Wähle deinen Beruf</h3><p class="ingame-jobs-hint">Dein Auftrag und das passende Dienstfahrzeug starten direkt in der 3D-Stadt.</p><div id="ingameJobChoices"></div><div id="ingameJobDetail">Wähle einen Job aus.</div><button id="startJob" class="ingame-start" disabled>AUFTRAG ANNEHMEN</button><small>J oder ESC · Menü schließen</small>';
  viewport.appendChild(jobPanel);
  careerHud=document.createElement('div');careerHud.id='careerHud';careerHud.style.cssText='position:absolute;top:14px;right:14px;z-index:8;padding:10px 14px;border:1px solid #ffffff30;border-radius:10px;background:#101b2ddd;color:#fff;font:700 13px/1.6 system-ui;pointer-events:none;';careerHud.innerHTML='KONTO: 0 €<br>AUFTRÄGE: 0';viewport.appendChild(careerHud);
+ missionHud=document.createElement('div');missionHud.id='missionHud';missionHud.className='mission-hud hidden';viewport.appendChild(missionHud);
  const choices=jobPanel.querySelector('#ingameJobChoices'),detail=jobPanel.querySelector('#ingameJobDetail'),accept=jobPanel.querySelector('#startJob');
  let selected=0;
  jobs.forEach((job,i)=>{
@@ -241,11 +335,18 @@ function buildInGameJobs(){
   if(jobCar){scene.remove(jobCar);if(jobCar.userData.jobMarker)scene.remove(jobCar.userData.jobMarker);}
   jobCar=makeCar(camera.position.x+3,camera.position.z-5,vehicle.color,false,vehicle.model);
   jobCar.rotation.y=yaw;
-  jobDestination=new THREE.Vector3(Math.max(-105,Math.min(105,camera.position.x+24)),0,Math.max(-205,Math.min(105,camera.position.z-45)));
-  const marker=new THREE.Mesh(new THREE.CylinderGeometry(1.2,1.2,.15,24),new THREE.MeshBasicMaterial({color:0x36d9c4}));
-  marker.position.copy(jobDestination);marker.position.y=.12;scene.add(marker);
-  jobCar.userData.jobMarker=marker;
-  jobActive=true;
+  const startX=camera.position.x,startZ=camera.position.z;
+  jobStops=selected===0?[[startX+24,startZ-45],[startX-28,startZ-75],[startX+35,startZ-105]]:[[startX+26,startZ-48],[startX-32,startZ-82]];
+  jobStops=jobStops.map(([x,z])=>new THREE.Vector3(Math.max(-105,Math.min(105,x)),0,Math.max(-205,Math.min(105,z))));
+  jobStopIndex=0;jobDestination=jobStops[0];
+  const marker=new THREE.Group();
+  const ring=new THREE.Mesh(new THREE.TorusGeometry(1.35,.12,8,32),new THREE.MeshBasicMaterial({color:0x36e6d4}));
+  ring.rotation.x=Math.PI/2;ring.position.y=.25;marker.add(ring);
+  const beam=new THREE.Mesh(new THREE.CylinderGeometry(.12,.5,5,12,1,true),new THREE.MeshBasicMaterial({color:0x36d9c4,transparent:true,opacity:.24,side:THREE.DoubleSide}));
+  beam.position.y=2.7;marker.add(beam);marker.position.copy(jobDestination);scene.add(marker);
+  jobCar.userData.jobMarker=marker;jobActive=true;
+  if(missionHud){missionHud.classList.remove('hidden');missionHud.innerHTML='<b>MISSION AKTIV</b><span>'+job.name+'</span><small id="missionProgress">STOPP 1 / '+jobStops.length+' · Fahre zum Marker</small><div class="mission-track"><i></i></div>';}
+
   if(careerHud)careerHud.innerHTML='KONTO: '+careerMoney.toLocaleString('de-DE')+' €<br>AUFTRÄGE: '+completedJobs;
   detail.textContent='AUFTRAG AKTIV: '+job.name+' – '+job.desc+' Fahre zum markierten Ziel. (Fahrzeug ist in der Stadt gespawnt.)';
   status.textContent='JOB AKTIV · '+job.name.toUpperCase();
@@ -404,6 +505,7 @@ function makeCity(){
   for(let z=-105;z<35;z+=20)for(const x of [-10.4,10.4])streetLamp(x,z);
   makeCar(4,-8,0x1c354d,false,'sportback');
   makeCar(-3,-35,0xffffff,true,'sedan');
+  buildDealership();
   createTraffic();
   // Erweiterte Stadt: zusätzliche Wohn- und Geschäftsquartiere, Nebenstraßen und Plätze.
   const sideRoadMat=new THREE.MeshStandardMaterial({color:0x29333d,roughness:.96});
@@ -460,6 +562,8 @@ function updateWorld(dt){
     p.children[2].rotation.x=Math.sin(t*5+u.phase)*.22;
     p.children[3].rotation.x=-Math.sin(t*5+u.phase)*.22;
   }
+  for(const car of dealerDisplayCars){car.rotation.y=Math.PI/2+Math.sin(t*.45)*.025;}
+  if(phonePanel&&!phonePanel.classList.contains('hidden')){const clockEl=phonePanel.querySelector('#phoneClock');if(clockEl)clockEl.textContent=new Date().toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'});}
   for(const car of policeCars){
     const [red,blue]=car.userData.lights;
     const flash=Math.floor(t*5)%2===0;
@@ -478,12 +582,22 @@ function move(){
     const forward=new THREE.Vector3(Math.sin(jobCar.rotation.y),0,Math.cos(jobCar.rotation.y));
     jobCar.position.addScaledVector(forward,carSpeed);
     if(jobActive&&jobDestination&&jobCar.position.distanceTo(jobDestination)<4){
-      jobActive=false;completedJobs++;const reward=250+Math.floor(Math.random()*251);careerMoney+=reward;
-      if(jobCar.userData.jobMarker){scene.remove(jobCar.userData.jobMarker);jobCar.userData.jobMarker=null;}
-      driving=false;carSpeed=0;
-      if(careerHud)careerHud.innerHTML='KONTO: '+careerMoney.toLocaleString('de-DE')+' €<br>AUFTRÄGE: '+completedJobs;
-      status.textContent='AUFTRAG ERLEDIGT · +'+reward+' € · F ZUM AUSSTEIGEN';
-      jobDestination=null;
+      jobStopIndex++;
+      if(jobStopIndex<jobStops.length){
+        jobDestination=jobStops[jobStopIndex];
+        if(jobCar.userData.jobMarker)jobCar.userData.jobMarker.position.copy(jobDestination);
+        const progress=missionHud?.querySelector('#missionProgress');if(progress)progress.textContent='STOPP '+(jobStopIndex+1)+' / '+jobStops.length+' · Weiter zum nächsten Marker';
+        const track=missionHud?.querySelector('.mission-track i');if(track)track.style.width=(jobStopIndex/jobStops.length*100)+'%';
+        status.textContent='CHECKPOINT ERREICHT · WEITER ZUM NÄCHSTEN ZIEL';
+      }else{
+        jobActive=false;completedJobs++;const reward=350+Math.floor(Math.random()*351);careerMoney+=reward;
+        if(jobCar.userData.jobMarker){scene.remove(jobCar.userData.jobMarker);jobCar.userData.jobMarker=null;}
+        driving=false;carSpeed=0;
+        if(careerHud)careerHud.innerHTML='KONTO: '+careerMoney.toLocaleString('de-DE')+' €<br>AUFTRÄGE: '+completedJobs;
+        status.textContent='MISSION ERLEDIGT · +'+reward+' €';
+        if(missionHud){missionHud.classList.add('hidden');}
+        jobDestination=null;jobStops=[];
+      }
     }
     // Der östliche Stadtplatz ist autofrei; Fahrzeuge bleiben auf den Straßen.
     if(jobCar.position.x>22&&jobCar.position.z>-118&&jobCar.position.z<48)jobCar.position.x=22;
@@ -541,7 +655,7 @@ function begin(){
     renderer.shadowMap.type=THREE.PCFSoftShadowMap;
     renderer.shadowMap.enabled=false;
     sunLight=null;hemiLight=null;
-    makeCity();buildInGameJobs();buildShopInteraction();applyQuality();viewport.appendChild(renderer.domElement);resize();loop();
+    makeCity();buildInGameJobs();buildShopInteraction();buildPhone();buildDealerPanel();applyQuality();viewport.appendChild(renderer.domElement);resize();loop();
     renderer.domElement.addEventListener('click',()=>renderer.domElement.requestPointerLock?.());
     document.addEventListener('pointerlockchange',()=>{
       locked=document.pointerLockElement===renderer.domElement;
@@ -559,6 +673,6 @@ function begin(){
 startButton?.addEventListener('click',begin);
 // In der eigenständigen Windows-Spielansicht direkt in die 3D-Stadt starten.
 if(document.body.classList.contains('game-app')) begin();
-document.addEventListener('keydown',e=>{keys[e.code]=true;if(e.code==='KeyE'&&!e.repeat)toggleShop();if(e.code==='KeyF'&&!e.repeat)toggleVehicle();if(e.code==='KeyJ'&&!e.repeat)toggleJobs();if(e.code==='KeyL'&&!e.repeat)toggleFlashlight();if(e.code==='Escape'&&jobPanel&&!jobPanel.classList.contains('hidden'))jobPanel.classList.add('hidden');if(e.code==='Escape'&&shopPanel&&!shopPanel.classList.contains('hidden'))shopPanel.classList.add('hidden');if(['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code))e.preventDefault();});
+document.addEventListener('keydown',e=>{keys[e.code]=true;if(e.code==='F1'){e.preventDefault();if(!e.repeat)togglePhone();return;}if(e.code==='KeyE'&&!e.repeat){if(dealerPanel&&!dealerPanel.classList.contains('hidden'))dealerPanel.classList.add('hidden');else if(nearestDealer())openDealer();else toggleShop();}if(e.code==='KeyF'&&!e.repeat)toggleVehicle();if(e.code==='KeyJ'&&!e.repeat)toggleJobs();if(e.code==='KeyL'&&!e.repeat)toggleFlashlight();if(e.code==='Escape'&&jobPanel&&!jobPanel.classList.contains('hidden'))jobPanel.classList.add('hidden');if(e.code==='Escape'&&shopPanel&&!shopPanel.classList.contains('hidden'))shopPanel.classList.add('hidden');if(e.code==='Escape'&&phonePanel&&!phonePanel.classList.contains('hidden'))phonePanel.classList.add('hidden');if(e.code==='Escape'&&dealerPanel&&!dealerPanel.classList.contains('hidden'))dealerPanel.classList.add('hidden');if(['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code))e.preventDefault();});
 document.addEventListener('keyup',e=>keys[e.code]=false);
 window.addEventListener('resize',resize);

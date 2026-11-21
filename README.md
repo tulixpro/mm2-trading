@@ -126,3 +126,10 @@ Hinweis: Das ist ein stilisiertes Low-Poly-Schadensmodell, keine realistische Ka
 ### Ego-Perspektive 0.3.6
 - Neue Fahrer-Kamera direkt im Cockpit hinter dem Lenkrad.
 - Über Kamera-Einstellungen oder mit C durch Verfolger, Nahansicht, Motorhaube und Ego-Perspektive wechseln.
+
+
+### Fahrphysik 0.3.7
+- Zeitbasierte Beschleunigung und sanfter Rollwiderstand.
+- Stärker abgestuftes Bremsen, Rückwärtsgang und geschwindigkeitsabhängige Lenkung.
+- Handbremse mit Taste Leertaste für engere Kurven.
+- Weiterhin spielinterne Arcade-Physik, keine echte Fahrzeugsimulation.

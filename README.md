@@ -186,3 +186,11 @@ Hinweis: Die Grafikprofile reduzieren vor allem die GPU-Last. Die tatsächliche 
 - Erklärt Bewegung, Umsehen, Ein-/Aussteigen, Jobs, Kameraperspektiven, Smartphone und Quick-Access-Rad.
 - Das Tutorial kann jederzeit übersprungen werden und wird nach Abschluss lokal als gesehen markiert.
 - Der Einstieg ist eine inszenierte Einführung über der 3D-Stadt; keine vorgerenderten Filmsequenzen.
+
+
+## Version 0.4.5 – Helikopter & Action Edition
+- Neues Low-Poly-Helikoptermodell am Flughafen mit animiertem Haupt- und Heckrotor sowie markiertem Helipad.
+- Separate Frankfurt Life Action Edition mit eigener Windows-App-Kennung und eigenem Launcher.
+- Action Edition verwendet eine dunklere, kontrastreichere Atmosphäre für Verfolgungs- und Action-Missionen; keine grafischen Blut- oder Gore-Effekte.
+- Website-Downloadbereich auf Version 0.4.5 aktualisiert und um beide Editionen erweitert.
+- Windows-Workflow baut Installer und portable Version für beide Editionen. Downloads sind erst verfügbar, wenn der Workflow erfolgreich abgeschlossen und die Release-Dateien veröffentlicht wurden.

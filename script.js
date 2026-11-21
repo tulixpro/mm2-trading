@@ -958,6 +958,16 @@ function buildAirportAndBuses(){
  for(const x of [-9,9]){const engine=new THREE.Mesh(new THREE.CylinderGeometry(.72,.72,3.2,12),new THREE.MeshStandardMaterial({color:0x58636b,metalness:.4,roughness:.55}));engine.rotation.x=Math.PI/2;engine.position.set(x,2.35,-.6);plane.add(engine);}
  for(const x of [-1.3,1.3]){const gear=new THREE.Mesh(new THREE.CylinderGeometry(.12,.12,1.5,8),new THREE.MeshStandardMaterial({color:0x333b42,metalness:.5}));gear.position.set(x,1.1,1.5);plane.add(gear);}
  plane.position.set(133,0,-245);scene.add(plane);
+ // Zwei stilisierte Begleitjets für die geskriptete Verfolgungssequenz während der Flugmission.
+ for(let i=0;i<2;i++){
+  const jet=new THREE.Group();const jetMat=new THREE.MeshStandardMaterial({color:i===0?0x566779:0x39495c,metalness:.42,roughness:.42});
+  const fus=new THREE.Mesh(new THREE.ConeGeometry(.62,6.8,8),jetMat);fus.rotation.x=-Math.PI/2;jet.add(fus);
+  const wings=new THREE.Mesh(new THREE.BoxGeometry(6.4,.16,1.8),jetMat);wings.position.z=-.4;jet.add(wings);
+  const tailPlane=new THREE.Mesh(new THREE.BoxGeometry(2.5,.12,1),jetMat);tailPlane.position.z=-2.5;jet.add(tailPlane);
+  const finJet=new THREE.Mesh(new THREE.BoxGeometry(.12,1.05,1.3),jetMat);finJet.position.set(0,.48,-2.45);jet.add(finJet);
+  const canopyJet=new THREE.Mesh(new THREE.SphereGeometry(.42,10,8),new THREE.MeshStandardMaterial({color:0x8bd8ef,transparent:true,opacity:.6}));canopyJet.scale.set(.75,.48,1.5);canopyJet.position.z=.85;jet.add(canopyJet);
+  jet.visible=false;jet.position.set(133+(i?12:-12),5,-278);scene.add(jet);militaryEscorts.push(jet);
+ }
  // Geparkter Rettungs-/Rundflughelikopter am Flughafen mit animiertem Rotor
  const heli=new THREE.Group();
  const heliBodyMat=new THREE.MeshStandardMaterial({color:0x1d526e,metalness:.22,roughness:.48});

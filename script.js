@@ -1265,7 +1265,7 @@ function begin(){
     renderer.shadowMap.type=THREE.PCFSoftShadowMap;
     renderer.shadowMap.enabled=false;
     sunLight=null;hemiLight=null;
-    makeCity();buildBreakableProps();buildInGameJobs();buildShopInteraction();buildPhone();buildDealerPanel();buildMiniMap();buildGamepadStatus();flBuildStatus();applyQuality();viewport.appendChild(renderer.domElement);buildPerformanceHud();flLoadGame();flApplyWeather();resize();loop();
+    makeCity();buildBreakableProps();buildInGameJobs();buildShopInteraction();buildPhone();document.querySelector("#openSettings")?.addEventListener("click",()=>{if(phonePanel?.classList.contains("hidden"))phonePanel.classList.remove("hidden");showPhoneHome();openPhoneApp("settings");document.exitPointerLock?.();});buildDealerPanel();buildMiniMap();buildGamepadStatus();flBuildStatus();applyQuality();viewport.appendChild(renderer.domElement);buildPerformanceHud();flLoadGame();flApplyWeather();resize();loop();
     renderer.domElement.tabIndex=0;
     renderer.domElement.addEventListener('click',()=>{renderer.domElement.focus();if(!phonePanel||phonePanel.classList.contains('hidden')){try{const result=renderer.domElement.requestPointerLock?.();if(result?.catch)result.catch(()=>{status.textContent='MAUSZIEHEN ZUM UMSEHEN';});}catch(_){status.textContent='MAUSZIEHEN ZUM UMSEHEN';}}});
     renderer.domElement.addEventListener('pointerdown',e=>{if(e.button!==0||locked)return;lookDrag=true;lastPointerX=e.clientX;lastPointerY=e.clientY;});

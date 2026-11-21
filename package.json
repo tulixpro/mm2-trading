@@ -1,7 +1,7 @@
 {
   "name": "frankfurt-life",
-  "version": "0.4.2",
-  "description": "Frankfurt Life - 3D city prototype with airport, buses, taxi service and German road signs",
+  "version": "0.4.3",
+  "description": "Frankfurt Life - 3D city prototype with redesigned smartphone UI and animated quick access wheel",
   "main": "electron/main.cjs",
   "author": "Frankfurt Life Community",
   "license": "UNLICENSED",

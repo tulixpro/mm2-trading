@@ -279,6 +279,29 @@ function createShop(x,z,side,name,subtitle,color){
  const products=name.startsWith('TANKSTELLE')?[{name:'Benzin 25%',price:90,kind:'fuel'},{name:'Benzin 50%',price:170,kind:'fuel'},{name:'Benzin 100%',price:300,kind:'fuel'}]:name.startsWith('BÄCKEREI')?[{name:'Brot',price:4},{name:'Brezel',price:3},{name:'Croissant',price:4},{name:'Kuchen',price:5},{name:'Kaffee',price:4}]:name.startsWith('PIZZERIA')?[{name:'Pizza',price:9},{name:'Pasta',price:8},{name:'Limo',price:3}]:name.startsWith('RESTAURANT')?[{name:'Burger-Menü',price:12},{name:'Schnitzel',price:16},{name:'Salat',price:9},{name:'Cola',price:3},{name:'Kaffee',price:4}]:name==='TUNINGWERK'?[{name:'Motor-Upgrade',price:850,kind:'tuning',id:'engine'},{name:'Sonderlackierung',price:280,kind:'tuning',id:'paint'},{name:'Sportfelgen',price:420,kind:'tuning',id:'wheels'}]:[{name:'Kaffee',price:4},{name:'Snack',price:3},{name:'Stadtplan',price:8}];
  shops.push({name,subtitle,x,z,side,products});
 }
+
+function createTransitStop(x,z,label){
+ const g=new THREE.Group();
+ const metal=new THREE.MeshStandardMaterial({color:0x334653,metalness:.55,roughness:.42});
+ const glass=new THREE.MeshStandardMaterial({color:0x83c5d7,transparent:true,opacity:.28,roughness:.2});
+ const roof=new THREE.MeshStandardMaterial({color:0x263d4c,roughness:.65});
+ const postGeo=new THREE.BoxGeometry(.12,2.35,.12);
+ for(const px of [-1.55,1.55]){const post=new THREE.Mesh(postGeo,metal);post.position.set(px,1.17,0);g.add(post);}
+ const canopy=new THREE.Mesh(new THREE.BoxGeometry(3.35,.16,1.55),roof);canopy.position.set(0,2.35,0);g.add(canopy);
+ const back=new THREE.Mesh(new THREE.BoxGeometry(3.05,1.75,.055),glass);back.position.set(0,1.25,-.65);g.add(back);
+ const bench=new THREE.Mesh(new THREE.BoxGeometry(2.15,.12,.48),new THREE.MeshStandardMaterial({color:0x9b7954,roughness:.8}));bench.position.set(0,.55,.15);g.add(bench);
+ const sign=new THREE.Mesh(new THREE.BoxGeometry(.55,.78,.1),new THREE.MeshStandardMaterial({color:0x167d91,roughness:.6}));sign.position.set(-1.9,2.15,.05);g.add(sign);
+ const pole=new THREE.Mesh(new THREE.CylinderGeometry(.035,.045,1.45,6),metal);pole.position.set(2,1.55,.45);g.add(pole);
+ const board=new THREE.Mesh(new THREE.BoxGeometry(.8,.5,.08),new THREE.MeshStandardMaterial({color:0xf1f4ef,roughness:.75}));board.position.set(2,2.35,.45);g.add(board);
+ g.position.set(x,0,z);scene.add(g);
+}
+function buildTransitStops(){
+ createTransitStop(13,-72,'INNENSTADT');
+ createTransitStop(-26,-96,'WESTEND');
+ createTransitStop(145,-145,'OSTEND');
+ createTransitStop(-145,165,'SÜDQUARTIER');
+}
+
 function streetLamp(x,z){
  const pole=new THREE.Mesh(new THREE.CylinderGeometry(.07,.11,5.2,7),new THREE.MeshStandardMaterial({color:0x27323b,metalness:.55,roughness:.5}));
  pole.position.set(x,2.6,z);scene.add(pole);
@@ -742,7 +765,7 @@ function makeCity(){
   for(let z=-300;z<225;z+=12){const line=new THREE.Mesh(new THREE.PlaneGeometry(.18,5),new THREE.MeshBasicMaterial({color:0xe5dfc5}));line.rotation.x=-Math.PI/2;line.position.set(0,.015,z);scene.add(line);}
   const sidewalkMat=new THREE.MeshLambertMaterial({color:0x92999b});
   for(const x of [-9.2,9.2]){const s=new THREE.Mesh(new THREE.BoxGeometry(3.5,.25,520),sidewalkMat);s.position.set(x,.08,-45);scene.add(s);}
-  buildStreetInfrastructure();
+  buildStreetInfrastructure();buildTransitStops();
   const leftShops=new Map([[-87,['SUPERMARKT','MARKT · FRISCHE WAREN',0x3c966c]],[ -51,['BÄCKEREI','BROT · KAFFEE · KUCHEN',0xc58b43]],[ -15,['MODEHAUS','MODE FÜR JEDEN TAG',0x8a638e]],[21,['ELEKTRO','TECHNIK & ZUBEHÖR',0x397ca5]]]);
   const rightShops=new Map([[-94,['CAFÉ AM MAIN','KAFFEE · SNACKS',0x9b6547]],[ -58,['AUTOWELT','FAHRZEUGE & SERVICE',0x397a91]],[ -22,['SPORTTREFF','SPORT · OUTDOOR',0x62884f]],[14,['KIOSK 24','ZEITUNGEN · GETRÄNKE',0xb68a39]]]);
   for(let z=-105;z<35;z+=18){

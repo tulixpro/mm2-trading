@@ -542,7 +542,7 @@ const jobs=[
  {name:'Stadtwerke',vehicle:'service',desc:'Fahre zu einer gemeldeten Störung.'}
 ];
 let jobPanel,careerHud,jobActive=false,jobCar=null,jobDestination=null;
-let driving=false,carSpeed=0,careerMoney=0,completedJobs=0;
+let driving=false,carSpeed=0,carSlip=0,careerMoney=0,completedJobs=0;
 let damageLevel=0,damageHud=null,damageFlash=0,cameraLookOffset=0,damageCooldown=0,flSavedDamage=0;
 const emergencyVehicles=[];
 const breakableProps=[];let lookDrag=false,lastPointerX=0,lastPointerY=0;
@@ -1028,10 +1028,10 @@ function applyCarDamage(car,level){
  const n=Math.max(0,Math.min(4,level|0));
  d.paint.color.setHex(n===0?d.originalColor:[0,0x777777,0x68636a,0x48434a,0x30343a][n]);
  d.paint.roughness=n===0?.38:Math.min(.96,.42+n*.13);
- d.frontBumper.position.y=.42-n*.045;d.frontBumper.rotation.x=-n*.055;
- d.rearBumper.position.y=.42-n*.03;d.bumper.rotation.x=-n*.08;
+ d.frontBumper.position.y=.42-n*.045;d.frontBumper.rotation.x=-n*.055;d.frontBumper.position.x=n>=3?.12:0;
+ d.rearBumper.position.y=.42-n*.03;d.bumper.rotation.x=-n*.08;d.rearBumper.position.x=n>=4?-.16:0;
  d.hoodDent.visible=n>=2;d.hoodDent.position.y=.94-n*.022;
- d.crack.visible=n>=2;d.smoke.visible=n>=4;
+ d.crack.visible=n>=2;d.smoke.visible=n>=3;d.smoke.scale.setScalar(n>=4?1.8:1);
  if(d.scratches)d.scratches.forEach((mesh,i)=>{mesh.visible=n>=i+1;});
  if(d.sideDents)d.sideDents.forEach((mesh,i)=>{mesh.visible=n>=i+2;});
  if(d.headlights)d.headlights.forEach(mesh=>{mesh.material.color.setHex(n>=4?0x66584b:0xfff0c8);mesh.material.transparent=n>=4;mesh.material.opacity=n>=4?.45:1;});
@@ -1146,10 +1146,17 @@ function move(dt=1/60){
     const steer=(keys.KeyA||keys.ArrowLeft?1:0)-(keys.KeyD||keys.ArrowRight?1:0);
     const speedRatio=Math.min(1,Math.abs(carSpeed)/maxForward);
     const steeringResponse=(.003+speedRatio*.014)*(carSpeed<0?-1:1);
-    // Bei hohem Tempo wird die Lenkung sanfter; Handbremse erlaubt engere Kurven.
-    jobCar.rotation.y+=steer*steeringResponse*frameScale*(handbrake?1.45:1);
+    // Seitlicher Reifenschlupf baut sich bei Tempo und starkem Lenken auf.
+    const grip=handbrake?.965:.91;
+    carSlip+=steer*speedRatio*(handbrake?.018:.006)*frameScale;
+    carSlip=Math.max(-.19,Math.min(.19,carSlip));
+    carSlip*=Math.pow(grip,frameScale);
+    // Die Karosserie dreht etwas stärker als die Bewegungsrichtung: kontrollierbares Driften.
+    jobCar.rotation.y+=steer*steeringResponse*frameScale*(handbrake?1.65:1);
     const forward=new THREE.Vector3(Math.sin(jobCar.rotation.y),0,Math.cos(jobCar.rotation.y));
+    const right=new THREE.Vector3(Math.cos(jobCar.rotation.y),0,-Math.sin(jobCar.rotation.y));
     jobCar.position.addScaledVector(forward,carSpeed*frameScale);
+    jobCar.position.addScaledVector(right,carSlip*frameScale);
     updateBreakableCollisions(dt);
     if(jobActive&&jobDestination&&jobCar.position.distanceTo(jobDestination)<4){
       jobStopIndex++;
@@ -1207,10 +1214,10 @@ function toggleVehicle(){
   if(!jobCar){status.textContent='WÄHLE ZUERST EINEN JOB MIT J';return;}
   if(!driving){
     if(camera.position.distanceTo(jobCar.position)>9){status.textContent='GEHE NÄHER AN DEIN DIENSTFAHRZEUG';return;}
-    driving=true;carSpeed=0;cameraLookOffset=0;yaw=jobCar.rotation.y-Math.PI;
+    driving=true;carSpeed=0;carSlip=0;cameraLookOffset=0;yaw=jobCar.rotation.y-Math.PI;
     status.textContent='IM FAHRZEUG · WASD / STICK FAHREN · F / X AUSSTEIGEN';
   }else{
-    driving=false;carSpeed=0;cameraLookOffset=0;
+    driving=false;carSpeed=0;carSlip=0;cameraLookOffset=0;
     camera.position.set(jobCar.position.x+3,2.1,jobCar.position.z+3);
     status.textContent='AUSGESTIEGEN · F / X ZUM EINSTEIGEN';
   }

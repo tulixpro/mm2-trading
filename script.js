@@ -1558,6 +1558,83 @@ function makeCar(x,z,color,police=false,model='sedan',performanceOverride=null){
   const dentLeft=new THREE.Mesh(new THREE.BoxGeometry(.12,.2,L*.48),damageMat);dentLeft.position.set(-W*.52,.59,0);damageGroup.add(dentLeft);
   const dentRight=new THREE.Mesh(new THREE.BoxGeometry(.12,.2,L*.48),damageMat);dentRight.position.set(W*.52,.59,0);damageGroup.add(dentRight);
   car.add(damageGroup);car.userData.damageGroup=damageGroup;car.userData.damageParts=damageGroup.children;car.userData.damageLevel=0;
+  // Premium-Außenpaket: zusätzliche, echte 3D-Bauteile mit moderater Polygonzahl.
+  // Reifenschulter und Profilblöcke geben den Rädern mehr Tiefe, ohne Texturen nachzuladen.
+  const treadRubber=new THREE.MeshStandardMaterial({color:0x171b20,roughness:.98});
+  const archLiner=new THREE.MeshStandardMaterial({color:0x171c21,roughness:.95});
+  for(const side of [-1,1])for(const axleZ of [-L*.32,L*.32]){
+    const wheelX=side*(W*.51),wheelY=.42;
+    const liner=new THREE.Mesh(new THREE.TorusGeometry(.405,.035,6,24,Math.PI),archLiner);
+    liner.rotation.set(0,Math.PI/2,Math.PI);liner.position.set(wheelX*.98,wheelY,axleZ);car.add(liner);
+    for(let block=0;block<8;block++){
+      const angle=block*Math.PI/4;
+      const tread=new THREE.Mesh(new THREE.BoxGeometry(.105,.052,.075),treadRubber);
+      tread.position.set(wheelX,wheelY+Math.sin(angle)*.365,axleZ+Math.cos(angle)*.365);
+      tread.rotation.x=angle;car.add(tread);
+    }
+    // Radhaus-Innenkante und kleine Befestigungspunkte.
+    for(let bolt=0;bolt<4;bolt++){
+      const a=bolt*Math.PI/2+Math.PI/4;
+      const rivet=new THREE.Mesh(new THREE.SphereGeometry(.018,6,5),chrome);
+      rivet.position.set(wheelX+side*.126,wheelY+Math.sin(a)*.27,axleZ+Math.cos(a)*.27);car.add(rivet);
+    }
+  }
+  // Kühlergrill mit räumlicher Wabenstruktur und seitlichen Lufteinlässen.
+  const grilleCellMat=new THREE.MeshStandardMaterial({color:0x090e13,metalness:.42,roughness:.52});
+  for(let row=0;row<2;row++)for(let col=0;col<9;col++){
+    const cell=new THREE.Mesh(new THREE.CylinderGeometry(.027,.027,.018,6),grilleCellMat);
+    cell.rotation.x=Math.PI/2;
+    cell.position.set((col-4)*W*.052,.61+row*.065,L*.548);car.add(cell);
+  }
+  for(const side of [-1,1]){
+    const intake=new THREE.Mesh(new THREE.BoxGeometry(.28,.16,.055),carbon);
+    intake.position.set(side*W*.39,.48,L*.535);car.add(intake);
+    for(let fin=0;fin<3;fin++){
+      const slat=new THREE.Mesh(new THREE.BoxGeometry(.22,.018,.025),chrome);
+      slat.position.set(side*W*.39,.43+fin*.045,L*.557);car.add(slat);
+    }
+    // Separate Seitenblinker mit orangefarbener Lichtfläche.
+    const sideIndicator=new THREE.Mesh(new THREE.BoxGeometry(.025,.045,.19),new THREE.MeshStandardMaterial({color:0xffa52b,emissive:0x9c4a08,emissiveIntensity:.5}));
+    sideIndicator.position.set(side*W*.512,.87,.35);car.add(sideIndicator);
+    // Türunterkante mit schmaler Licht-/Reflektorleiste.
+    const sillAccent=new THREE.Mesh(new THREE.BoxGeometry(.025,.035,L*.42),new THREE.MeshStandardMaterial({color:model==='super'?0x9caab5:0x59636b,metalness:.72,roughness:.3}));
+    sillAccent.position.set(side*W*.525,.34,-.02);car.add(sillAccent);
+  }
+  // Feine Haubenlinien, Wischergelenke und Heckleuchten-Segmente.
+  for(const side of [-1,1]){
+    const hoodLine=new THREE.Mesh(new THREE.BoxGeometry(.018,.012,profile.hood*.78),new THREE.MeshStandardMaterial({color:0x59636b,metalness:.6,roughness:.35}));
+    hoodLine.position.set(side*W*.31,.946,L*.34);car.add(hoodLine);
+    const wiperArm=new THREE.Mesh(new THREE.BoxGeometry(.018,.018,.42),black);
+    wiperArm.position.set(side*.2,1.325,L*.16);wiperArm.rotation.x=-.42;wiperArm.rotation.z=side*.12;car.add(wiperArm);
+    const rearLed=new THREE.Mesh(new THREE.BoxGeometry(.25,.035,.025),new THREE.MeshBasicMaterial({color:0xff3444}));
+    rearLed.position.set(side*W*.34,.82,-L*.552);car.add(rearLed);
+  }
+  const rearReflector=new THREE.Mesh(new THREE.BoxGeometry(W*.54,.045,.025),new THREE.MeshStandardMaterial({color:0x8f1722,emissive:0x37070c,emissiveIntensity:.35}));
+  rearReflector.position.set(0,.55,-L*.535);car.add(rearReflector);
+  // Modellabhängige Anbauteile für klar unterscheidbare Fahrzeugklassen.
+  if(model==='suv'||model==='wagon'){
+    for(const side of [-1,1]){
+      const rail=new THREE.Mesh(new THREE.BoxGeometry(.075,.07,L*.48),chrome);
+      rail.position.set(side*W*.29,1.08+profile.cabin/2,-.18);car.add(rail);
+      for(const z of [-.65,.25]){
+        const foot=new THREE.Mesh(new THREE.BoxGeometry(.09,.11,.12),black);
+        foot.position.set(side*W*.29,1.05+profile.cabin/2,z);car.add(foot);
+      }
+    }
+  }
+  if(model==='pickup'){
+    const bedRibMat=new THREE.MeshStandardMaterial({color:0x59636b,metalness:.55,roughness:.55});
+    for(let rib=0;rib<5;rib++){
+      const ribMesh=new THREE.Mesh(new THREE.BoxGeometry(W*.62,.018,.035),bedRibMat);
+      ribMesh.position.set(0,.88,-L*.22-rib*.16);car.add(ribMesh);
+    }
+  }
+  if(model==='super'||model==='coupe'){
+    for(const side of [-1,1]){
+      const aeroFin=new THREE.Mesh(new THREE.BoxGeometry(.06,.18,.48),carbon);
+      aeroFin.position.set(side*W*.47,.39,L*.35);aeroFin.rotation.x=-.12;car.add(aeroFin);
+    }
+  }
   car.position.set(x,0,z);scene.add(car);return car;
 }
 const fleet=[

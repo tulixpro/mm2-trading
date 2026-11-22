@@ -318,7 +318,7 @@ function building(x,z,w,d,h,color){
   g.position.set(x,0,z);scene.add(g);
 }
 const flEnterableHomes=[];
-let flInsideHome=false,flHomeExitPosition=null,flHomeInterior=null;
+let flInsideHome=false,flHomeExitPosition=null,flHomeInterior=null,flHomeDoorPivot=null,flHomeDoorPhase='closed',flHomeDoorProgress=0,flHomeDoorAction=null;
 function flBuildHomeInterior(){
  if(flHomeInterior)return flHomeInterior;
  const room=new THREE.Group();
@@ -335,18 +335,49 @@ function flBuildHomeInterior(){
  addBox(4,.95,.8,0xb9b7ae,3.9,.48,-3.9);addBox(4.1,.12,.9,0x454c52,3.9,1.02,-3.9,.35);
  addBox(.85,2,.8,0xbfc8ce,5.4,1,-4.7,.25);
  addBox(2.5,.48,3,0x6e8497,3.7,.28,2.8);addBox(1.1,.2,.55,0xece8df,3.7,.62,1.8);
- const lamp=new THREE.PointLight(0xffdfb0,1.25,18);lamp.position.set(0,2.9,0);room.add(lamp);
- addBox(1.2,2.2,.12,0x263746,0,1.05,5.35);
+ const lamp=new THREE.PointLight(0xffdfb0,1.45,18);lamp.position.set(0,2.9,0);room.add(lamp);
+ const ceilingLamp=new THREE.Mesh(new THREE.SphereGeometry(.16,16,10),new THREE.MeshStandardMaterial({color:0xffedc7,emissive:0xffcf83,emissiveIntensity:1.3}));
+ ceilingLamp.position.set(0,3.12,0);room.add(ceilingLamp);
+ // Hinged door: pivot at the left edge, so it swings naturally into the room.
+ flHomeDoorPivot=new THREE.Group();flHomeDoorPivot.position.set(-.6,0,5.35);room.add(flHomeDoorPivot);
+ addBox(1.2,2.2,.12,0x263746,.6,1.05,0);
+ const knob=new THREE.Mesh(new THREE.SphereGeometry(.055,12,8),mat(0xc49a51,.25));knob.position.set(1.04,1.02,-.08);flHomeDoorPivot.add(knob);
+ // Wall picture and small side table add depth to the living room.
+ addBox(1.45,.95,.055,0x8b674c,-3.1,2.15,-5.27);
+ addBox(.85,.08,.75,0x674b37,5.35,.48,.5);addBox(.08,.9,.08,0x49382c,5.05,.2,.5);
  room.position.set(420,0,420);room.visible=false;scene.add(room);flHomeInterior=room;return room;
 }
 function flToggleHome(){
- if(!started||!camera||driving||planeFlying||activeBoat)return false;
- if(flInsideHome){flInsideHome=false;if(flHomeExitPosition)camera.position.copy(flHomeExitPosition);if(flHomeInterior)flHomeInterior.visible=false;status.textContent='DU BIST WIEDER DRAUSSEN';return true;}
+ if(!started||!camera||driving||planeFlying||activeBoat||flHomeDoorPhase!=='closed')return false;
+ if(flInsideHome){flHomeDoorAction='exit';flHomeDoorPhase='opening';flHomeDoorProgress=0;status.textContent='TÜR ÖFFNET SICH …';return true;}
  let home=null,best=Infinity;
  for(const h of flEnterableHomes){const d=Math.hypot(camera.position.x-h.x,camera.position.z-(h.z+h.depth/2+.8));if(d<best){best=d;home=h;}}
  if(!home||best>4.5)return false;
  flHomeExitPosition=camera.position.clone();flBuildHomeInterior().visible=true;
- camera.position.set(420,1.7,423.8);flInsideHome=true;status.textContent='WOHNUNG · E ZUM VERLASSEN';document.exitPointerLock?.();return true;
+ flHomeDoorAction='enter';flHomeDoorPhase='opening';flHomeDoorProgress=0;status.textContent='TÜR ÖFFNET SICH …';
+ document.exitPointerLock?.();return true;
+}
+function flUpdateHomeDoor(dt){
+ if(!flHomeDoorPivot||flHomeDoorPhase==='closed')return;
+ const speed=2.2;
+ if(flHomeDoorPhase==='opening'){
+  flHomeDoorProgress=Math.min(1,flHomeDoorProgress+dt*speed);
+  const eased=flHomeDoorProgress*flHomeDoorProgress*(3-2*flHomeDoorProgress);
+  flHomeDoorPivot.rotation.y=-1.35*eased;
+  if(flHomeDoorProgress>=1){
+   if(flHomeDoorAction==='enter'){camera.position.set(420,1.7,423.8);flInsideHome=true;status.textContent='WOHNUNG · E ZUM VERLASSEN';}
+   else{flInsideHome=false;if(flHomeExitPosition)camera.position.copy(flHomeExitPosition);status.textContent='DU BIST WIEDER DRAUSSEN';}
+   flHomeDoorPhase='holding';flHomeDoorProgress=0;
+  }
+ }else if(flHomeDoorPhase==='holding'){
+  flHomeDoorProgress+=dt;
+  if(flHomeDoorProgress>.45){flHomeDoorPhase='closing';flHomeDoorProgress=0;}
+ }else if(flHomeDoorPhase==='closing'){
+  flHomeDoorProgress=Math.min(1,flHomeDoorProgress+dt*speed);
+  const eased=flHomeDoorProgress*flHomeDoorProgress*(3-2*flHomeDoorProgress);
+  flHomeDoorPivot.rotation.y=-1.35*(1-eased);
+  if(flHomeDoorProgress>=1){flHomeDoorPivot.rotation.y=0;flHomeDoorPhase='closed';flHomeDoorAction=null;if(!flInsideHome&&flHomeInterior)flHomeInterior.visible=false;}
+ }
 }
 function residentialBuilding(x,z,w,d,h,color){
  const g=new THREE.Group();
@@ -1837,6 +1868,7 @@ function loop(now=0){
   const frameMs=lastFrame?now-lastFrame:0;
   if(frameMs>0){perfFrames.push(frameMs);if(perfFrames.length>45)perfFrames.shift();}
   lastFrame=now;const dt=Math.min(clock.getDelta(),.05);
+  flUpdateHomeDoor(dt);
   // Dynamic resolution only reacts to real rendering load, not an intentional 30-FPS cap.
   if((!maxFps||maxFps>=50)&&now-perfLastCheck>3000&&perfFrames.length>=20){
     perfLastCheck=now;const avgMs=perfFrames.reduce((a,b)=>a+b,0)/perfFrames.length;

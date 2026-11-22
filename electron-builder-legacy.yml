@@ -3,6 +3,9 @@ productName: Frankfurt Life Legacy
 directories:
   output: dist-legacy
 files:
+  - launcher.html
+  - launcher.css
+  - launcher.js
   - game.html
   - game.css
   - index.html

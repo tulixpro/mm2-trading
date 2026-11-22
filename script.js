@@ -33,12 +33,13 @@ function flLoadVehicleVisual(car,model,color,W,L){
       if(!node.isMesh)return;
       node.castShadow=true;node.receiveShadow=true;
       const mats=Array.isArray(node.material)?node.material:[node.material];
-      node.material=mats.map(mat=>{
+      const cloned=mats.map(mat=>{
         const copy=mat.clone();
         if(copy.color&&/paint|body|shell|car.?paint/i.test(copy.name||''))copy.color.setHex(color);
         if('envMapIntensity' in copy)copy.envMapIntensity=1.25;
         return copy;
-      }).length>1?mats.map(mat=>mat.clone()):mats[0].clone();
+      });
+      node.material=Array.isArray(node.material)?cloned:cloned[0];
     });
     visual.updateMatrixWorld(true);
     const bounds=new THREE.Box3().setFromObject(visual);

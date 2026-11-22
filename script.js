@@ -87,6 +87,38 @@ let invertCameraY=localStorage.getItem('flInvertY')==='on';
 let cameraMode='follow',cutscene=null,cutsceneOverlay=null,cutsceneElapsed=0,introTutorial=null;
 let shopPanel=null,currentShop=null;
 const clock=new THREE.Clock();
+
+/* Procedural local audio layer: generated WebAudio tones/noise, no external audio files. */
+let flAudioContext=null,flEngineOsc=null,flEngineSub=null,flEngineGain=null,flEngineFilter=null,flFootstepAt=0,flAudioReady=false;
+function flInitProceduralAudio(){
+ const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return;
+ try{flAudioContext=flAudioContext||new AC();if(flAudioContext.state==='suspended')flAudioContext.resume();if(flAudioReady)return;
+ flEngineOsc=flAudioContext.createOscillator();flEngineOsc.type='sawtooth';flEngineSub=flAudioContext.createOscillator();flEngineSub.type='triangle';
+ flEngineFilter=flAudioContext.createBiquadFilter();flEngineFilter.type='lowpass';flEngineFilter.frequency.value=360;
+ flEngineGain=flAudioContext.createGain();flEngineGain.gain.value=0;const subGain=flAudioContext.createGain();subGain.gain.value=.28;
+ flEngineOsc.connect(flEngineFilter);flEngineFilter.connect(flEngineGain);flEngineSub.connect(subGain);subGain.connect(flEngineGain);flEngineGain.connect(flAudioContext.destination);
+ flEngineOsc.start();flEngineSub.start();flAudioReady=true;}catch(_){flAudioReady=false;}
+}
+function flPlayFootstep(){
+ if(!flAudioContext||flAudioContext.state!=='running')return;
+ const length=Math.floor(flAudioContext.sampleRate*.075),buffer=flAudioContext.createBuffer(1,length,flAudioContext.sampleRate),data=buffer.getChannelData(0);
+ for(let i=0;i<length;i++)data[i]=(Math.random()*2-1)*(1-i/length);
+ const source=flAudioContext.createBufferSource(),filter=flAudioContext.createBiquadFilter(),gain=flAudioContext.createGain();
+ source.buffer=buffer;filter.type='lowpass';filter.frequency.value=650+Math.random()*500;
+ gain.gain.setValueAtTime(.0001,flAudioContext.currentTime);gain.gain.exponentialRampToValueAtTime(.045,flAudioContext.currentTime+.008);gain.gain.exponentialRampToValueAtTime(.0001,flAudioContext.currentTime+.075);
+ source.connect(filter);filter.connect(gain);gain.connect(flAudioContext.destination);source.start();
+}
+function flUpdateProceduralAudio(){
+ if(!flAudioReady||!flAudioContext||flAudioContext.state!=='running')return;
+ const moving=keys.KeyW||keys.KeyA||keys.KeyS||keys.KeyD||keys.ArrowUp||keys.ArrowDown||keys.ArrowLeft||keys.ArrowRight,now=flAudioContext.currentTime;
+ const engineActive=driving&&jobCar&&Math.abs(carSpeed)>.003&&flFuel>0;
+ const speed=engineActive?Math.min(1,Math.abs(carSpeed)/Math.max(.1,jobCar.userData.maxForwardSpeed||.5)):0;
+ const throttle=engineActive&&(keys.KeyW||keys.ArrowUp)?1:0,frequency=engineActive?48+speed*105+throttle*38:38;
+ flEngineOsc.frequency.setTargetAtTime(frequency,now,.09);flEngineSub.frequency.setTargetAtTime(frequency*.5,now,.1);
+ flEngineFilter.frequency.setTargetAtTime(240+speed*1150,now,.12);flEngineGain.gain.setTargetAtTime(engineActive?.055+throttle*.035:.0001,now,.16);
+ if(!driving&&!activeBoat&&!planeFlying&&flCharacterType!=='wheelchair'&&moving&&now>=flFootstepAt){flPlayFootstep();flFootstepAt=now+((keys.ShiftLeft||keys.ShiftRight)?.31:.46);}
+}
+
 let missionHud=null,jobStops=[],jobStopIndex=0;
 
 // FRANKFURT MOBILE – Smartphone mit Homescreen und animierten App-Seiten
@@ -2498,6 +2530,7 @@ function loop(now=0){
   if(frameMs>0){perfFrames.push(frameMs);if(perfFrames.length>45)perfFrames.shift();}
   lastFrame=now;const dt=Math.min(clock.getDelta(),.05);
   flUpdateHomeDoor(dt);
+  flUpdateProceduralAudio();
   // Dynamic resolution only reacts to real rendering load, not an intentional 30-FPS cap.
   if((!maxFps||maxFps>=50)&&now-perfLastCheck>3000&&perfFrames.length>=20){
     perfLastCheck=now;const avgMs=perfFrames.reduce((a,b)=>a+b,0)/perfFrames.length;
@@ -2516,7 +2549,7 @@ document.addEventListener('visibilitychange',()=>{
   else if(!raf){lastFrame=0;clock.getDelta();raf=requestAnimationFrame(loop);}
 });
 function begin(){
-  if(started)return;started=true;placeholder?.remove();
+  if(started)return;started=true;flInitProceduralAudio();placeholder?.remove();
   if(qualitySelect){const saved=localStorage.getItem('flQuality');qualitySelect.value=lowEndDevice?'legacy':(saved&&qualitySettings[saved]?saved:(saved==='ultra'?'legacy':'high'));}
   if(fpsSelect){const savedFps=localStorage.getItem('flFps');fpsSelect.value=savedFps||(lowEndDevice?'30':'60');maxFps=fpsSelect.value==='unlimited'?0:Number(fpsSelect.value);}
   if(mouseSelect){mouseSelect.value=localStorage.getItem('flMouse')||'1';mouseSensitivity=Number(mouseSelect.value)||1;}

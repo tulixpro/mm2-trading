@@ -981,20 +981,20 @@ function buildMiniMap(){
 }
 function drawCityMap(ctx,w,h,large=false){
  if(!ctx)return;
- const c=ctx;const px=x=>(x+180)/360*w,py=z=>(z+300)/660*h;c.clearRect(0,0,w,h);c.fillStyle='#197fa5';c.fillRect(0,0,w,h);c.fillStyle='#314b48';c.fillRect(0,0,w,py(250));c.fillStyle='#d8c18d';c.fillRect(0,py(250),w,py(320)-py(250));
+ const c=ctx;const px=x=>(x+440)/880*w,py=z=>(z+430)/760*h;c.clearRect(0,0,w,h);c.fillStyle='#197fa5';c.fillRect(0,0,w,h);c.fillStyle='#314b48';c.fillRect(0,0,w,py(250));c.fillStyle='#d8c18d';c.fillRect(0,py(250),w,py(330)-py(250));
  // Blocks and local streets across the expanded playable district.
  c.fillStyle='#3b5650';
- for(let x=-165;x<180;x+=24)for(let z=-286;z<220;z+=30){c.fillRect(px(x+2),py(z+2),Math.max(2,px(x+21)-px(x+2)),Math.max(2,py(z+27)-py(z+2)));}
+ for(let x=-405;x<420;x+=30)for(let z=-410;z<245;z+=34){c.fillRect(px(x+2),py(z+2),Math.max(2,px(x+27)-px(x+2)),Math.max(2,py(z+30)-py(z+2)));}
  c.strokeStyle='#9da9a0';c.lineCap='square';c.lineWidth=large?12:7;
- for(const x of [-160,-130,-82,-48,0,48,82,130,160]){c.beginPath();c.moveTo(px(x),0);c.lineTo(px(x),h);c.stroke();}
- for(let z=-285;z<=205;z+=38){c.beginPath();c.moveTo(0,py(z));c.lineTo(w,py(z));c.stroke();}
+ for(const x of [-365,-305,-245,-160,-130,-82,-48,0,48,82,130,160,245,305,365]){c.beginPath();c.moveTo(px(x),0);c.lineTo(px(x),h);c.stroke();}
+ for(let z=-390;z<=210;z+=40){c.beginPath();c.moveTo(0,py(z));c.lineTo(w,py(z));c.stroke();}
  c.strokeStyle='#d8d0ad';c.lineWidth=large?2.5:1.5;c.setLineDash([8,7]);c.beginPath();c.moveTo(px(0),0);c.lineTo(px(0),h);c.stroke();c.setLineDash([]);
  // Main river ribbon and district labels.
  c.fillStyle='#347f9c';c.fillRect(0,py(108),w,Math.max(7,py(126)-py(108)));
  c.fillStyle='#d9e6dc';c.font='bold '+(large?15:11)+'px Arial';
  c.fillText('MAIN',px(8),py(119));
  c.fillStyle='#e4d8ad';c.font='bold '+(large?12:9)+'px Arial';
- c.fillText('INNENSTADT',px(-165),py(-90));c.fillText('WOHNVIERTEL',px(95),py(-210));c.fillText('WESTEND',px(-160),py(35));c.fillText('OSTEND',px(105),py(35));c.fillText('SÜDQUARTIER',px(-45),py(175));c.fillText('STRAND & BUCHT',px(-55),py(285));
+ c.fillText('INNENSTADT',px(-165),py(-90));c.fillText('WOHNVIERTEL',px(95),py(-210));c.fillText('WESTEND',px(-160),py(35));c.fillText('OSTEND',px(105),py(35));c.fillText('SÜDQUARTIER',px(-45),py(175));c.fillText('STRAND & BUCHT',px(-55),py(285));c.fillText('NORDVIERTEL',px(-80),py(-365));c.fillText('LUXUSMEILE',px(265),py(150));
  // Shops and major destinations.
  c.fillStyle='#f1bd59';
  for(const shop of shops){c.beginPath();c.arc(px(shop.x),py(shop.z),large?4:2.5,0,Math.PI*2);c.fill();}

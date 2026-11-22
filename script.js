@@ -481,9 +481,10 @@ function makePedestrian(x,z,index){
 }
 function makeCar(x,z,color,police=false,model='sedan',performanceOverride=null){
   const car=new THREE.Group();
-  const paint=new THREE.MeshPhysicalMaterial({color,roughness:.24,metalness:.52,clearcoat:.95,clearcoatRoughness:.14,envMapIntensity:1.15});
+  const paint=new THREE.MeshPhysicalMaterial({color,roughness:.19,metalness:.62,clearcoat:1,clearcoatRoughness:.075,envMapIntensity:1.5});
   const glass=new THREE.MeshPhysicalMaterial({color:0x182b3a,roughness:.075,metalness:.03,clearcoat:1,clearcoatRoughness:.08,transparent:true,opacity:.2,depthWrite:false,envMapIntensity:1.2});
-  const black=new THREE.MeshStandardMaterial({color:0x10151b,roughness:.7});
+  const black=new THREE.MeshStandardMaterial({color:0x10151b,roughness:.58});
+  const mirrorFinish=new THREE.MeshPhysicalMaterial({color:0x263744,metalness:.88,roughness:.12,clearcoat:1,clearcoatRoughness:.045,envMapIntensity:1.8});
   const chrome=new THREE.MeshStandardMaterial({color:0xb8c4ce,metalness:.8,roughness:.22});
   const light=new THREE.MeshStandardMaterial({color:0xfff1d2,emissive:0xffd58a,emissiveIntensity:.65,roughness:.2,metalness:.08});
   const tail=new THREE.MeshStandardMaterial({color:0xff2638,emissive:0x9d0718,emissiveIntensity:.8,roughness:.25});
@@ -572,7 +573,8 @@ function makeCar(x,z,color,police=false,model='sedan',performanceOverride=null){
   const frontGlass=new THREE.Mesh(new THREE.BoxGeometry(W*.76,.04,.58),glass);frontGlass.position.set(0,1.34,L*.16);frontGlass.rotation.x=-.42;car.add(frontGlass);
   const backGlass=new THREE.Mesh(new THREE.BoxGeometry(W*.72,.04,.48),glass);backGlass.position.set(0,1.31,-L*.34);backGlass.rotation.x=.48;car.add(backGlass);
   for(const side of [-1,1]){
-    const mirror=new THREE.Mesh(new THREE.BoxGeometry(.2,.13,.24),black);mirror.position.set(side*W*.53,1.03,.48);car.add(mirror);
+    const mirror=new THREE.Mesh(new THREE.BoxGeometry(.2,.13,.24),mirrorFinish);mirror.position.set(side*W*.53,1.03,.48);car.add(mirror);
+    const mirrorGlass=new THREE.Mesh(new THREE.BoxGeometry(.012,.085,.17),new THREE.MeshPhysicalMaterial({color:0x9bb5c5,metalness:.95,roughness:.09,clearcoat:1,clearcoatRoughness:.025}));mirrorGlass.position.set(side*(W*.53+.103),1.035,.48);car.add(mirrorGlass);
     for(const zw of [-L*.32,L*.32]){
       const wheel=new THREE.Mesh(new THREE.CylinderGeometry(.37,.37,.24,32),black);wheel.rotation.z=Math.PI/2;wheel.position.set(side*(W*.51),.42,zw);car.add(wheel);
       const tyreShoulder=new THREE.Mesh(new THREE.TorusGeometry(.315,.055,10,32),black);tyreShoulder.rotation.y=Math.PI/2;tyreShoulder.position.copy(wheel.position);car.add(tyreShoulder);

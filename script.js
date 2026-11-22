@@ -286,6 +286,13 @@ function flBuildAmbientEvents(){
  const robberyPolice1=flMakeEmergencyUnit(0xf0f1f3,'police'),robberyPolice2=flMakeEmergencyUnit(0x202a35,'police');
  robberyPolice1.position.set(-5.8,0,4.5);robberyPolice1.rotation.y=Math.PI/2;robberyPolice2.position.set(5.8,0,4.5);robberyPolice2.rotation.y=-Math.PI/2;
  robbery.add(robberyPolice1,robberyPolice2);
+ const eventNpcMat=new THREE.MeshStandardMaterial({color:0x26313a,roughness:.9});
+ for(let i=0;i<2;i++){
+  const person=new THREE.Group();
+  const torso=new THREE.Mesh(new THREE.CapsuleGeometry(.23,.72,3,6),eventNpcMat);torso.position.y=.92;person.add(torso);
+  const head=new THREE.Mesh(new THREE.SphereGeometry(.19,8,6),new THREE.MeshStandardMaterial({color:0xb98e72,roughness:.95}));head.position.y=1.52;person.add(head);
+  person.position.set(-1.1+i*2.2,0,2.1);robbery.add(person);
+ }
  const barrierMat=new THREE.MeshStandardMaterial({color:0xeab52e,roughness:.7});
  for(let i=0;i<4;i++){const barrier=new THREE.Mesh(new THREE.BoxGeometry(2.4,.85,.16),barrierMat);barrier.position.set(-3.6+i*2.4,.44,7.4);robbery.add(barrier);}
  response.visible=false;robbery.visible=false;robbery.position.set(14,0,-178);

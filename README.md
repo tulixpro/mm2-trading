@@ -17,6 +17,16 @@ Ein unabhängiges Open-City-Projekt mit einem kleinen 3D-Browser-Prototyp.
 
 Die NPCs und der Streifenwagen sind Platzhalter aus einfachen 3D-Formen, keine realistischen, voll animierten Figuren oder Polizeisimulation.
 
+## Desktop-Launcher
+
+Die Windows-App startet zuerst den eigenen Frankfurt-Life-Launcher:
+- Auswahl zwischen der modernen Realistic-Edition und San Andreas Retro-3D
+- Grafikprofil für den nächsten Spielstart: Sparsam, Ausgeglichen, Hoch, Maximal oder Ultra
+- Launcher-Oberfläche mit Projekt- und Editionsinformationen
+- Die ausgewählte Grafikqualität wird an den Spielstart übergeben
+
+Der Launcher ist eine native Electron-Oberfläche. Ein automatischer Update-Installer ist noch nicht integriert; die Projekt- und Release-Seite ist über den Launcher erreichbar.
+
 ## Windows-App
 Ein Electron-Projekt und ein GitHub-Actions-Workflow bereiten Windows-x64-Artefakte (Installer und portable Ausgabe) vor. Der Workflow muss erfolgreich laufen, bevor ein echter Download bereitgestellt werden kann. Die App lädt Three.js derzeit über jsDelivr und benötigt beim Start eine Internetverbindung.
 

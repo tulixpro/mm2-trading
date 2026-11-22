@@ -2,6 +2,7 @@
 #include "Engine/Canvas.h"
 #include "Engine/Engine.h"
 #include "Engine/World.h"
+#include "FLVehicleShowcaseActor.h"
 
 void AFLRealisticHUD::BeginPlay()
 {
@@ -13,6 +14,17 @@ void AFLRealisticHUD::DrawHUD()
 {
     Super::DrawHUD();
     if (!Canvas || !GetWorld()) return;
+
+    if (AFLVehicleShowcaseActor* Vehicle = Cast<AFLVehicleShowcaseActor>(GetOwningPawn()))
+    {
+        const float GaugeX = Canvas->SizeX - 245.0f;
+        const float GaugeY = Canvas->SizeY - 82.0f;
+        const float Fuel = Vehicle->GetFuelPercent();
+        Canvas->DrawRect(FLinearColor(0.015f,0.022f,0.028f,0.82f), GaugeX - 16.0f, GaugeY - 18.0f, 220.0f, 58.0f);
+        Canvas->DrawText(GEngine ? GEngine->GetSmallFont() : nullptr, FString::Printf(TEXT("FUEL  %02.0f%%"), Fuel), GaugeX, GaugeY - 10.0f);
+        Canvas->DrawRect(FLinearColor(0.18f,0.20f,0.21f,1.0f), GaugeX, GaugeY + 17.0f, 180.0f, 9.0f);
+        Canvas->DrawRect(Fuel < 15.0f ? FLinearColor(0.85f,0.12f,0.08f,1.0f) : FLinearColor(0.22f,0.72f,0.38f,1.0f), GaugeX, GaugeY + 17.0f, 180.0f * Fuel / 100.0f, 9.0f);
+    }
 
     const float Elapsed = GetWorld()->GetTimeSeconds() - ScreenStartTime;
     const float IntroDuration = 4.5f;

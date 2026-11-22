@@ -350,3 +350,12 @@ These are **project scaffolds only**, not finished playable Unreal games. The ex
 - Bei zeitlich begrenzten Unfall- und Polizeieinsatz-Ereignissen werden synthetische Sirenentöne und blinkende Einsatzlichter abgespielt. Die Audioausgabe benötigt eine vom Browser freigegebene WebAudio-Aktivierung.
 - Der fiktive Bankviertel-Vorfall enthält jetzt eine einfache NPC-Animationssequenz: Figuren bewegen sich in Richtung Streifenwagen, nehmen eine begleitete Festnahme-Pose ein und die Polizeiszene fährt anschließend aus dem Bild.
 - Das ist eine geskriptete Darstellung, keine echte Festnahme-KI. Gebäude sind begehbare/visuelle Blockouts ohne ausgearbeitete Innenräume; Einsatzfahrzeuge fahren noch nicht autonom von der Wache zum Einsatzort. Sirenen sind synthetisch und keine Originalaufnahmen.
+
+
+## Lebendige Stadt – Kreisverkehre und neue Dienstleistungen
+- Drei zusätzliche Kreisverkehrsplätze mit Mittelinseln, Bepflanzung, Fahrbahnmarkierungen und Fußgängerüberwegen ergänzen das Straßennetz in Nebenquartieren.
+- Neue begehbare Ladenfronten: Umzugsservice Main, Paketzentrum, Baumarkt Frankfurt und Fahrradhaus.
+- Passende Liefer- und Service-Transporter stehen an den Betrieben; zusätzliche Passanten beleben das neue Dienstleistungsviertel.
+- Der Beruf Möbeltransport war bereits in der Jobzentrale vorhanden und passt nun sichtbar zum Umzugsbetrieb.
+- Technische Grenze: Kreisverkehre sind derzeit 3D-Straßenanlagen; die NPC-Verkehrs-KI nutzt dort noch keine echte Kreisverkehrs-Vorfahrt oder Spurführung. Die Transporter sind zunächst statische Szenenfahrzeuge, keine autonomen Lieferfahrzeuge. Die neuen Ladenfronten verwenden das bestehende einfache Shop-Interaktionssystem.
+- Änderungen gespeichert; noch kein Browser-Laufzeittest auf realer Hardware durchgeführt.

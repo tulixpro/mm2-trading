@@ -27,7 +27,7 @@ const flEnvironmentAssets={
 };
 const flEnvironmentCache=new Map();
 function flLoadEnvironmentVisual(host,assetKey,fitSize,hideExisting=false){
-  if(classicEdition||!flEnvironmentAssets[assetKey])return;
+  if(classicEdition||liteMode||!flEnvironmentAssets[assetKey])return;
   const url=flEnvironmentAssets[assetKey];
   let pending=flEnvironmentCache.get(url);
   if(!pending){
@@ -75,6 +75,8 @@ function flBuildEnvironmentAssets(){
   }
 }
 function flLoadVehicleVisual(car,model,color,W,L){
+  // Schwache Geräte verwenden die eingebauten Low-Poly-Fahrzeuge statt großer Remote-GLBs.
+  if(liteMode)return;
   const key=flVehicleAssets[model]?'asset:'+flVehicleAssets[model]:null;
   if(!key)return;
   let pending=flVehicleCache.get(key);
@@ -180,17 +182,19 @@ let sunLight=null,hemiLight=null,flashlight=null,flashlightTarget=null,flashligh
 function applyQuality(){
  if(!renderer||!scene)return;
  const mode=qualitySelect?.value||'medium',q=qualitySettings[mode]||qualitySettings.medium;
- renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,(classicEdition?Math.min(q.pixelRatio,.58):q.pixelRatio)*autoResolutionScale));
- renderer.shadowMap.enabled=classicEdition?false:q.shadows;
+ const devicePixelCap=classicEdition?.58:lowEndDevice?.68:1.45;
+ renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,devicePixelCap,q.pixelRatio*autoResolutionScale));
+ const allowShadows=!classicEdition&&!lowEndDevice&&q.shadows;
+ renderer.shadowMap.enabled=allowShadows;
  renderer.shadowMap.type=THREE.PCFSoftShadowMap;
  renderer.shadowMap.autoUpdate=true;
  renderer.toneMappingExposure=classicEdition?.92:q.exposure;
  if(scene.fog)scene.fog.far=classicEdition?125:q.fog;
- if(sunLight){sunLight.intensity=classicEdition?1.2:mode==='minimum'?1.0:mode==='legacy'?1.15:mode==='low'?1.25:mode==='medium'?1.55:mode==='high'?1.9:mode==='ultra'?2.15:2.05;sunLight.castShadow=q.shadows;const shadowResolution=q.shadowMapSize||1024;sunLight.shadow.mapSize.set(shadowResolution,shadowResolution);sunLight.shadow.camera.left=-65;sunLight.shadow.camera.right=65;sunLight.shadow.camera.top=65;sunLight.shadow.camera.bottom=-65;sunLight.shadow.camera.near=1;sunLight.shadow.camera.far=140;sunLight.shadow.camera.updateProjectionMatrix();}
+ if(sunLight){sunLight.intensity=classicEdition?1.2:mode==='minimum'?1.0:mode==='legacy'?1.15:mode==='low'?1.25:mode==='medium'?1.55:mode==='high'?1.9:mode==='ultra'?2.15:2.05;sunLight.castShadow=allowShadows;const shadowResolution=q.shadowMapSize||1024;sunLight.shadow.mapSize.set(shadowResolution,shadowResolution);sunLight.shadow.camera.left=-65;sunLight.shadow.camera.right=65;sunLight.shadow.camera.top=65;sunLight.shadow.camera.bottom=-65;sunLight.shadow.camera.near=1;sunLight.shadow.camera.far=140;sunLight.shadow.camera.updateProjectionMatrix();}
  if(hemiLight)hemiLight.intensity=q.ambient;
  scene.traverse(obj=>{if(obj.isMesh){obj.castShadow=q.shadows;obj.receiveShadow=q.shadows;}});
  const hint=document.querySelector('#graphicsHint')||document.querySelector('#qualityStatus');
- if(hint)hint.textContent=classicEdition?'SAN ANDREAS RETRO-3D · SPEICHERSPARMODUS':'Grafik: '+q.label+' · '+(q.shadows?'Schatten AN':'Schatten AUS');
+ if(hint)hint.textContent=classicEdition?'SAN ANDREAS RETRO-3D · SPEICHERSPARMODUS':lowEndDevice?'KOMPATIBILITÄTSMODUS · '+q.label+' · reduzierte Renderlast': 'Grafik: '+q.label+' · '+(allowShadows?'Schatten AN':'Schatten AUS');
  if(viewport)viewport.dataset.graphics=mode;
  resize();
 }
@@ -3741,8 +3745,8 @@ function loop(now=0){
   // Dynamic resolution only reacts to real rendering load, not an intentional 30-FPS cap.
   if((!maxFps||maxFps>=50)&&now-perfLastCheck>3000&&perfFrames.length>=20){
     perfLastCheck=now;const avgMs=perfFrames.reduce((a,b)=>a+b,0)/perfFrames.length;
-    if(avgMs>28&&autoResolutionScale>.42){autoResolutionScale=Math.max(.42,autoResolutionScale*.88);applyQuality();}
-    else if(avgMs<17.5&&autoResolutionScale<1){autoResolutionScale=Math.min(1,autoResolutionScale+.04);applyQuality();}
+    if(avgMs>(lowEndDevice?34:28)&&autoResolutionScale>(lowEndDevice?.34:.42)){autoResolutionScale=Math.max(lowEndDevice?.34:.42,autoResolutionScale*.88);applyQuality();}
+    else if(avgMs<(lowEndDevice?27:17.5)&&autoResolutionScale<1){autoResolutionScale=Math.min(1,autoResolutionScale+(lowEndDevice?.025:.04));applyQuality();}
   }
   if(gamePaused)return;
   perfHudTimer+=dt;
@@ -3764,8 +3768,8 @@ function begin(){
   if(cameraSelect){cameraSelect.value=flStorage.getItem('flCamera')||'follow';cameraMode=cameraSelect.value||'follow';}
   status.textContent=lowEndDevice?'OLD-SCHOOL-MODUS · STADT BLEIBT GUT ERKENNBAR':'STADT GELADEN · KLICKE INS SPIEL';
   try{
-    renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance',stencil:false,depth:true,preserveDrawingBuffer:false});
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,classicEdition?.58:lowEndDevice?.68:1));
+    renderer=new THREE.WebGLRenderer({antialias:!lowEndDevice&&!classicEdition,powerPreference:lowEndDevice?'low-power':'high-performance',stencil:false,depth:true,preserveDrawingBuffer:false});
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,classicEdition?.58:lowEndDevice?.58:1));
     renderer.outputColorSpace=THREE.SRGBColorSpace;
     renderer.toneMapping=THREE.ACESFilmicToneMapping;
     renderer.toneMappingExposure=classicEdition?.92:1.08;

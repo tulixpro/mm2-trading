@@ -89,7 +89,7 @@ let shopPanel=null,currentShop=null;
 const clock=new THREE.Clock();
 
 /* Procedural local audio layer: generated WebAudio tones/noise, no external audio files. */
-let flAudioContext=null,flEngineOsc=null,flEngineSub=null,flEngineGain=null,flEngineFilter=null,flFootstepAt=0,flAudioReady=false;
+let flAudioContext=null,flEngineOsc=null,flEngineSub=null,flEngineGain=null,flEngineFilter=null,flRoadNoise=null,flRoadGain=null,flRoadFilter=null,flFootstepAt=0,flAudioReady=false;
 function flInitProceduralAudio(){
  const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return;
  try{flAudioContext=flAudioContext||new AC();if(flAudioContext.state==='suspended')flAudioContext.resume();if(flAudioReady)return;
@@ -97,7 +97,12 @@ function flInitProceduralAudio(){
  flEngineFilter=flAudioContext.createBiquadFilter();flEngineFilter.type='lowpass';flEngineFilter.frequency.value=360;
  flEngineGain=flAudioContext.createGain();flEngineGain.gain.value=0;const subGain=flAudioContext.createGain();subGain.gain.value=.28;
  flEngineOsc.connect(flEngineFilter);flEngineFilter.connect(flEngineGain);flEngineSub.connect(subGain);subGain.connect(flEngineGain);flEngineGain.connect(flAudioContext.destination);
- flEngineOsc.start();flEngineSub.start();flAudioReady=true;}catch(_){flAudioReady=false;}
+ flEngineOsc.start();flEngineSub.start();
+  const noiseLength=flAudioContext.sampleRate*2,noiseBuffer=flAudioContext.createBuffer(1,noiseLength,flAudioContext.sampleRate),noiseData=noiseBuffer.getChannelData(0);
+  for(let i=0;i<noiseLength;i++)noiseData[i]=Math.random()*2-1;
+  flRoadNoise=flAudioContext.createBufferSource();flRoadNoise.buffer=noiseBuffer;flRoadNoise.loop=true;
+  flRoadFilter=flAudioContext.createBiquadFilter();flRoadFilter.type='lowpass';flRoadFilter.frequency.value=700;
+  flRoadGain=flAudioContext.createGain();flRoadGain.gain.value=0;flRoadNoise.connect(flRoadFilter);flRoadFilter.connect(flRoadGain);flRoadGain.connect(flAudioContext.destination);flRoadNoise.start();flAudioReady=true;}catch(_){flAudioReady=false;}
 }
 function flPlayFootstep(){
  if(!flAudioContext||flAudioContext.state!=='running')return;
@@ -111,11 +116,12 @@ function flPlayFootstep(){
 function flUpdateProceduralAudio(){
  if(!flAudioReady||!flAudioContext||flAudioContext.state!=='running')return;
  const moving=keys.KeyW||keys.KeyA||keys.KeyS||keys.KeyD||keys.ArrowUp||keys.ArrowDown||keys.ArrowLeft||keys.ArrowRight,now=flAudioContext.currentTime;
- const engineActive=driving&&jobCar&&Math.abs(carSpeed)>.003&&flFuel>0;
+ const engineActive=driving&&jobCar&&flFuel>0;
  const speed=engineActive?Math.min(1,Math.abs(carSpeed)/Math.max(.1,jobCar.userData.maxForwardSpeed||.5)):0;
  const throttle=engineActive&&(keys.KeyW||keys.ArrowUp)?1:0,frequency=engineActive?48+speed*105+throttle*38:38;
  flEngineOsc.frequency.setTargetAtTime(frequency,now,.09);flEngineSub.frequency.setTargetAtTime(frequency*.5,now,.1);
  flEngineFilter.frequency.setTargetAtTime(240+speed*1150,now,.12);flEngineGain.gain.setTargetAtTime(engineActive?.055+throttle*.035:.0001,now,.16);
+ flRoadFilter.frequency.setTargetAtTime(350+speed*1800,now,.18);flRoadGain.gain.setTargetAtTime(engineActive?speed*.025:0,now,.22);
  if(!driving&&!activeBoat&&!planeFlying&&flCharacterType!=='wheelchair'&&moving&&now>=flFootstepAt){flPlayFootstep();flFootstepAt=now+((keys.ShiftLeft||keys.ShiftRight)?.31:.46);}
 }
 

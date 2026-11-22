@@ -2101,7 +2101,7 @@ function buildStreetInfrastructure(){
    const pedRed=new THREE.Mesh(new THREE.CircleGeometry(.085,12),new THREE.MeshStandardMaterial({color:0x4a1718,emissive:0x2a0808,emissiveIntensity:.08}));pedRed.position.set(0,.13,.116);pedHead.add(pedRed);
    const pedGreen=new THREE.Mesh(new THREE.CircleGeometry(.085,12),new THREE.MeshStandardMaterial({color:0x174a2a,emissive:0x092b12,emissiveIntensity:.08}));pedGreen.position.set(0,-.13,.116);pedHead.add(pedGreen);
    pedHead.position.set(side*10.5,2.7,z+3.35);scene.add(pedHead);
-   trafficSignals.push({lamps,phase:(z+190)/38+(side>0?1.4:0),crossZ:z+5.4,pedRed,pedGreen,walkAllowed:false});
+   trafficSignals.push({lamps,phase:(z+190)/38,crossZ:z+5.4,pedRed,pedGreen,walkAllowed:false});
   }
  }
  // Zwei kleine Haltestellen mit Dach, Sitzbank und Linienanzeige.

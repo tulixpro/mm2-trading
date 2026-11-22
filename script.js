@@ -1516,6 +1516,7 @@ function makeCity(){
   createShop(-145,165,-1,'SÜDQUARTIER KIOSK','GETRÄNKE · SNACKS',0xb68a39);
   createShop(145,165,1,'CITY SPORT','SPORT · OUTDOOR',0x62884f);
   createPedestrianDistrict();
+  buildFrankfurtStadiumAndPark();
   for(let i=0;i<(liteMode?7:24);i++){
     const side=i%2===0?-1:1;
     makePedestrian(side*(9.1+(i%4)*.38),-108+(i*9.7)%128,i);
@@ -1560,6 +1561,101 @@ function updateWorld(dt){
     blue.material.color.setHex(flash?0x173c78:0x247bff);
   }
   if((performanceFrame%3)===0)for(const car of emergencyVehicles){const [red,blue]=car.userData.emergencyLights;const flash=Math.floor(t*8)%2===0;red.material.color.setHex(flash?0xff2638:0x52121a);blue.material.color.setHex(flash?0x1c7cff:0x142b51);}
+}
+
+
+function buildFrankfurtStadiumAndPark(){
+ const detailCount=liteMode?0:1;
+ // Compact football stadium district on the eastern edge of the playable city.
+ const stadium=new THREE.Group();
+ const concrete=new THREE.MeshStandardMaterial({color:0x8d969b,roughness:.88});
+ const darkConcrete=new THREE.MeshStandardMaterial({color:0x38434b,roughness:.82});
+ const seatA=new THREE.MeshStandardMaterial({color:0xc7463c,roughness:.82});
+ const seatB=new THREE.MeshStandardMaterial({color:0xe2e4df,roughness:.82});
+ const turf=new THREE.MeshStandardMaterial({color:0x347b45,roughness:.96});
+ const pitch=new THREE.Mesh(new THREE.PlaneGeometry(48,30),turf);pitch.rotation.x=-Math.PI/2;pitch.position.set(0,.13,0);stadium.add(pitch);
+ const lineMat=new THREE.MeshBasicMaterial({color:0xecefe3});
+ const line=(w,h,x,z)=>{const m=new THREE.Mesh(new THREE.PlaneGeometry(w,h),lineMat);m.rotation.x=-Math.PI/2;m.position.set(x,.145,z);stadium.add(m);};
+ line(46,.12,0,-14.8);line(46,.12,0,14.8);line(.12,30,-23,0);line(.12,30,23,0);
+ const center=new THREE.Mesh(new THREE.RingGeometry(4.7,4.85,32),lineMat);center.rotation.x=-Math.PI/2;center.position.y=.15;stadium.add(center);
+ for(const side of [-1,1]){
+  const stand=new THREE.Mesh(new THREE.BoxGeometry(58,5.2,12),concrete);stand.position.set(0,2.6,side*24);stadium.add(stand);
+  for(let row=0;row<5;row++){
+   const tier=new THREE.Mesh(new THREE.BoxGeometry(55-row*1.2,.34,1.35),row%2?seatA:seatB);
+   tier.position.set(0,4.2+row*.52,side*(19+row*1.45));stadium.add(tier);
+  }
+ }
+ for(const side of [-1,1]){
+  const stand=new THREE.Mesh(new THREE.BoxGeometry(12,5.2,34),concrete);stand.position.set(side*32,2.6,0);stadium.add(stand);
+  for(let row=0;row<5;row++){
+   const tier=new THREE.Mesh(new THREE.BoxGeometry(1.35,.34,31-row*1.1),row%2?seatB:seatA);
+   tier.position.set(side*(27+row*1.45),4.2+row*.52,0);stadium.add(tier);
+  }
+ }
+ const roofMat=new THREE.MeshStandardMaterial({color:0x344b5d,metalness:.38,roughness:.48});
+ for(const side of [-1,1]){
+  const roof=new THREE.Mesh(new THREE.BoxGeometry(62,.65,14),roofMat);roof.position.set(0,7.4,side*25);stadium.add(roof);
+  const beam=new THREE.Mesh(new THREE.BoxGeometry(1,.7,14),roofMat);beam.position.set(side*32,7.4,0);stadium.add(beam);
+ }
+ const signCanvas=document.createElement('canvas');signCanvas.width=768;signCanvas.height=128;
+ const signCtx=signCanvas.getContext('2d');signCtx.fillStyle='#152b3b';signCtx.fillRect(0,0,768,128);signCtx.fillStyle='#fff';signCtx.font='bold 54px Arial';signCtx.textAlign='center';signCtx.fillText('FRANKFURT STADION',384,82);
+ const signTex=new THREE.CanvasTexture(signCanvas);signTex.colorSpace=THREE.SRGBColorSpace;
+ const sign=new THREE.Mesh(new THREE.BoxGeometry(.35,2,34),new THREE.MeshStandardMaterial({map:signTex,roughness:.6}));sign.position.set(0,9,32);stadium.add(sign);
+ const floodMat=new THREE.MeshStandardMaterial({color:0xe8f0f3,emissive:0xd4eaff,emissiveIntensity:.75});
+ for(const x of [-36,36])for(const z of [-30,30]){
+  const mast=new THREE.Mesh(new THREE.CylinderGeometry(.16,.23,13,8),darkConcrete);mast.position.set(x,6.5,z);stadium.add(mast);
+  const lamp=new THREE.Mesh(new THREE.BoxGeometry(2.5,.35,.8),floodMat);lamp.position.set(x,13.1,z);stadium.add(lamp);
+ }
+ stadium.position.set(230,0,-55);scene.add(stadium);
+ // Landscaped public park with paths, pond, trees, benches and a small playground.
+ const park=new THREE.Group();
+ const grass=new THREE.Mesh(new THREE.PlaneGeometry(94,112),new THREE.MeshStandardMaterial({color:0x477b4e,roughness:1}));grass.rotation.x=-Math.PI/2;grass.position.y=-.025;park.add(grass);
+ const pathMat=new THREE.MeshStandardMaterial({color:0xbab6a8,roughness:.98});
+ const path=new THREE.Mesh(new THREE.PlaneGeometry(5.2,100),pathMat);path.rotation.x=-Math.PI/2;path.position.set(0,.015,0);park.add(path);
+ const crossPath=new THREE.Mesh(new THREE.PlaneGeometry(82,4.2),pathMat);crossPath.rotation.x=-Math.PI/2;crossPath.position.set(0,.02,0);park.add(crossPath);
+ const pond=new THREE.Mesh(new THREE.CircleGeometry(10,32),new THREE.MeshStandardMaterial({color:0x438fa4,roughness:.22,metalness:.18,transparent:true,opacity:.9}));pond.rotation.x=-Math.PI/2;pond.position.set(25,.035,-25);park.add(pond);
+ const rim=new THREE.Mesh(new THREE.TorusGeometry(10,.38,8,40),concrete);rim.rotation.x=Math.PI/2;rim.position.set(25,.08,-25);park.add(rim);
+ const trunkMat=new THREE.MeshStandardMaterial({color:0x6a4c35,roughness:1});
+ const leafMats=[0x3e754b,0x548957,0x688e54].map(color=>new THREE.MeshStandardMaterial({color,roughness:1}));
+ const treePositions=[[-37,-42],[-28,-15],[-39,20],[-25,43],[37,-43],[39,-12],[39,20],[29,43],[-13,-47],[12,-48],[-14,48],[14,48]];
+ for(let i=0;i<treePositions.length;i++){
+  const [x,z]=treePositions[i];const trunk=new THREE.Mesh(new THREE.CylinderGeometry(.22,.34,3.1,8),trunkMat);trunk.position.set(x,1.55,z);park.add(trunk);
+  const crown=new THREE.Mesh(new THREE.SphereGeometry(2.15,10,8),leafMats[i%3]);crown.position.set(x,4.1,z);crown.scale.y=1.15;park.add(crown);
+ }
+ for(const z of [-34,34])for(const x of [-18,18]){
+  const bench=new THREE.Group();const wood=new THREE.MeshStandardMaterial({color:0x805b3e,roughness:.85});
+  const seat=new THREE.Mesh(new THREE.BoxGeometry(2.3,.16,.62),wood);seat.position.y=.72;bench.add(seat);
+  const back=new THREE.Mesh(new THREE.BoxGeometry(2.3,.72,.12),wood);back.position.set(0,1.05,-.24);bench.add(back);
+  for(const sx of [-.85,.85]){const leg=new THREE.Mesh(new THREE.BoxGeometry(.12,.7,.48),darkConcrete);leg.position.set(sx,.35,0);bench.add(leg);}
+  bench.position.set(x,0,z);park.add(bench);
+ }
+ // Playground: slide, climbing frame and swings; decorative only.
+ const playMat=new THREE.MeshStandardMaterial({color:0xd18b42,metalness:.16,roughness:.55});
+ const frame=new THREE.Mesh(new THREE.BoxGeometry(7,.18,.18),roofMat);frame.position.set(-25,3,8);park.add(frame);
+ for(const x of [-28,-22]){const post=new THREE.Mesh(new THREE.CylinderGeometry(.09,.11,3,8),roofMat);post.position.set(x,1.5,8);park.add(post);}
+ const slide=new THREE.Mesh(new THREE.BoxGeometry(1.1,.12,3.4),playMat);slide.position.set(-31,1.05,12);slide.rotation.x=-.38;park.add(slide);
+ const binMat=new THREE.MeshStandardMaterial({color:0x315f59,roughness:.8});
+ for(const [x,z] of [[-8,-37],[8,38],[34,8],[-34,0]]){const bin=new THREE.Mesh(new THREE.CylinderGeometry(.38,.32,.9,12),binMat);bin.position.set(x,.45,z);park.add(bin);}
+ for(const [x,z] of [[-40,-8],[40,8],[-12,-50],[12,50]]){
+  const pole=new THREE.Mesh(new THREE.CylinderGeometry(.07,.1,4.2,8),darkConcrete);pole.position.set(x,2.1,z);park.add(pole);
+  const head=new THREE.Mesh(new THREE.BoxGeometry(.65,.18,.3),floodMat);head.position.set(x,4.15,z);park.add(head);
+ }
+ park.position.set(-230,0,-35);scene.add(park);
+ // Detailed street manholes, drain grates and patched asphalt around the central boulevard.
+ const asphaltPatch=new THREE.MeshStandardMaterial({color:0x30383e,roughness:.98});
+ const iron=new THREE.MeshStandardMaterial({color:0x555e63,metalness:.82,roughness:.52});
+ const ironDark=new THREE.MeshStandardMaterial({color:0x242c31,metalness:.72,roughness:.62});
+ const coverGeo=new THREE.CylinderGeometry(.62,.62,.075,32);
+ for(const z of [-275,-225,-175,-125,-75,-25,25,75,125,175]){
+  const patch=new THREE.Mesh(new THREE.CircleGeometry(.78,32),asphaltPatch);patch.rotation.x=-Math.PI/2;patch.position.set(-5.5,.018,z);scene.add(patch);
+  const cover=new THREE.Mesh(coverGeo,iron);cover.position.set(-5.5,.075,z);scene.add(cover);
+  const ring=new THREE.Mesh(new THREE.TorusGeometry(.53,.045,6,32),ironDark);ring.rotation.x=Math.PI/2;ring.position.set(-5.5,.12,z);scene.add(ring);
+  for(let k=-2;k<=2;k++){
+   const rib=new THREE.Mesh(new THREE.BoxGeometry(.055,.018,.78),ironDark);rib.position.set(-5.5+k*.18,.12,z);scene.add(rib);
+  }
+  const drain=new THREE.Mesh(new THREE.BoxGeometry(.34,.055,1.05),ironDark);drain.position.set(5.9,.045,z+12);scene.add(drain);
+  for(let k=0;k<5;k++){const slot=new THREE.Mesh(new THREE.BoxGeometry(.04,.02,.92),iron);slot.position.set(5.78+k*.055,.078,z+12);scene.add(slot);}
+ }
 }
 
 function buildBreakableProps(){

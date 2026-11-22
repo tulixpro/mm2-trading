@@ -81,6 +81,7 @@ const streetLights=[];
 let flPolicePursuit=null,flPoliceCooldown=0;
 const shops=[];
 const shopPickupItems=[];
+const flSpeedBumps=[];
 const inventory={Kaffee:0,Snack:0,Stadtplan:0,Brot:0,Brezel:0,Croissant:0,Kuchen:0};
 let miniMapCanvas=null,miniMapCtx=null,tuningLevel=0,paintLevel=0,turboLevel=0,suspensionLevel=0,tuningMods={spoiler:false,lowered:false,tinted:false,rims:false},mouseSensitivity=1,cameraFov=68;
 let appetite=65;
@@ -140,6 +141,27 @@ function flUpdateSuspensionVisuals(){
    part.springGroup.scale.y=1-speed*.045+pulse;
    part.strut.scale.y=1-speed*.035+pulse*.6;
   });
+ }
+}
+function flBuildSpeedBumps(){
+ flSpeedBumps.length=0;
+ const dark=new THREE.MeshStandardMaterial({color:0x202329,roughness:.88});
+ const yellow=new THREE.MeshStandardMaterial({color:0xf0c42c,roughness:.72});
+ const edge=new THREE.MeshStandardMaterial({color:0x858d91,metalness:.45,roughness:.55});
+ for(const z of [-225,-135,-45,55,155]){
+  const group=new THREE.Group();
+  // Flache, segmentierte Oberseite mit abwechselnden Warnmarkierungen.
+  for(let i=0;i<12;i++){
+   const x=-7.7+i*1.4;
+   const block=new THREE.Mesh(new THREE.BoxGeometry(1.32,.105,.78),i%2?dark:yellow);
+   block.position.set(x,.0525,0);group.add(block);
+  }
+  for(const side of [-1,1]){
+   const cap=new THREE.Mesh(new THREE.BoxGeometry(.22,.07,.8),edge);
+   cap.position.set(side*8.45,.035,0);group.add(cap);
+  }
+  group.position.set(0,.012,z);scene.add(group);
+  flSpeedBumps.push({z,lastHit:0,group});
  }
 }
 function flPlayFootstep(){
@@ -1839,6 +1861,8 @@ function makeCity(){
     }
   }
   const road=new THREE.Mesh(new THREE.PlaneGeometry(18,520),asphaltMat);road.rotation.x=-Math.PI/2;road.position.set(0,0,-45);scene.add(road);
+  // Mehrere flache, gut sichtbare Bremsschwellen auf der Hauptstraße.
+  flBuildSpeedBumps();
   const wetMain=new THREE.Mesh(new THREE.PlaneGeometry(17.8,519),new THREE.MeshPhongMaterial({color:0x526574,transparent:true,opacity:0,shininess:105,specular:0x8fa8bb,depthWrite:false}));wetMain.rotation.x=-Math.PI/2;wetMain.position.set(0,.012,-45);scene.add(wetMain);flWetRoadMaterials.push(wetMain.material);
   for(let z=-300;z<225;z+=12){const line=new THREE.Mesh(new THREE.PlaneGeometry(.18,5),new THREE.MeshBasicMaterial({color:0xe5dfc5}));line.rotation.x=-Math.PI/2;line.position.set(0,.015,z);scene.add(line);}
   const sidewalkMat=new THREE.MeshLambertMaterial({color:0x92999b});
@@ -2459,8 +2483,23 @@ function move(dt=1/60){
     jobCar.rotation.y+=carYawRate;
     const forward=new THREE.Vector3(Math.sin(jobCar.rotation.y),0,Math.cos(jobCar.rotation.y));
     const right=new THREE.Vector3(Math.cos(jobCar.rotation.y),0,-Math.sin(jobCar.rotation.y));
+    const previousZ=jobCar.position.z;
     jobCar.position.addScaledVector(forward,carSpeed*frameScale);
     jobCar.position.addScaledVector(right,carSlip*frameScale);
+    // Beim Überfahren einer Bremsschwelle wird ein gedämpfter Fahrwerksimpuls ausgelöst.
+    const crossing=flSpeedBumps.find(b=>((previousZ-b.z)*(jobCar.position.z-b.z)<=0)&&Math.abs(previousZ-b.z)<Math.abs(carSpeed*frameScale)+.18&&Math.abs(jobCar.position.x)<8.7&&performance.now()-b.lastHit>450);
+    if(crossing&&Math.abs(carSpeed)>.012){
+      const bumpSpeed=Math.min(1,Math.abs(carSpeed)/Math.max(.1,maxForward));
+      jobCar.userData.suspensionBounceVelocity=Math.min(2.35,.48+bumpSpeed*1.75);
+      crossing.lastHit=performance.now();
+    }
+    let bounceOffset=jobCar.userData.suspensionBounceOffset||0;
+    let bounceVelocity=jobCar.userData.suspensionBounceVelocity||0;
+    bounceVelocity+=(-bounceOffset*42-bounceVelocity*7.2)*dt;
+    bounceOffset+=bounceVelocity*dt;
+    jobCar.userData.suspensionBounceOffset=bounceOffset;
+    jobCar.userData.suspensionBounceVelocity=bounceVelocity;
+    jobCar.position.y=bounceOffset;
     updateBreakableCollisions(dt);
     if(jobActive&&jobDestination&&jobCar.position.distanceTo(jobDestination)<4){
       jobStopIndex++;

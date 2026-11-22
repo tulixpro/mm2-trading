@@ -231,6 +231,7 @@ function flBuildAmbientEvents(){
  const redMat=new THREE.MeshStandardMaterial({color:0xb52c2c,roughness:.55});
  const amberMat=new THREE.MeshStandardMaterial({color:0xffb52e,emissive:0xff8a12,emissiveIntensity:1.2});
  const blueMat=new THREE.MeshStandardMaterial({color:0x2678d8,emissive:0x1259d0,emissiveIntensity:1.2});
+ const glass=new THREE.MeshStandardMaterial({color:0x1b3544,roughness:.2,metalness:.1,transparent:true,opacity:.72});
  const makeIncidentCar=(x,z,rot,color)=>{
   const car=new THREE.Group();
   const shell=new THREE.Mesh(new THREE.BoxGeometry(2, .68, 4.1),new THREE.MeshStandardMaterial({color,roughness:.55,metalness:.22}));
@@ -287,7 +288,7 @@ function flBuildAmbientEvents(){
  robbery.add(robberyPolice1,robberyPolice2);
  const barrierMat=new THREE.MeshStandardMaterial({color:0xeab52e,roughness:.7});
  for(let i=0;i<4;i++){const barrier=new THREE.Mesh(new THREE.BoxGeometry(2.4,.85,.16),barrierMat);barrier.position.set(-3.6+i*2.4,.44,7.4);robbery.add(barrier);}
- response.visible=false;robbery.visible=false;robbery.position.set(0,0,-178);
+ response.visible=false;robbery.visible=false;robbery.position.set(14,0,-178);
  accident.visible=false;forestry.visible=false;forestry.position.set(112,0,75);
  root.add(accident,forestry,response,robbery);root.position.set(0,0,0);scene.add(root);
  flAmbientEvents={root,accident,forestry,response,robbery,beaconLight,workBody,boom,emergencyUnits:[police,fire,ambulance,robberyPolice1,robberyPolice2],kind:null};
@@ -364,7 +365,7 @@ function flUpdateAmbientEvents(dt,t){
   flAmbientEventTimer-=dt;
   if(flAmbientEventTimer<=0&&flAmbientEventCooldown<=0){
    const roll=Math.random();e.kind=roll<.48?'accident':roll<.83?'forest':'robbery';e.duration=52+Math.random()*42;
-   e.accident.visible=e.kind==='accident';e.forestry.visible=e.kind==='forest';e.response.visible=e.kind==='accident';e.robbery.visible=e.kind==='robbery';
+   e.accident.visible=e.kind==='accident';e.forestry.visible=e.kind==='forest';e.response.visible=e.kind==='accident';e.robbery.visible=e.kind==='robbery';if(e.kind==='accident'){e.emergencyUnits[1].visible=true;e.emergencyUnits[2].visible=Math.random()<.68;}
    const px=driving&&jobCar?jobCar.position.x:camera.position.x,pz=driving&&jobCar?jobCar.position.z:camera.position.z;
    const target=e.kind==='forest'?new THREE.Vector3(112,0,75):e.kind==='robbery'?new THREE.Vector3(0,0,-178):new THREE.Vector3(13,0,-43);
    const near=Math.hypot(px-target.x,pz-target.z)<105;

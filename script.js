@@ -78,6 +78,7 @@ const actionEdition=new URLSearchParams(location.search).get('edition')==='actio
 if(actionEdition){document.body.classList.add('action-edition');document.title='Frankfurt Life Action – Spiel';}
 const taxiVehicles=[];
 const streetLights=[];
+let flPolicePursuit=null,flPoliceCooldown=0;
 const shops=[];
 const inventory={Kaffee:0,Snack:0,Stadtplan:0,Brot:0,Brezel:0,Croissant:0,Kuchen:0};
 let miniMapCanvas=null,miniMapCtx=null,tuningLevel=0,paintLevel=0,turboLevel=0,tuningMods={spoiler:false,lowered:false,tinted:false,rims:false},mouseSensitivity=1,cameraFov=68;
@@ -115,7 +116,7 @@ function flClaimDaily(){flCheckDailyDate();if(flDailyClaimed){status.textContent
 
 function flBuildStatus(){flWeatherLabel=document.createElement('div');flWeatherLabel.style.cssText='position:absolute;left:16px;top:16px;z-index:8;padding:7px 10px;border:1px solid #ffffff35;border-radius:8px;background:#101b2ddd;color:#eaf6ff;font:700 11px system-ui;pointer-events:none';viewport.appendChild(flWeatherLabel);flFuelLabel=document.createElement('div');flFuelLabel.style.cssText='position:absolute;left:16px;top:52px;z-index:8;padding:7px 10px;border:1px solid #ffffff35;border-radius:8px;background:#101b2ddd;color:#eaf6ff;font:700 11px system-ui;pointer-events:none';viewport.appendChild(flFuelLabel);flUpdateStatus();}
 function flUpdateStatus(){if(flWeatherLabel)flWeatherLabel.textContent='🕒 '+String(Math.floor(flGameHour)).padStart(2,'0')+':'+String(Math.floor(flGameHour%1*60)).padStart(2,'0')+' · '+flWeather;if(flFuelLabel)flFuelLabel.textContent='⛽ TANK: '+Math.round(flFuel)+'%';}
-function flApplyWeather(){if(!scene||!sunLight||!hemiLight)return;const wet=flWeather==='Regen';for(const mat of flWetRoadMaterials){mat.opacity=wet?.34:0;mat.needsUpdate=true;}if(flRainPoints)flRainPoints.visible=wet;const night=flGameHour<6||flGameHour>20,daylight=Math.max(.18,Math.sin((flGameHour-6)/14*Math.PI)),factor=flWeather==='Regen'?.62:flWeather==='Nebel'?.72:flWeather==='Bewölkt'?.82:1;sunLight.intensity=(night?.22:.55+daylight*1.25)*factor;sunLight.color.setHex(night?0x9bb8e8:classicEdition?(flWeather==='Regen'?0xc5a77d:0xffc078):(flWeather==='Regen'?0xaabbd0:0xffe0b4));hemiLight.intensity=(night?.65:1.1+daylight*.85)*factor;const color=night?0x17283d:classicEdition?(flWeather==='Nebel'?0xa99b80:flWeather==='Regen'?0x8c806b:flWeather==='Bewölkt'?0xa69778:0xb99a70):(flWeather==='Nebel'?0xaab6bc:flWeather==='Regen'?0x71899a:flWeather==='Bewölkt'?0x91a2ad:0x91b1c8);scene.background.setHex(color);if(scene.fog)scene.fog.color.setHex(color);}
+function flApplyWeather(){if(!scene||!sunLight||!hemiLight)return;const wet=flWeather==='Regen';const night=flGameHour<6||flGameHour>20;for(const lamp of streetLights){const active=night||flWeather==='Nebel';lamp.glow.intensity=active?(classicEdition?.72:1.05):0;lamp.bulb.material.emissiveIntensity=active?(classicEdition?.7:1.05):.12;lamp.halo.material.opacity=active?.18:0;}for(const mat of flWetRoadMaterials){mat.opacity=wet?.34:0;mat.needsUpdate=true;}if(flRainPoints)flRainPoints.visible=wet;const daylight=Math.max(.18,Math.sin((flGameHour-6)/14*Math.PI)),factor=flWeather==='Regen'?.62:flWeather==='Nebel'?.72:flWeather==='Bewölkt'?.82:1;sunLight.intensity=(night?.22:.55+daylight*1.25)*factor;sunLight.color.setHex(night?0x9bb8e8:classicEdition?(flWeather==='Regen'?0xc5a77d:0xffc078):(flWeather==='Regen'?0xaabbd0:0xffe0b4));hemiLight.intensity=(night?.65:1.1+daylight*.85)*factor;const color=night?0x17283d:classicEdition?(flWeather==='Nebel'?0xa99b80:flWeather==='Regen'?0x8c806b:flWeather==='Bewölkt'?0xa69778:0xb99a70):(flWeather==='Nebel'?0xaab6bc:flWeather==='Regen'?0x71899a:flWeather==='Bewölkt'?0x91a2ad:0x91b1c8);scene.background.setHex(color);if(scene.fog)scene.fog.color.setHex(color);}
 function flAddWetRoad(width,length,x,z){
   const mat=new THREE.MeshPhongMaterial({color:0x526574,transparent:true,opacity:0,shininess:105,specular:0x8fa8bb,depthWrite:false});
   const mesh=new THREE.Mesh(new THREE.PlaneGeometry(width,length),mat);mesh.rotation.x=-Math.PI/2;mesh.position.set(x,.018,z);scene.add(mesh);flWetRoadMaterials.push(mat);
@@ -548,8 +549,11 @@ function streetLamp(x,z){
  pole.position.set(x,2.6,z);scene.add(pole);
  const arm=new THREE.Mesh(new THREE.BoxGeometry(.9,.09,.1),new THREE.MeshStandardMaterial({color:0x27323b,metalness:.45}));
  arm.position.set(x+(x<0?.38:-.38),5.05,z);scene.add(arm);
- const bulb=new THREE.Mesh(new THREE.BoxGeometry(.38,.12,.24),new THREE.MeshBasicMaterial({color:0xffe4a8}));
- bulb.position.set(x+(x<0?.72:-.72),4.98,z);scene.add(bulb);streetLights.push(bulb);
+ const bulb=new THREE.Mesh(new THREE.BoxGeometry(.38,.12,.24),new THREE.MeshStandardMaterial({color:0xffe4a8,emissive:0xffc36b,emissiveIntensity:.18,roughness:.28}));
+ const lx=x+(x<0?.72:-.72);bulb.position.set(lx,4.98,z);scene.add(bulb);
+ const glow=new THREE.PointLight(classicEdition?0xffbd72:0xffd49a,0,13,2);glow.position.set(lx,4.72,z);scene.add(glow);
+ const halo=new THREE.Mesh(new THREE.SphereGeometry(.3,10,8),new THREE.MeshBasicMaterial({color:classicEdition?0xffb45e:0xffd39a,transparent:true,opacity:.0,depthWrite:false}));halo.position.set(lx,4.82,z);scene.add(halo);
+ streetLights.push({bulb,glow,halo,x:lx,z});
 }
 function tree(x,z){
   const group=new THREE.Group();
@@ -1032,7 +1036,8 @@ const introTutorialScenes=[
  {tag:'KAPITEL 01 · WILLKOMMEN',title:'DEINE STADT. DEIN ALLTAG.',text:'Du bist neu in Frankfurt. Erkunde Viertel, entdecke Geschäfte und lerne die Stadt Schritt für Schritt kennen.'},
  {tag:'KAPITEL 02 · BEWEGUNG',title:'GEH LOS UND ERKUNDE.',text:'Bewege dich mit WASD oder den Pfeiltasten. Mit der Maus schaust du dich um. Drücke F, wenn du in dein bereitgestelltes Fahrzeug ein- oder aussteigen möchtest.'},
  {tag:'KAPITEL 03 · DEIN WEG',title:'JOBS. AUTOS. NEUE ZIELE.',text:'Mit J öffnest du die Jobzentrale. Wähle einen Beruf, nimm einen Auftrag an und folge dem Zielmarker. Mit C wechselst du die Kameraperspektive.'},
- {tag:'KAPITEL 04 · DEIN SMARTPHONE',title:'ALLES IN DEINER HAND.',text:'Mit F1 öffnest du dein Smartphone. Dort findest du Karte, Garage, Bank, ÖPNV und Taxi. Mit Q öffnest du das Quick-Access-Rad. Viel Spaß in Frankfurt!'}
+ {tag:'KAPITEL 04 · DEIN SMARTPHONE',title:'ALLES IN DEINER HAND.',text:'Mit F1 öffnest du dein Smartphone. Dort findest du Karte, Garage, Bank, ÖPNV und Taxi. Mit Q öffnest du das Quick-Access-Rad.'},
+ {tag:'KAPITEL 05 · DIE ERSTE VERFOLGUNG',title:'FRANKFURT BLEIBT IN BEWEGUNG.',text:'Bei einem heftigen Unfall kann die Polizei aufmerksam werden. Im ersten Fluchtauftrag lernst du, ruhig zu lenken, zu bremsen und dem GPS-Ziel zu folgen. Die Missionen und ihre Reihenfolge sind in beiden Editionen gleich.'}
 ];
 function showIntroTutorialScene(index){
  if(!introTutorial)return;
@@ -1040,7 +1045,7 @@ function showIntroTutorialScene(index){
  introTutorial.querySelector('#tutorialEyebrow').textContent=sceneData.tag;
  introTutorial.querySelector('#tutorialTitle').textContent=sceneData.title;
  introTutorial.querySelector('#tutorialText').textContent=sceneData.text;
- introTutorial.querySelector('#tutorialSceneCount').textContent='INTRO · 0'+(index+1)+' / 04';
+ introTutorial.querySelector('#tutorialSceneCount').textContent='INTRO · 0'+(index+1)+' / 05';
  introTutorial.querySelectorAll('.tutorial-progress i').forEach((el,n)=>el.classList.toggle('active',n<=index));
  const next=introTutorial.querySelector('#tutorialNext');next.innerHTML=index===introTutorialScenes.length-1?'STADT BETRETEN <span>→</span>':'WEITER <span>→</span>';
  const content=introTutorial.querySelector('.tutorial-content');content.classList.remove('tutorial-scene-change');void content.offsetWidth;content.classList.add('tutorial-scene-change');
@@ -1063,7 +1068,7 @@ function startCutscene(jobName){
  if(!cutsceneOverlay||!camera||!jobCar)return;
  const chapter=Math.min(8,completedJobs+1);
  const story=[
-  ['ANKUNFT IN FRANKFURT','Eine neue Stadt, ein neuer Anfang. Du kennst hier noch niemanden – aber jede Fahrt kann etwas verändern.'],
+  ['ANKUNFT IN FRANKFURT','Eine neue Stadt, ein neuer Anfang. Du kennst hier noch niemanden – und die Polizei registriert bereits die ersten Zwischenfälle in deinem Viertel.'],
   ['ERSTE KONTAKTE','Die Leute merken sich deinen Namen. Kleine Aufträge öffnen langsam neue Türen.'],
   ['DIE STADT WIRD GRÖSSER','Neue Viertel, neue Kunden und größere Herausforderungen warten auf dich.'],
   ['VERTRAUEN AUFBAUEN','Zuverlässigkeit zahlt sich aus. Dein Ruf fährt inzwischen mit.'],
@@ -1790,7 +1795,7 @@ function updateWorld(dt){
     lift.car=null;lift.originalPosition=null;status.textContent='HEBEBÜHNE UNTEN · AUTO FREI';
    }
   }}
-  flUpdateSystems(dt);flUpdateRain(dt);if(shopScene)updateShopFilmScene(dt);
+  flUpdateSystems(dt);flUpdateRain(dt);if(flPoliceCooldown>0)flPoliceCooldown=Math.max(0,flPoliceCooldown-dt);flUpdatePolicePursuit(dt);if(shopScene)updateShopFilmScene(dt);
   if((performanceFrame%4)===0)for(const signal of trafficSignals){const phase=(t+signal.phase*1.7)%8;const active=phase<5?0:phase<6.2?1:2;signal.lamps.forEach((lamp,i)=>lamp.material.emissiveIntensity=i===active?.9:.04);}
   if((performanceFrame++%4)===0)drawMiniMap();
   for(const heli of airportHelicopters){heli.rotor.rotation.y+=dt*18;heli.tailRotor.rotation.x+=dt*20;}if((performanceFrame%2)===0)for(let i=0;i<beachFoam.length;i++){beachFoam[i].position.x+=Math.sin(t*.5+i)*dt*1.4;beachFoam[i].material.opacity=.35+Math.sin(t*1.8+i)*.15;}if(waterSurface)waterSurface.position.y=-.18+Math.sin(t*.65)*.025;
@@ -2118,6 +2123,25 @@ function refreshDamageHud(){
  damageHud.classList.remove('hidden');
  damageHud.innerHTML='<b>FAHRZEUGZUSTAND · '+(100-damageLevel*25)+' %</b><span>'+['Keine Schäden','Leichte Kratzer','Dellen & Lackschäden','Stark beschädigt','Reparatur erforderlich'][damageLevel]+'</span><div class="damage-bars">'+[0,1,2,3].map(i=>'<i class="'+(i<damageLevel?'lost':'')+'"></i>').join('')+'</div><small>Werkstatt: TUNINGWERK · Reparatur ab '+Math.max(120,damageLevel*260)+' €</small>';
 }
+function flStartPolicePursuit(){
+ if(flPolicePursuit||flPoliceCooldown>0||!jobCar||!scene)return;
+ const behind=new THREE.Vector3(-Math.sin(jobCar.rotation.y)*24,0,-Math.cos(jobCar.rotation.y)*24);
+ const spawn=jobCar.position.clone().add(behind);
+ const patrol=makeCar(spawn.x,spawn.z,0xf1f2ed,true,'sedan');
+ patrol.rotation.y=jobCar.rotation.y;patrol.userData.pursuit=true;patrol.userData.pursuitElapsed=0;patrol.userData.pursuitLost=0;
+ flPolicePursuit=patrol;status.textContent='POLIZEI ALARMIERT · VERFOLGUNG! FAHRE ZUM MARKER UND BLEIB IN BEWEGUNG';
+ if(missionHud){missionHud.classList.remove('hidden');missionHud.innerHTML='<b>POLIZEI-VERFOLGUNG</b><span>Die Polizei hat deinen Unfall bemerkt</span><small>Bleib auf der Straße und fahre dem GPS-Ziel entgegen</small><div class="mission-track"><i style="width:35%"></i></div>';}
+}
+function flUpdatePolicePursuit(dt){
+ if(!flPolicePursuit||!jobCar)return;
+ const patrol=flPolicePursuit;patrol.userData.pursuitElapsed+=dt;
+ const dx=jobCar.position.x-patrol.position.x,dz=jobCar.position.z-patrol.position.z,dist=Math.hypot(dx,dz);
+ const targetAngle=Math.atan2(dx,dz);let delta=((targetAngle-patrol.rotation.y+Math.PI*3)%(Math.PI*2))-Math.PI;
+ patrol.rotation.y+=THREE.MathUtils.clamp(delta,-dt*1.8,dt*1.8);
+ const speed=dist>7?.34:.18;patrol.position.x+=Math.sin(patrol.rotation.y)*speed*dt*60;patrol.position.z+=Math.cos(patrol.rotation.y)*speed*dt*60;
+ if(dist>65)patrol.userData.pursuitLost+=dt;else patrol.userData.pursuitLost=0;
+ if(patrol.userData.pursuitElapsed>32||patrol.userData.pursuitLost>9){scene.remove(patrol);const i=policeCars.indexOf(patrol);if(i>=0)policeCars.splice(i,1);flPolicePursuit=null;flPoliceCooldown=35;if(missionHud)missionHud.classList.add('hidden');status.textContent='VERFOLGUNG BEENDET · DIE STADT KEHRT ZUR RUHE ZURÜCK';}
+}
 function damagePlayerCar(impact=.24){
  if(!jobCar||impact<.15)return;
  const severity=impact>.43?2:1;
@@ -2125,6 +2149,7 @@ function damagePlayerCar(impact=.24){
  applyCarDamage(jobCar,damageLevel);refreshDamageHud();
  if(damageLevel>=3)carSpeed*=.72;
  flSaveGame();damageFlash=Math.min(.55,.2+impact*.6);
+ if(!classicEdition&&damageLevel>=1)flStartPolicePursuit();else if(classicEdition&&damageLevel>=1)flStartPolicePursuit();
 }
 function updateBreakableCollisions(dt){
  if(damageCooldown>0)damageCooldown=Math.max(0,damageCooldown-dt);

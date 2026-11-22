@@ -139,7 +139,7 @@ function flPlayFootstep(){
 function flUpdateProceduralAudio(){
  if(!flAudioReady||!flAudioContext||flAudioContext.state!=='running')return;
  const moving=keys.KeyW||keys.KeyA||keys.KeyS||keys.KeyD||keys.ArrowUp||keys.ArrowDown||keys.ArrowLeft||keys.ArrowRight,now=flAudioContext.currentTime;
- const engineActive=driving&&jobCar&&flEngineOn&&flFuel>0;
+ const engineActive=driving&&jobCar&&flEngineOn&&flFuel>0&&performance.now()>=flEngineStartingUntil;
  const speed=engineActive?Math.min(1,Math.abs(carSpeed)/Math.max(.1,jobCar.userData.maxForwardSpeed||.5)):0;
  const throttle=engineActive&&(keys.KeyW||keys.ArrowUp)?1:0,frequency=engineActive?48+speed*105+throttle*38:38;
  flEngineOsc.frequency.setTargetAtTime(frequency,now,.09);flEngineSub.frequency.setTargetAtTime(frequency*.5,now,.1);
@@ -1891,6 +1891,7 @@ function updateWorld(dt){
     const gait=t*(5.2+u.speed*2.4)+u.phase,step=Math.sin(gait),lift=Math.max(0,Math.cos(gait));
     if(u.legs){u.legs[0].rotation.x=step*.48;u.legs[1].rotation.x=-step*.48;}
     if(u.knees){u.knees[0].rotation.x=Math.max(0,-step)*.72;u.knees[1].rotation.x=Math.max(0,step)*.72;}
+    if(u.feet){u.feet[0].rotation.x=-Math.max(0,step)*.18;u.feet[1].rotation.x=-Math.max(0,-step)*.18;}
     if(u.arms){u.arms[0].rotation.x=-step*.3;u.arms[1].rotation.x=step*.3;}
     if(u.torso){u.torso.position.y=1.18+Math.abs(step)*.025;u.torso.rotation.x=.025+Math.abs(step)*.018;}
     if(u.head){u.head.rotation.y=Math.sin(t*.7+u.phase)*.07;u.head.rotation.x=Math.sin(t*1.1+u.phase)*.018;}
@@ -2328,10 +2329,10 @@ function move(dt=1/60){
     const tireGrip=weatherGrip*damageGrip;
     const vehiclePower=(jobCar.userData.enginePower||1)*(1+turboLevel*.12);
     const maxForward=((jobCar.userData.maxForwardSpeed||.47)+tuningLevel*.012+turboLevel*.018)*(damageLevel>=4?.62:damageLevel===3?.78:1),maxReverse=.16;
-    if(flEngineOn&&accelerating&&flFuel>0){
+    if(flEngineOn&&performance.now()>=flEngineStartingUntil&&accelerating&&flFuel>0){
       if(carSpeed<0)carSpeed=Math.min(0,carSpeed+.022*frameScale);
       else carSpeed=Math.min(maxForward,carSpeed+(.0038*vehiclePower+Math.max(0,1-carSpeed/maxForward)*.0035*vehiclePower)*frameScale);
-    }else if(flEngineOn&&braking){
+    }else if(flEngineOn&&performance.now()>=flEngineStartingUntil&&braking){
       // Betriebsbremse: stärker als Motorbremse, mit sanftem Übergang zum Stillstand.
       if(carSpeed>0)carSpeed=Math.max(0,carSpeed-(.014+.012*tireGrip)*frameScale);
       else carSpeed=Math.max(-maxReverse,carSpeed-.004*frameScale);
@@ -2540,7 +2541,7 @@ function toggleVehicle(){
     driving=true;flEngineOn=false;carSpeed=0;carSlip=0;carYawRate=0;cameraLookOffset=0;yaw=jobCar.rotation.y-Math.PI;
     if(flCharacterType==='wheelchair')flStoreWheelchairInCar(true);
     speedometerHud.classList.remove('hidden');
-    if(flCharacterType!=='wheelchair')status.textContent='IM FAHRZEUG · WASD / STICK FAHREN · F / X AUSSTEIGEN';
+    if(flCharacterType!=='wheelchair')status.textContent='IM FAHRZEUG · M MOTOR STARTEN · WASD FAHREN · F AUSSTEIGEN';
   }else{
     driving=false;flEngineOn=false;carSpeed=0;carSlip=0;carYawRate=0;cameraLookOffset=0;
     speedometerHud.classList.add('hidden');

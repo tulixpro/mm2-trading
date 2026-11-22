@@ -298,17 +298,24 @@ function building(x,z,w,d,h,color){
   if(liteMode){const simpleRoof=new THREE.Mesh(new THREE.BoxGeometry(w*1.03,.35,d*1.03),new THREE.MeshStandardMaterial({color:0x26364b,roughness:.82,metalness:.08}));simpleRoof.position.y=h+.15;g.add(simpleRoof);g.position.set(x,0,z);scene.add(g);return;}
   const roof=new THREE.Mesh(new THREE.BoxGeometry(w*1.03,.35,d*1.03),new THREE.MeshLambertMaterial({color:0x26364b}));
   roof.position.y=h+.15;g.add(roof);
+  const facadeGlass=[0x9fc6d8,0x789caf,0x496779].map((tint,i)=>new THREE.MeshPhysicalMaterial({color:tint,roughness:.12+i*.035,metalness:.18,clearcoat:1,clearcoatRoughness:.08,envMapIntensity:1.35,emissive:i===2?0x07121a:0x142b3a,emissiveIntensity:.12}));
+  const windowFrame=new THREE.MeshStandardMaterial({color:0x293943,metalness:.72,roughness:.3});
+  const sillMat=new THREE.MeshStandardMaterial({color:0x9ba8ad,metalness:.48,roughness:.42});
   for(let y=2;y<h-1;y+=2.6){
     for(let xx=-w/2+.8;xx<w/2-.4;xx+=1.5){
-      const lit=Math.random()>.3;
-      const winMat=new THREE.MeshStandardMaterial({color:lit?0x9ac9e7:0x34465b,emissive:lit?0x28475c:0x080e16,emissiveIntensity:.28,roughness:.3,metalness:.12});
-      const win=new THREE.Mesh(new THREE.BoxGeometry(.55,.8,.06),winMat);
-      win.position.set(xx,y,d/2+.04);g.add(win);
-      const sideWin=new THREE.Mesh(new THREE.BoxGeometry(.06,.8,.55),winMat);
-      sideWin.position.set(w/2+.04,y,xx/w*d*.72);g.add(sideWin);
+      const lit=Math.random()>.3,glassMat=facadeGlass[lit?Math.floor(Math.random()*2):2];
+      const win=new THREE.Mesh(new THREE.BoxGeometry(.62,.92,.075),glassMat);
+      win.position.set(xx,y,d/2+.045);g.add(win);
+      // Slim metal mullions, projecting stone sills and top lintels create a layered facade.
+      for(const dx of [-.34,.34]){const mullion=new THREE.Mesh(new THREE.BoxGeometry(.035,.98,.105),windowFrame);mullion.position.set(xx+dx,y,d/2+.055);g.add(mullion);}
+      const crossbar=new THREE.Mesh(new THREE.BoxGeometry(.62,.035,.105),windowFrame);crossbar.position.set(xx,y,d/2+.055);g.add(crossbar);
+      const sill=new THREE.Mesh(new THREE.BoxGeometry(.72,.07,.18),sillMat);sill.position.set(xx,y-.51,d/2+.09);g.add(sill);
+      const sideWin=new THREE.Mesh(new THREE.BoxGeometry(.075,.92,.62),glassMat);
+      sideWin.position.set(w/2+.045,y,xx/w*d*.72);g.add(sideWin);
       if(y>3&&Math.abs(xx)<w*.42){
         const balcony=new THREE.Mesh(new THREE.BoxGeometry(.82,.08,.28),new THREE.MeshStandardMaterial({color:0x77838b,metalness:.35,roughness:.7}));
-        balcony.position.set(xx,y-.52,d/2+.2);g.add(balcony);
+        balcony.position.set(xx,y-.57,d/2+.2);g.add(balcony);
+        const rail=new THREE.Mesh(new THREE.BoxGeometry(.82,.055,.055),windowFrame);rail.position.set(xx,y-.2,d/2+.34);g.add(rail);
       }
     }
   }
@@ -1452,7 +1459,17 @@ function makeCity(){
   hemiLight=new THREE.HemisphereLight(classicEdition?0xffd69a:0xd7ecff,classicEdition?0x66513a:0x4a5260,classicEdition?1.65:2);scene.add(hemiLight);
   sunLight=new THREE.DirectionalLight(classicEdition?0xffc078:0xffe0b4,classicEdition?1.25:1.5);sunLight.position.set(-25,45,25);sunLight.castShadow=false;scene.add(sunLight);
   const ground=new THREE.Mesh(new THREE.PlaneGeometry(1100,900),new THREE.MeshLambertMaterial({color:0x58636b}));ground.rotation.x=-Math.PI/2;ground.position.set(0,-.12,-80);scene.add(ground);
-  const road=new THREE.Mesh(new THREE.PlaneGeometry(18,520),new THREE.MeshStandardMaterial({color:0x202a35,roughness:.94,metalness:.02}));road.rotation.x=-Math.PI/2;road.position.set(0,0,-45);scene.add(road);
+  const asphaltMat=new THREE.MeshStandardMaterial({color:0x202a35,roughness:.94,metalness:.025});
+  if(!classicEdition&&typeof document!=='undefined'){
+    const asphaltCanvas=document.createElement('canvas');asphaltCanvas.width=256;asphaltCanvas.height=256;
+    const ac=asphaltCanvas.getContext('2d');
+    if(ac){
+      ac.fillStyle='#59616a';ac.fillRect(0,0,256,256);
+      for(let i=0;i<5200;i++){const shade=55+Math.floor(Math.random()*90);ac.fillStyle='rgba('+shade+','+shade+','+shade+','+(Math.random()*.22)+')';const size=Math.random()*2.2+.35;ac.fillRect(Math.random()*256,Math.random()*256,size,size);}
+      const asphaltTexture=new THREE.CanvasTexture(asphaltCanvas);asphaltTexture.wrapS=THREE.RepeatWrapping;asphaltTexture.wrapT=THREE.RepeatWrapping;asphaltTexture.repeat.set(5,110);asphaltTexture.colorSpace=THREE.SRGBColorSpace;asphaltTexture.anisotropy=Math.min(8,renderer?.capabilities?.getMaxAnisotropy?.()||1);asphaltMat.map=asphaltTexture;asphaltMat.needsUpdate=true;
+    }
+  }
+  const road=new THREE.Mesh(new THREE.PlaneGeometry(18,520),asphaltMat);road.rotation.x=-Math.PI/2;road.position.set(0,0,-45);scene.add(road);
   const wetMain=new THREE.Mesh(new THREE.PlaneGeometry(17.8,519),new THREE.MeshPhongMaterial({color:0x526574,transparent:true,opacity:0,shininess:105,specular:0x8fa8bb,depthWrite:false}));wetMain.rotation.x=-Math.PI/2;wetMain.position.set(0,.012,-45);scene.add(wetMain);flWetRoadMaterials.push(wetMain.material);
   for(let z=-300;z<225;z+=12){const line=new THREE.Mesh(new THREE.PlaneGeometry(.18,5),new THREE.MeshBasicMaterial({color:0xe5dfc5}));line.rotation.x=-Math.PI/2;line.position.set(0,.015,z);scene.add(line);}
   const sidewalkMat=new THREE.MeshLambertMaterial({color:0x92999b});

@@ -243,6 +243,40 @@ void AFLRealisticCityBlock::BuildDistrict()
         }
     }
 
+    // Marked pedestrian crossings at each junction, plus stop bars and tactile curb ramps.
+    const FLinearColor RoadWhite(0.88f,0.87f,0.81f,1.0f);
+    const FLinearColor Tactile(0.72f,0.62f,0.42f,1.0f);
+    for (int32 IX = -1; IX <= 1; ++IX)
+    {
+        for (int32 IY = -1; IY <= 1; ++IY)
+        {
+            const float CX = IX * 2600.0f;
+            const float CY = IY * 2600.0f;
+            // Zebra stripes on both sides of each crossing, kept clear of the junction centre.
+            for (int32 Stripe = -4; Stripe <= 4; ++Stripe)
+            {
+                const float S = Stripe * 62.0f;
+                for (int32 Side : {-1, 1})
+                {
+                    AddBox(FVector(CX + Side * 445.0f, CY + S, 5.0f),
+                        FVector(0.22f, 0.34f, 0.035f), RoadWhite);
+                    AddBox(FVector(CX + S, CY + Side * 445.0f, 5.0f),
+                        FVector(0.34f, 0.22f, 0.035f), RoadWhite);
+                }
+            }
+            // Stop bars before the pedestrian crossing.
+            for (int32 Side : {-1, 1})
+            {
+                AddBox(FVector(CX + Side * 610.0f, CY, 5.0f),
+                    FVector(0.10f, 3.4f, 0.035f), RoadWhite);
+                AddBox(FVector(CX, CY + Side * 610.0f, 5.0f),
+                    FVector(3.4f, 0.10f, 0.035f), RoadWhite);
+                AddBox(FVector(CX + Side * 720.0f, CY + Side * 720.0f, 14.0f),
+                    FVector(0.72f, 0.72f, 0.07f), Tactile);
+            }
+        }
+    }
+
     // A derelict industrial site tucked into the edge of the district.
     AddAbandonedSite(FVector(3650.0f, 3650.0f, 0.0f));
 

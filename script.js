@@ -232,7 +232,7 @@ let shopPanel=null,currentShop=null;
 const clock=new THREE.Clock();
 
 /* Procedural local audio layer: generated WebAudio tones/noise, no external audio files. */
-let flAudioContext=null,flEngineOsc=null,flEngineSub=null,flEngineHarmonic=null,flEngineHarmonicGain=null,flEngineGain=null,flEngineFilter=null,flRoadNoise=null,flRoadGain=null,flRoadFilter=null,flFootstepAt=0,flAudioReady=false;\nconst flWindTrees=[];
+let flAudioContext=null,flEngineOsc=null,flEngineSub=null,flEngineHarmonic=null,flEngineHarmonicGain=null,flEngineGain=null,flEngineFilter=null,flRoadNoise=null,flRoadGain=null,flRoadFilter=null,flWindNoise=null,flWindGain=null,flWindFilter=null,flFootstepAt=0,flAudioReady=false;\nconst flWindTrees=[];
 function flInitProceduralAudio(){
  const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return;
  try{flAudioContext=flAudioContext||new AC();if(flAudioContext.state==='suspended')flAudioContext.resume();if(flAudioReady)return;
@@ -245,7 +245,7 @@ function flInitProceduralAudio(){
   for(let i=0;i<noiseLength;i++)noiseData[i]=Math.random()*2-1;
   flRoadNoise=flAudioContext.createBufferSource();flRoadNoise.buffer=noiseBuffer;flRoadNoise.loop=true;
   flRoadFilter=flAudioContext.createBiquadFilter();flRoadFilter.type='lowpass';flRoadFilter.frequency.value=700;
-  flRoadGain=flAudioContext.createGain();flRoadGain.gain.value=0;flRoadNoise.connect(flRoadFilter);flRoadFilter.connect(flRoadGain);flRoadGain.connect(flAudioContext.destination);flRoadNoise.start();flAudioReady=true;}catch(_){flAudioReady=false;}
+  flRoadGain=flAudioContext.createGain();flRoadGain.gain.value=0;flRoadNoise.connect(flRoadFilter);flRoadFilter.connect(flRoadGain);flRoadGain.connect(flAudioContext.destination);flRoadNoise.start();\n   const windLength=flAudioContext.sampleRate*3,windBuffer=flAudioContext.createBuffer(1,windLength,flAudioContext.sampleRate),windData=windBuffer.getChannelData(0);for(let i=0;i<windLength;i++)windData[i]=(Math.random()*2-1)*.32;\n   flWindNoise=flAudioContext.createBufferSource();flWindNoise.buffer=windBuffer;flWindNoise.loop=true;flWindFilter=flAudioContext.createBiquadFilter();flWindFilter.type='lowpass';flWindFilter.frequency.value=430;flWindGain=flAudioContext.createGain();flWindGain.gain.value=.006;flWindNoise.connect(flWindFilter);flWindFilter.connect(flWindGain);flWindGain.connect(flAudioContext.destination);flWindNoise.start();flAudioReady=true;}catch(_){flAudioReady=false;}
 }
 
 function flPlayIgnitionSound(){

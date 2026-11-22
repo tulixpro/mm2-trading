@@ -14,6 +14,7 @@ Two native Unreal Engine projects are maintained alongside the existing Three.js
 - Runtime-generated greybox district: nine city blocks, road grid, sidewalk strips, facade/window rhythm, shopfront placeholders, streetlights and simple tree shapes
 - Primitive-mesh vehicle silhouettes: sedan, van and police-car display props placed along the roads, with tinted body/glass, basic bumpers, grille, mirrors, wheel hubs and police lightbar (not drivable)
 - Runtime color variation for facade blocks, windows, asphalt, curbs and road markings using dynamic material parameters where supported
+- Expanded procedural facade pass: roof parapets/coping, rooftop service boxes, deeper window surrounds and sills, selected projecting balconies with rails, side-elevation windows, retail glazing, sign bands, awnings and wall-mounted service details. These are still primitive-mesh placeholders, not finished photorealistic assets.
 - Lumen, virtual shadow maps, Nanite project support, anti-aliasing and texture-streaming configuration
 - Sky-atmosphere and volumetric-fog project support
 
@@ -40,7 +41,7 @@ This is the gameplay hook, not a finished phone menu or autonomous tow-truck AI 
 
 ## Graphics status – important
 
-The district currently uses Unreal's basic primitive meshes. It is a **greybox/blockout**, not a photorealistic Frankfurt city. The tree shapes are placeholders, not realistic foliage. Renderer settings enable modern UE5 features, but they do not create detailed art assets by themselves. A finished visual pass still needs modular architecture, tree/foliage meshes, PBR materials, road markings, decals, street furniture, authored lighting, sky/cloud actors and a designed level.
+The district currently uses Unreal's basic primitive meshes, now with a denser procedural architectural-detail pass. It is still a **greybox/blockout**, not a photorealistic Frankfurt city. The tree shapes are placeholders, not realistic foliage. Renderer settings enable modern UE5 features, but they do not create detailed art assets by themselves. A finished visual pass still needs modular architecture, tree/foliage meshes, PBR materials, road markings, decals, street furniture, authored lighting, sky/cloud actors and a designed level.
 
 ## Honest project status
 

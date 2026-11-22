@@ -49,6 +49,8 @@ const qualitySettings={
  ultra:{pixelRatio:1.45,shadows:true,shadowMapSize:4096,fog:340,exposure:1.12,ambient:1.55,label:'ULTRA · 4K-SCHATTEN'},
  advanced:{pixelRatio:1.05,shadows:true,shadowMapSize:2048,fog:250,exposure:1.08,ambient:1.7,label:'ERWEITERT · 2K-SCHATTEN'}
 };
+const launcherQuality=new URLSearchParams(location.search).get('quality');
+if(qualitySelect&&qualitySettings[launcherQuality]&&!classicEdition)qualitySelect.value=launcherQuality;
 let sunLight=null,hemiLight=null,flashlight=null,flashlightTarget=null,flashlightOn=false;
 function applyQuality(){
  if(!renderer||!scene)return;

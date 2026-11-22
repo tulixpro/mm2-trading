@@ -481,7 +481,7 @@ function makePedestrian(x,z,index){
 }
 function makeCar(x,z,color,police=false,model='sedan',performanceOverride=null){
   const car=new THREE.Group();
-  const paint=new THREE.MeshPhysicalMaterial({color,roughness:.19,metalness:.62,clearcoat:1,clearcoatRoughness:.075,envMapIntensity:1.5});
+  const paint=new THREE.MeshPhysicalMaterial({color,roughness:.2,metalness:.68,clearcoat:1,clearcoatRoughness:.055,envMapIntensity:1.85});
   const glass=new THREE.MeshPhysicalMaterial({color:0x182b3a,roughness:.075,metalness:.03,clearcoat:1,clearcoatRoughness:.08,transparent:true,opacity:.2,depthWrite:false,envMapIntensity:1.2});
   const black=new THREE.MeshStandardMaterial({color:0x10151b,roughness:.58});
   const mirrorFinish=new THREE.MeshPhysicalMaterial({color:0x263744,metalness:.88,roughness:.12,clearcoat:1,clearcoatRoughness:.045,envMapIntensity:1.8});
@@ -1329,8 +1329,31 @@ function tryStartBoat(){
  if(!nearest)return false;activeBoat=nearest;boatSpeed=0;boatHeading=nearest.rotation.y;status.textContent='MOTORBOOT · W/S GAS/BREMSE · A/D LENKEN · F AUSSTEIGEN';return true;
 }
 
+function flBuildReflectionEnvironment(){
+ if(classicEdition||typeof document==='undefined')return;
+ const canvas=document.createElement('canvas');canvas.width=1024;canvas.height=512;
+ const ctx=canvas.getContext('2d');if(!ctx)return;
+ const sky=ctx.createLinearGradient(0,0,0,512);
+ sky.addColorStop(0,'#18283d');sky.addColorStop(.38,'#7899b3');sky.addColorStop(.57,'#f2d9b2');sky.addColorStop(.63,'#6e7d88');sky.addColorStop(1,'#202b36');
+ ctx.fillStyle=sky;ctx.fillRect(0,0,1024,512);
+ const sun=ctx.createRadialGradient(710,250,4,710,250,190);
+ sun.addColorStop(0,'rgba(255,244,218,.95)');sun.addColorStop(.22,'rgba(255,224,180,.32)');sun.addColorStop(1,'rgba(255,224,180,0)');
+ ctx.fillStyle=sun;ctx.fillRect(500,40,420,420);
+ // Soft architectural silhouettes create broad, readable highlights in vehicle paint.
+ for(let x=0;x<1024;x+=37){
+  const h=55+((x*17)%125),w=18+((x*7)%25);
+  ctx.fillStyle=x%3===0?'rgba(35,49,64,.82)':'rgba(57,72,85,.72)';
+  ctx.fillRect(x,330-h,w,h);
+  ctx.fillStyle='rgba(255,221,165,.42)';
+  for(let y=340-h+12;y<325;y+=19)if((x+y)%4!==0)ctx.fillRect(x+5,y,4,7);
+ }
+ const tex=new THREE.CanvasTexture(canvas);tex.mapping=THREE.EquirectangularReflectionMapping;
+ tex.colorSpace=THREE.SRGBColorSpace;tex.needsUpdate=true;
+ scene.environment=tex;scene.environmentIntensity=.9;
+}
 function makeCity(){
   const skyColor=classicEdition?0xb99a70:0x91b1c8;scene=new THREE.Scene();scene.background=new THREE.Color(skyColor);scene.fog=new THREE.Fog(skyColor,classicEdition?72:95,classicEdition?135:(liteMode?175:260));
+  if(!classicEdition)flBuildReflectionEnvironment();
   camera=new THREE.PerspectiveCamera(cameraFov,viewport.clientWidth/viewport.clientHeight,.1,620);camera.position.set(0,2.1,14);
   flashlight=new THREE.SpotLight(0xddeeff,0,48,Math.PI/7,.42,1.35);
   flashlight.position.set(0,0,0);flashlightTarget=new THREE.Object3D();flashlightTarget.position.set(0,0,-1);

@@ -12,7 +12,7 @@
 
 AFLVehicleShowcaseActor::AFLVehicleShowcaseActor()
 {
-    PrimaryActorTick.bCanEverTick = false;
+    PrimaryActorTick.bCanEverTick = true;
     CollisionRoot = CreateDefaultSubobject<UBoxComponent>(TEXT("VehicleCollision"));
     RootComponent = CollisionRoot;
     CollisionRoot->SetBoxExtent(FVector(230.0f, 105.0f, 85.0f));
@@ -39,6 +39,7 @@ AFLVehicleShowcaseActor::AFLVehicleShowcaseActor()
 void AFLVehicleShowcaseActor::BeginPlay()
 {
     Super::BeginPlay();
+    FuelPercent = 100.0f;
     if (VehicleStyle == 1) BuildVan();
     else if (VehicleStyle == 2) BuildPoliceCar();
     else BuildSedan();
@@ -129,8 +130,24 @@ void AFLVehicleShowcaseActor::SetupPlayerInputComponent(UInputComponent* PlayerI
 
 void AFLVehicleShowcaseActor::DriveForward(float Value)
 {
-    if (FMath::Abs(Value) > KINDA_SMALL_NUMBER)
+    CurrentThrottle = FMath::Clamp(Value, -1.0f, 1.0f);
+    if (FuelPercent > 0.0f && FMath::Abs(Value) > KINDA_SMALL_NUMBER)
         AddMovementInput(GetActorForwardVector(), Value);
+}
+
+void AFLVehicleShowcaseActor::Tick(float DeltaSeconds)
+{
+    Super::Tick(DeltaSeconds);
+    if (GetController() && FuelPercent > 0.0f && FMath::Abs(CurrentThrottle) > 0.05f)
+    {
+        const float LitresUsed = (LitresPerHourAtFullThrottle * FMath::Abs(CurrentThrottle) * DeltaSeconds) / 3600.0f;
+        FuelPercent = FMath::Max(0.0f, FuelPercent - (LitresUsed / FMath::Max(1.0f, FuelCapacityLitres)) * 100.0f);
+    }
+    if (FuelPercent <= 0.0f)
+    {
+        CurrentThrottle = 0.0f;
+        VehicleMovement->StopMovementImmediately();
+    }
 }
 
 void AFLVehicleShowcaseActor::Steer(float Value)
@@ -150,6 +167,7 @@ void AFLVehicleShowcaseActor::ExitVehicle()
 {
     APlayerController* PC = Cast<APlayerController>(GetController());
     if (!PC || !PreviousDriver) return;
+    CurrentThrottle = 0.0f;
     AFLRealisticCharacter* Character = PreviousDriver;
     PreviousDriver = nullptr;
     Character->SetActorLocation(GetActorLocation() - GetActorRightVector() * 280.0f + FVector(0,0,20.0f));

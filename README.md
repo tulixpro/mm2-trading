@@ -325,3 +325,12 @@ These are **project scaffolds only**, not finished playable Unreal games. The ex
 - Der Federweg begrenzt jetzt die vereinfachte Geländebewegung der Fahrzeugkarosserie.
 
 **Technischer Status:** Die Ereignisse sind derzeit geskriptete Szenen und noch keine vollständig autonome Unfall-KI oder echte Forstmaschinen-Simulation. Verkehrskollisionen, Fahrzeugschäden, Einsatzkräfte mit Aufgaben, echte Motorsägen-/Maschinengeräusche, Baumfäll-Animationen und physikalische Einzelradaufhängung fehlen weiterhin. Die Änderungen wurden im Repository gespeichert, aber noch nicht in einem laufenden Browser-Spiel getestet.
+
+
+## Verkehr, Kollisionen und Wald-Atmosphäre
+- NPC-Fahrzeuge führen seltene Spurwechsel aus und bremsen vereinfacht bei vorausfahrendem Verkehr.
+- Bei überlappenden Fahrzeugen erkennt die Arcade-Kollisionsprüfung einen Zusammenstoß, bremst beide Fahrzeuge kurz ab, gibt einen kleinen Ausweichimpuls und zeigt eine dunkle Schadensmarkierung am betroffenen Fahrzeugbereich.
+- Auch das Spielerfahrzeug kann mit NPC-Verkehr kollidieren; das bestehende Schadenssystem erhält einen zusätzlichen Treffer und das getroffene NPC-Auto wird kurz abgebremst.
+- Über dem Wald kreisen einfache Vogel-Silhouetten. In Waldnähe werden gelegentlich kurze, synthetisch erzeugte Vogelrufe abgespielt.
+- Zusammenstoß- und Ereignistöne werden ebenfalls prozedural mit Web Audio erzeugt. Es werden keine echten Tier- oder Fahrzeugaufnahmen mitgeliefert.
+- Die Simulation ist weiterhin Arcade-Physik: keine vollständige Soft-Body-Verformung, keine realen Crash-Daten, keine komplexe Versicherungs-/Polizeiabwicklung und keine authentischen Motoraufnahmen.

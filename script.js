@@ -311,6 +311,22 @@ function flBuildAmbientEvents(){
   const log=new THREE.Mesh(new THREE.CylinderGeometry(.24,.24,3.7,10),logMat);log.rotation.z=Math.PI/2;log.position.set(3.1, .25+(i%2)*.48, -1.5+Math.floor(i/2)*.72);forestry.add(log);
  }
  const stump=new THREE.Mesh(new THREE.CylinderGeometry(.38,.46,.52,10),logMat);stump.position.set(-3.2,.26,2.3);forestry.add(stump);
+ // Kleine Forstkolonne: Holzanhänger, Warnbaken und eine arbeitende Person.
+ const trailer=new THREE.Group();
+ const trailerBed=new THREE.Mesh(new THREE.BoxGeometry(2.25,.22,3.4),darkMat);trailerBed.position.y=.78;trailer.add(trailerBed);
+ for(const side of [-1,1]){const rail=new THREE.Mesh(new THREE.BoxGeometry(.12,1.05,3.4),new THREE.MeshStandardMaterial({color:0x3b464b,roughness:.8}));rail.position.set(side*1.02,1.25,0);trailer.add(rail);for(const z of [-1.25,1.25]){const wheel=new THREE.Mesh(new THREE.CylinderGeometry(.32,.32,.18,10),darkMat);wheel.rotation.z=Math.PI/2;wheel.position.set(side*1.08,.38,z);trailer.add(wheel);}}
+ trailer.position.set(5.8,0,-3.8);forestry.add(trailer);
+ const worker=new THREE.Group(),hiVis=new THREE.MeshStandardMaterial({color:0xe4b52d,roughness:.9}),pantsMat=new THREE.MeshStandardMaterial({color:0x303b3c,roughness:.95}),skinMat=new THREE.MeshStandardMaterial({color:0xb98d70,roughness:.95});
+ const workerBody=new THREE.Mesh(new THREE.CapsuleGeometry(.24,.62,3,7),hiVis);workerBody.position.y=1.02;worker.add(workerBody);
+ const workerHead=new THREE.Mesh(new THREE.SphereGeometry(.19,9,7),skinMat);workerHead.position.y=1.56;worker.add(workerHead);
+ const helmet=new THREE.Mesh(new THREE.SphereGeometry(.22,9,6,0,Math.PI*2,0,Math.PI/2),new THREE.MeshStandardMaterial({color:0xe7c52f,roughness:.7}));helmet.position.y=1.72;worker.add(helmet);
+ const workerArms=[],workerLegs=[];
+ for(const side of [-1,1]){const arm=new THREE.Mesh(new THREE.CapsuleGeometry(.085,.42,3,6),hiVis);arm.position.set(side*.32,1.08,0);worker.add(arm);workerArms.push(arm);const leg=new THREE.Mesh(new THREE.CapsuleGeometry(.11,.48,3,6),pantsMat);leg.position.set(side*.14,.39,0);worker.add(leg);workerLegs.push(leg);}
+ worker.position.set(-4.8,0,-1.2);forestry.add(worker);
+ const workLamp=new THREE.Mesh(new THREE.SphereGeometry(.16,8,6),amberMat);workLamp.position.set(0,2.85,-.6);forestry.add(workLamp);
+ const workCones=[];
+ for(let i=0;i<5;i++){const cone=new THREE.Mesh(new THREE.ConeGeometry(.22,.58,7),new THREE.MeshStandardMaterial({color:0xf07825,roughness:.8}));cone.position.set(-5.4+i*2.6,.29,5.1);forestry.add(cone);workCones.push(cone);}
+
  const warning=new THREE.Mesh(new THREE.BoxGeometry(2.3,1.35,.12),new THREE.MeshStandardMaterial({color:0xf0bd37,roughness:.75}));
  warning.position.set(-3.5,1.1,-3.6);forestry.add(warning);
  const warningText=new THREE.Mesh(new THREE.BoxGeometry(1.4,.16,.04),darkMat);warningText.position.set(-3.5,1.15,-3.51);forestry.add(warningText);
@@ -354,7 +370,7 @@ function flBuildAmbientEvents(){
  response.visible=false;robbery.visible=false;robbery.position.set(14,0,-178);
  accident.visible=false;forestry.visible=false;forestry.position.set(112,0,75);
  root.add(accident,forestry,response,robbery);root.position.set(0,0,0);scene.add(root);
- flAmbientEvents={root,accident,forestry,response,robbery,beaconLight,workBody,boom,emergencyUnits:[police,fire,ambulance,robberyPolice1,robberyPolice2],arrestActors,arrestCar,arrestProgress:0,sirenTimer:2,civic,kind:null};
+ flAmbientEvents={root,accident,forestry,response,robbery,beaconLight,workBody,boom,worker,workerArms,workerLegs,workLamp,workCones,emergencyUnits:[police,fire,ambulance,robberyPolice1,robberyPolice2],arrestActors,arrestCar,arrestProgress:0,sirenTimer:2,civic,kind:null};
 }
 function flPlayEmergencySiren(){
  if(!flAudioContext||flAudioContext.state!=='running')return;
@@ -446,7 +462,7 @@ function flUpdateAmbientEvents(dt,t){
   if(e.kind==='accident'){
    e.beaconLight.material.emissiveIntensity=.45+Math.abs(Math.sin(t*5))*1.8;
    e.response.visible=true;
-  }else if(e.kind==='forest'){e.workBody.rotation.y=Math.sin(t*1.4)*.012;e.boom.rotation.x=-.35+Math.sin(t*1.8)*.045;e.response.visible=false;}
+  }else if(e.kind==='forest'){e.workBody.rotation.y=Math.sin(t*1.4)*.012;e.boom.rotation.x=-.35+Math.sin(t*1.8)*.045;e.workLamp.material.emissiveIntensity=.35+Math.abs(Math.sin(t*4))*1.4;e.worker.rotation.y=Math.sin(t*.7)*.22;const workPhase=Math.sin(t*2.1);e.workerArms[0].rotation.x=-.55+workPhase*.22;e.workerArms[1].rotation.x=.35-workPhase*.18;e.workerLegs[0].rotation.x=workPhase*.08;e.workerLegs[1].rotation.x=-workPhase*.08;e.workCones.forEach((cone,i)=>{cone.rotation.z=Math.sin(t*2+i)*.025;});e.response.visible=false;}
   else if(e.kind==='robbery'){e.robbery.visible=true;e.response.visible=false;}
   for(const unit of e.emergencyUnits){if(unit.userData.lights)unit.userData.lights.forEach((light,index)=>{light.material.emissiveIntensity=(Math.floor(t*7+index)%2===0)?2.1:.12;});}
   e.duration-=dt;

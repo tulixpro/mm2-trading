@@ -17,6 +17,63 @@ const flVehicleAssets={
   police:'https://tevy.dev/models/police-car/v1/lod1.glb'
 };
 const flVehicleCache=new Map();
+const flEnvironmentAssets={
+  rowan:'https://tevy.dev/models/rowan/v1/lod2.glb',
+  planeTree:'https://tevy.dev/models/plane-tree/v1/lod2.glb',
+  apartment:'https://tevy.dev/models/apartment-block/v2/lod2.glb',
+  officeTower:'https://tevy.dev/models/office-tower/v2/lod2.glb',
+  housingSlab:'https://tevy.dev/models/public-housing-slab/v1/lod2.glb',
+  mixedBlock:'https://tevy.dev/models/mixed-tenant-block/v1/lod2.glb'
+};
+const flEnvironmentCache=new Map();
+function flLoadEnvironmentVisual(host,assetKey,fitSize,hideExisting=false){
+  if(classicEdition||!flEnvironmentAssets[assetKey])return;
+  const url=flEnvironmentAssets[assetKey];
+  let pending=flEnvironmentCache.get(url);
+  if(!pending){
+    pending=new Promise((resolve,reject)=>flVehicleLoader.load(url,g=>resolve(g.scene),undefined,reject));
+    flEnvironmentCache.set(url,pending);
+    pending.catch(()=>flEnvironmentCache.delete(url));
+  }
+  pending.then(source=>{
+    if(!host.parent)return;
+    const visual=source.clone(true);
+    visual.traverse(node=>{
+      if(!node.isMesh)return;
+      node.castShadow=true;node.receiveShadow=true;
+      const mats=Array.isArray(node.material)?node.material:[node.material];
+      const cloned=mats.map(mat=>{
+        const copy=mat.clone();
+        if('envMapIntensity' in copy)copy.envMapIntensity=1.15;
+        return copy;
+      });
+      node.material=Array.isArray(node.material)?cloned:cloned[0];
+    });
+    visual.updateMatrixWorld(true);
+    const bounds=new THREE.Box3().setFromObject(visual),size=new THREE.Vector3();
+    bounds.getSize(size);
+    const scale=Math.min(fitSize.x/Math.max(size.x,.001),fitSize.y/Math.max(size.y,.001),fitSize.z/Math.max(size.z,.001));
+    visual.scale.setScalar(scale);
+    visual.position.set(-((bounds.min.x+bounds.max.x)*.5)*scale,-bounds.min.y*scale,-((bounds.min.z+bounds.max.z)*.5)*scale);
+    visual.updateMatrixWorld(true);
+    if(hideExisting)host.children.forEach(child=>child.visible=false);
+    visual.name='FrankfurtLifeEnvironmentAsset_'+assetKey;
+    host.add(visual);
+  }).catch(error=>console.warn('Frankfurt Life: Umgebungsmodell konnte nicht geladen werden:',assetKey,error));
+}
+function flBuildEnvironmentAssets(){
+  if(classicEdition||liteMode)return;
+  const placements=[
+    {key:'apartment',x:-207,z:-142,fit:{x:39,y:30,z:23}},
+    {key:'officeTower',x:210,z:-170,fit:{x:50,y:74,z:33}},
+    {key:'housingSlab',x:-214,z:42,fit:{x:60,y:19,z:16}},
+    {key:'mixedBlock',x:211,z:54,fit:{x:16,y:30,z:15}}
+  ];
+  for(const item of placements){
+    const host=new THREE.Group();host.position.set(item.x,0,item.z);scene.add(host);
+    flLoadEnvironmentVisual(host,item.key,item.fit,false);
+  }
+}
 function flLoadVehicleVisual(car,model,color,W,L){
   const key=flVehicleAssets[model]?'asset:'+flVehicleAssets[model]:null;
   if(!key)return;
@@ -282,6 +339,7 @@ function flBuildForest(){
    const crown2=new THREE.Mesh(new THREE.IcosahedronGeometry(r*1.12,1),grass);crown2.position.set(.35,h*.9,.12);tree.add(crown2);
   }
   tree.position.set(x,0,z);tree.rotation.y=Math.random()*Math.PI*2;forest.add(tree);
+  if(i%6===0)flLoadEnvironmentVisual(tree,i%12===0?'planeTree':'rowan',{x:h*1.05,y:h,z:h*1.05},true);
  }
  // Kleine Vögel kreisen als dezente Silhouetten über den Baumkronen.
  const birdMat=new THREE.MeshStandardMaterial({color:0x202b2a,roughness:.9});
@@ -1186,6 +1244,7 @@ function tree(x,z){
   ];
   for(let i=0;i<clusters.length;i++){const [cx,cy,cz,r]=clusters[i];const crown=new THREE.Mesh(new THREE.IcosahedronGeometry(r,1),crownMat[i%crownMat.length]);crown.position.set(cx,cy,cz);crown.scale.set(1,.88,1);group.add(crown);}
   group.position.set(x,0,z);scene.add(group);
+  flLoadEnvironmentVisual(group,Math.random()<.5?'rowan':'planeTree',{x:8,y:7.5,z:8},true);
 }
 function makePedestrian(x,z,index){
   const group=new THREE.Group();
@@ -2618,6 +2677,7 @@ function makeCity(){
     const side=i%2===0?-1:1;
     makePedestrian(side*(9.1+(i%4)*.38),-108+(i*9.7)%128,i);
   }
+  flBuildEnvironmentAssets();
 }
 function resize(){
   if(!renderer)return;

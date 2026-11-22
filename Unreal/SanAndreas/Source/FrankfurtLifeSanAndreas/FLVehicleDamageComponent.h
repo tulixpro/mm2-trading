@@ -4,26 +4,33 @@
 #include "Components/ActorComponent.h"
 #include "FLVehicleDamageComponent.generated.h"
 
+class UStaticMeshComponent;
+
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FFLVehicleDamageChanged, float, BodyHealth, float, EngineHealth, float, TyreHealth);
 
-/**
- * Lightweight, gameplay-oriented vehicle condition model.
- * Attach to a vehicle actor and enable hit events on its mesh components.
- * Values are normalized to 0..100; this is not a soft-body deformation solver.
- */
+/** Gameplay damage model. Wheel visuals are assigned in the vehicle Blueprint. */
 UCLASS(ClassGroup=(FrankfurtLife), meta=(BlueprintSpawnableComponent))
-class FRANKFURTLIFESANANDREAS_API UFLVehicleDamageComponent : public UActorComponent
+class FRANKFURTLIFESANANDREAS_API : public UActorComponent
 {
     GENERATED_BODY()
 
 public:
     UFLVehicleDamageComponent();
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Vehicle|Condition", meta=(ClampMin="1.0"))
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Vehicle|Damage", meta=(ClampMin="1.0"))
     float ImpactDamageScale = 0.55f;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Vehicle|Condition", meta=(ClampMin="0.0"))
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Vehicle|Damage", meta=(ClampMin="0.0"))
     float MinimumImpactSpeedKmh = 18.0f;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Vehicle|Damage", meta=(ClampMin="1.0"))
+    float WheelDetachSpeedKmh = 95.0f;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Vehicle|Damage", meta=(ClampMin="1.0"))
+    float WheelDetachDamageThreshold = 68.0f;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Vehicle|Damage")
+    TArray<UStaticMeshComponent*> WheelVisuals;
 
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Vehicle|Condition")
     float BodyHealth = 100.0f;
@@ -37,10 +44,13 @@ public:
     UPROPERTY(BlueprintAssignable, Category="Vehicle|Condition")
     FFLVehicleDamageChanged OnConditionChanged;
 
-    UFUNCTION(BlueprintCallable, Category="Vehicle|Condition")
+    UFUNCTION(BlueprintCallable, Category="Vehicle|Damage")
     void ApplyImpactDamage(float ImpactSpeedKmh, FName HitBone = NAME_None);
 
-    UFUNCTION(BlueprintCallable, Category="Vehicle|Condition")
+    UFUNCTION(BlueprintCallable, Category="Vehicle|Damage")
+    void ApplyWheelImpact(int32 WheelIndex, float ImpactSpeedKmh);
+
+    UFUNCTION(BlueprintCallable, Category="Vehicle|Damage")
     void RepairVehicle(float RepairAmount = 100.0f);
 
     UFUNCTION(BlueprintPure, Category="Vehicle|Condition")
@@ -50,9 +60,16 @@ protected:
     virtual void BeginPlay() override;
 
 private:
+    UPROPERTY()
+    TArray<float> WheelDamage;
+
+    UPROPERTY()
+    TArray<bool> WheelDetached;
+
     UFUNCTION()
     void HandleComponentHit(UPrimitiveComponent* HitComponent, AActor* OtherActor,
         UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
 
     void BroadcastCondition();
+    void DetachWheelVisual(int32 WheelIndex);
 };

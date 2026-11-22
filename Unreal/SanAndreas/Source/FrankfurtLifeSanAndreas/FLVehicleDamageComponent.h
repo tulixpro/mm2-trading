@@ -6,7 +6,8 @@
 
 class UStaticMeshComponent;
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FFLVehicleDamageChanged, float, BodyHealth, float, EngineHealth, float, TyreHealth);\nDECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FFLMechanicTowRequested, const FString&, Reason);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FFLVehicleDamageChanged, float, BodyHealth, float, EngineHealth, float, TyreHealth);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FFLMechanicTowRequested, const FString&, Reason);\nDECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FFLMechanicTowRequested, const FString&, Reason);
 
 /** Gameplay damage model. Wheel visuals are assigned in the vehicle Blueprint. */
 UCLASS(ClassGroup=(FrankfurtLife), meta=(BlueprintSpawnableComponent))
@@ -44,6 +45,12 @@ public:
     UPROPERTY(BlueprintAssignable, Category="Vehicle|Condition")
     FFLVehicleDamageChanged OnConditionChanged;
 
+    UPROPERTY(BlueprintAssignable, Category="Vehicle|Roadside Assistance")
+    FFLMechanicTowRequested OnMechanicTowRequested;
+
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Vehicle|Roadside Assistance")
+    bool bMechanicTowRequested = false;
+
     UFUNCTION(BlueprintCallable, Category="Vehicle|Damage")
     void ApplyImpactDamage(float ImpactSpeedKmh, FName HitBone = NAME_None);
 
@@ -55,6 +62,12 @@ public:
 
     UFUNCTION(BlueprintPure, Category="Vehicle|Condition")
     bool IsDriveable() const { return EngineHealth > 8.0f && TyreHealth > 5.0f; }
+
+    UFUNCTION(BlueprintPure, Category="Vehicle|Roadside Assistance")
+    bool IsTowRequired() const;
+
+    UFUNCTION(BlueprintCallable, Category="Vehicle|Roadside Assistance")
+    bool RequestMechanicTow();
 
 protected:
     virtual void BeginPlay() override;

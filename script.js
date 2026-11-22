@@ -2163,6 +2163,64 @@ function flBuildReflectionEnvironment(){
  tex.colorSpace=THREE.SRGBColorSpace;tex.needsUpdate=true;
  scene.environment=tex;scene.environmentIntensity=.9;
 }
+
+function flBuildRoundabouts(){
+ const asphalt=new THREE.MeshStandardMaterial({color:0x303940,roughness:.94});
+ const curb=new THREE.MeshStandardMaterial({color:0xb8b9b3,roughness:.8});
+ const islandMat=new THREE.MeshStandardMaterial({color:0x638052,roughness:1});
+ const marking=new THREE.MeshBasicMaterial({color:0xe8e2cb});
+ const centers=[[-48,57],[82,-95],[-130,-19]];
+ for(const [x,z] of centers){
+  const roadDisk=new THREE.Mesh(new THREE.CircleGeometry(8.7,48),asphalt);roadDisk.rotation.x=-Math.PI/2;roadDisk.position.set(x,.022,z);scene.add(roadDisk);
+  const island=new THREE.Mesh(new THREE.CylinderGeometry(3.35,3.55,.42,32),curb);island.position.set(x,.22,z);scene.add(island);
+  const green=new THREE.Mesh(new THREE.CircleGeometry(3.18,32),islandMat);green.rotation.x=-Math.PI/2;green.position.set(x,.445,z);scene.add(green);
+  for(let k=0;k<3;k++){
+   const shrub=new THREE.Mesh(new THREE.IcosahedronGeometry(.42+k*.08,1),new THREE.MeshStandardMaterial({color:k===1?0x78975a:0x3f6846,roughness:1}));
+   const a=k*Math.PI*2/3;shrub.position.set(x+Math.cos(a)*1.7,.85,z+Math.sin(a)*1.7);scene.add(shrub);
+  }
+  const centerTree=new THREE.Group();const trunk=new THREE.Mesh(new THREE.CylinderGeometry(.12,.18,1.55,7),new THREE.MeshStandardMaterial({color:0x624932}));trunk.position.y=1.15;centerTree.add(trunk);
+  const crown=new THREE.Mesh(new THREE.SphereGeometry(.8,9,7),new THREE.MeshStandardMaterial({color:0x477b4d,roughness:1}));crown.position.y=2.15;centerTree.add(crown);centerTree.position.set(x,0,z);scene.add(centerTree);
+  const ring=new THREE.Mesh(new THREE.TorusGeometry(5.35,.055,5,48),marking);ring.rotation.x=Math.PI/2;ring.position.set(x,.065,z);scene.add(ring);
+  for(let arm=0;arm<4;arm++){
+   const a=arm*Math.PI/2;
+   for(let n=0;n<3;n++){
+    const dash=new THREE.Mesh(new THREE.BoxGeometry(.16,.018,1.15),marking);
+    dash.position.set(x+Math.cos(a)*(6.9+n*.55),.065,z+Math.sin(a)*(6.9+n*.55));dash.rotation.y=-a;scene.add(dash);
+   }
+   const crosswalk=new THREE.Group();
+   for(let n=0;n<5;n++){const bar=new THREE.Mesh(new THREE.BoxGeometry(2.8,.018,.22),marking);bar.position.set(0,.07,(n-2)*.42);crosswalk.add(bar);}
+   crosswalk.position.set(x+Math.cos(a)*10.1,.0,z+Math.sin(a)*10.1);crosswalk.rotation.y=-a;scene.add(crosswalk);
+  }
+ }
+}
+function flBuildCityServices(){
+ flBuildRoundabouts();
+ createShop(-15,164,-1,'UMZUGSSERVICE MAIN','UMZÜGE · MÖBEL · TRANSPORT',0x547b9b);
+ createShop(15,182,1,'PAKETZENTRUM','PAKETE · KURIER · LIEFERUNG',0xd18a3c);
+ createShop(-15,-150,-1,'BAUMARKT FRANKFURT','WERKZEUG · MATERIAL · GARTEN',0x66864b);
+ createShop(15,-168,1,'FAHRRADHAUS','FAHRRÄDER · REPARATUR · ZUBEHÖR',0x4b8791);
+ const vanMat=new THREE.MeshStandardMaterial({color:0xe4e7e7,roughness:.58});
+ const blueMat=new THREE.MeshStandardMaterial({color:0x245b83,roughness:.62});
+ const addServiceVan=(x,z,label)=>{
+  const van=makeCar(x,z,0xe5e8e8,false,'van');
+  van.scale.set(1.06,1.04,1.12);van.rotation.y=x<0?Math.PI/2:-Math.PI/2;
+  const sidePanel=new THREE.Mesh(new THREE.BoxGeometry(.035,.62,1.75),blueMat);
+  sidePanel.position.set(x<0?-.93:.93,1.05,0);van.add(sidePanel);
+  const labelCanvas=document.createElement('canvas');labelCanvas.width=512;labelCanvas.height=128;
+  const ctx=labelCanvas.getContext('2d');ctx.fillStyle='#173e5c';ctx.fillRect(0,0,512,128);ctx.fillStyle='#fff';ctx.font='bold 44px Arial';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(label,256,64);
+  const decal=new THREE.Mesh(new THREE.PlaneGeometry(1.55,.38),new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(labelCanvas),transparent:true,side:THREE.DoubleSide}));
+  decal.position.set(x<0?-.955:.955,1.05,0);decal.rotation.y=x<0?-Math.PI/2:Math.PI/2;van.add(decal);
+  return van;
+ };
+ addServiceVan(-22,169,'UMZUG MAIN');
+ addServiceVan(22,187,'PAKETDIENST');
+ addServiceVan(-22,-145,'BAUMARKT');
+ addServiceVan(22,-163,'RAD-SERVICE');
+ if(!liteMode){
+  for(let i=0;i<10;i++)makePedestrian(-27+(i%5)*13,150+Math.floor(i/5)*19,260+i);
+ }
+}
+
 function makeCity(){
   const skyColor=classicEdition?0xb99a70:0x91b1c8;scene=new THREE.Scene();scene.background=new THREE.Color(skyColor);scene.fog=new THREE.Fog(skyColor,classicEdition?82:105,classicEdition?155:(liteMode?195:340));
   if(!classicEdition)flBuildReflectionEnvironment();
@@ -2246,6 +2304,7 @@ function makeCity(){
   if(!liteMode){buildEmergencyServices();buildFrankfurtLandmarks();}
   buildDealership();
   createTraffic();
+  flBuildCityServices();
   // Erweiterte Stadt: zusätzliche Wohn- und Geschäftsquartiere, Nebenstraßen und Plätze.
   const sideRoadMat=new THREE.MeshStandardMaterial({color:0x29333d,roughness:.96});
   const sideWalkMat=new THREE.MeshStandardMaterial({color:0x92999b,roughness:.9});

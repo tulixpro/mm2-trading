@@ -428,7 +428,19 @@ function createShop(x,z,side,name,subtitle,color){
  for(let i=0;i<4;i++){
   const shelf=new THREE.Mesh(new THREE.BoxGeometry(.5,.85,1.05),interiorMat);
   shelf.position.set(-side*2.8,.65,-2.7+i*1.8);g.add(shelf);
+  // Small visible packages and bottles make the shop shelves feel stocked.
+  for(let k=0;k<3;k++){
+   const pack=new THREE.Mesh(new THREE.BoxGeometry(.22,.32,.22),new THREE.MeshStandardMaterial({color:[0xc64e36,0xe2c65b,0x4b8e76,0x4774a1][(i+k)%4],roughness:.58}));
+   pack.position.set(-side*2.8+(k-1)*.24,1.13,-2.7+i*1.8);g.add(pack);
+  }
  }
+ const checkout=new THREE.Mesh(new THREE.BoxGeometry(1.15,1.05,2.1),new THREE.MeshStandardMaterial({color:0x55483b,roughness:.52}));
+ checkout.position.set(frontX*.48,.66,3.0);g.add(checkout);
+ const checkoutTop=new THREE.Mesh(new THREE.BoxGeometry(1.22,.09,2.18),new THREE.MeshStandardMaterial({color:0x252a2d,metalness:.18,roughness:.32}));
+ checkoutTop.position.set(frontX*.48,1.22,3.0);g.add(checkoutTop);
+ const register=new THREE.Mesh(new THREE.BoxGeometry(.38,.2,.28),new THREE.MeshStandardMaterial({color:0x182d3b,metalness:.25,roughness:.3}));
+ register.position.set(frontX*.48,1.36,2.72);g.add(register);
+ const ceilingLight=new THREE.PointLight(0xffe2b7,.8,13);ceilingLight.position.set(0,6.6,0);g.add(ceilingLight);
  const base=new THREE.Mesh(new THREE.BoxGeometry(8.3,.24,10.3),trimMat);base.position.y=.12;g.add(base);
  g.position.set(x,0,z);scene.add(g);
  const products=name.startsWith('TANKSTELLE')?[{name:'Benzin 25%',price:90,kind:'fuel'},{name:'Benzin 50%',price:170,kind:'fuel'},{name:'Benzin 100%',price:300,kind:'fuel'},{name:'Wasser',price:2},{name:'Schokoriegel',price:3},{name:'Chips',price:3},{name:'Stadtplan',price:8}]:name.startsWith('BÄCKEREI')?[{name:'Brot',price:4},{name:'Brezel',price:3},{name:'Croissant',price:4},{name:'Kuchen',price:5},{name:'Kaffee',price:4}]:name.startsWith('PIZZERIA')?[{name:'Pizza',price:9},{name:'Pasta',price:8},{name:'Limo',price:3}]:name.startsWith('RESTAURANT')?[{name:'Burger-Menü',price:12},{name:'Schnitzel',price:16},{name:'Salat',price:9},{name:'Cola',price:3},{name:'Kaffee',price:4}]:name==='TUNINGWERK'?[{name:'Motor-Upgrade · Stufe 1–3',price:850,kind:'tuning',id:'engine'},{name:'Turbo-Kit',price:1450,kind:'tuning',id:'turbo'},{name:'Sonderlackierung',price:280,kind:'tuning',id:'paint'},{name:'Sportfelgen',price:420,kind:'tuning',id:'wheels'},{name:'Heckspoiler',price:620,kind:'tuning',id:'spoiler'},{name:'Sportfahrwerk · tieferlegen',price:780,kind:'tuning',id:'lowered'},{name:'Scheibentönung',price:340,kind:'tuning',id:'tint'},{name:'Unfallschäden reparieren',price:Math.max(120,damageLevel*260),kind:'tuning',id:'repair'}]:name==='WESTEND MARKT'?[{name:'Brot',price:4},{name:'Snack',price:3},{name:'Kaffee',price:4},{name:'Cola',price:3},{name:'Wasser',price:2},{name:'Stadtplan',price:8},{name:'Regenschirm',price:12},{name:'Batterien',price:6}]:name==='CITY SPORT'?[{name:'Laufschuhe',price:65},{name:'Sporttasche',price:35},{name:'Fußball',price:22},{name:'Fahrradhelm',price:28},{name:'Wasser',price:2}]:name==='OSTEND CAFÉ'?[{name:'Kaffee',price:4},{name:'Croissant',price:4},{name:'Kuchen',price:5},{name:'Limo',price:3}]:name==='SÜDQUARTIER KIOSK'?[{name:'Snack',price:3},{name:'Cola',price:3},{name:'Wasser',price:2},{name:'Stadtplan',price:8},{name:'Regenschirm',price:12}]:[{name:'Kaffee',price:4},{name:'Snack',price:3},{name:'Stadtplan',price:8}];

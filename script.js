@@ -317,6 +317,37 @@ function building(x,z,w,d,h,color){
   entry.position.set(0,1.05,d/2+.12);g.add(entry);
   g.position.set(x,0,z);scene.add(g);
 }
+const flEnterableHomes=[];
+let flInsideHome=false,flHomeExitPosition=null,flHomeInterior=null;
+function flBuildHomeInterior(){
+ if(flHomeInterior)return flHomeInterior;
+ const room=new THREE.Group();
+ const mat=(color,roughness=.8)=>new THREE.MeshStandardMaterial({color,roughness});
+ const addBox=(w,h,d,color,x,y,z,roughness=.8)=>{const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat(color,roughness));m.position.set(x,y,z);room.add(m);return m;};
+ addBox(13,.22,11,0x8b7765,0,-.12,0);
+ addBox(13,3.4,.2,0xe5dfd4,0,1.6,-5.4);
+ addBox(.2,3.4,11,0xd8d2c8,-6.5,1.6,0);addBox(.2,3.4,11,0xd8d2c8,6.5,1.6,0);
+ addBox(13,.18,11,0xf2eee6,0,3.35,0);
+ addBox(5,.035,3.2,0x526477,-.5,.02,1);
+ addBox(3.5,.72,1.15,0x52606a,-1,.42,-.2);addBox(3.5,.85,.3,0x43515d,-1,.95,-.65);
+ addBox(2,.14,1.1,0x76543b,-.5,.48,1.2);
+ for(const x of [-1.35,.35])addBox(.09,.45,.09,0x4b382b,x,.23,1.2);
+ addBox(4,.95,.8,0xb9b7ae,3.9,.48,-3.9);addBox(4.1,.12,.9,0x454c52,3.9,1.02,-3.9,.35);
+ addBox(.85,2,.8,0xbfc8ce,5.4,1,-4.7,.25);
+ addBox(2.5,.48,3,0x6e8497,3.7,.28,2.8);addBox(1.1,.2,.55,0xece8df,3.7,.62,1.8);
+ const lamp=new THREE.PointLight(0xffdfb0,1.25,18);lamp.position.set(0,2.9,0);room.add(lamp);
+ addBox(1.2,2.2,.12,0x263746,0,1.05,5.35);
+ room.position.set(420,0,420);room.visible=false;scene.add(room);flHomeInterior=room;return room;
+}
+function flToggleHome(){
+ if(!started||!camera||driving||planeFlying||activeBoat)return false;
+ if(flInsideHome){flInsideHome=false;if(flHomeExitPosition)camera.position.copy(flHomeExitPosition);if(flHomeInterior)flHomeInterior.visible=false;status.textContent='DU BIST WIEDER DRAUSSEN';return true;}
+ let home=null,best=Infinity;
+ for(const h of flEnterableHomes){const d=Math.hypot(camera.position.x-h.x,camera.position.z-(h.z+h.depth/2+.8));if(d<best){best=d;home=h;}}
+ if(!home||best>4.5)return false;
+ flHomeExitPosition=camera.position.clone();flBuildHomeInterior().visible=true;
+ camera.position.set(420,1.7,423.8);flInsideHome=true;status.textContent='WOHNUNG · E ZUM VERLASSEN';document.exitPointerLock?.();return true;
+}
 function residentialBuilding(x,z,w,d,h,color){
  const g=new THREE.Group();
  const wall=new THREE.MeshStandardMaterial({color,roughness:.88});
@@ -340,7 +371,7 @@ function residentialBuilding(x,z,w,d,h,color){
  const signCanvas=document.createElement('canvas');signCanvas.width=512;signCanvas.height=100;
  const ctx=signCanvas.getContext('2d');ctx.fillStyle='#23394a';ctx.fillRect(0,0,512,100);ctx.fillStyle='#fff';ctx.font='bold 34px Arial';ctx.textAlign='center';ctx.fillText('WOHNEN',256,64);
  const sign=new THREE.Mesh(new THREE.BoxGeometry(2.8,.55,.1),new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(signCanvas)}));sign.position.set(0,3,d/2+.1);g.add(sign);
- g.position.set(x,0,z);scene.add(g);
+ g.position.set(x,0,z);scene.add(g);flEnterableHomes.push({x,z,depth:d});
 }
 function createShop(x,z,side,name,subtitle,color){
  const g=new THREE.Group();
@@ -1864,7 +1895,7 @@ function begin(){
 startButton?.addEventListener('click',begin);
 // In der eigenständigen Windows-Spielansicht direkt in die 3D-Stadt starten.
 if(document.body.classList.contains('game-app')) begin();
-document.addEventListener('keydown',e=>{keys[e.code]=true;keyboardKeys[e.code]=true;if(e.code==='Escape'&&!e.repeat){const overlays=[jobPanel,shopPanel,phonePanel,dealerPanel];const visible=overlays.find(p=>p&&!p.classList.contains('hidden'));if(visible){visible.classList.add('hidden');return;}togglePauseMenu();return;}if(e.code==='F1'){e.preventDefault();if(!e.repeat)togglePhone();return;}if(e.code==='KeyQ'&&!e.repeat){e.preventDefault();toggleQuickAccessWheel();return;}if(e.code==='KeyE'&&!e.repeat){if(!tryRefuelAtPump())toggleShopOrDealer();}if(e.code==='KeyF'&&!e.repeat){if(!tryStartBoat()&&!tryStartFlight())toggleVehicle();}if(e.code==='KeyG'&&!e.repeat)tryTakeoverVehicle();if(e.code==='KeyJ'&&!e.repeat)toggleJobs();if(e.code==='KeyL'&&!e.repeat)toggleFlashlight();if(e.code==='F5'&&!e.repeat){e.preventDefault();flSaveGame(true);}if(e.code==='KeyC'&&!e.repeat)cycleCamera();if(e.code==='Escape'&&jobPanel&&!jobPanel.classList.contains('hidden'))jobPanel.classList.add('hidden');if(e.code==='Escape'&&shopPanel&&!shopPanel.classList.contains('hidden'))shopPanel.classList.add('hidden');if(e.code==='Escape'&&phonePanel&&!phonePanel.classList.contains('hidden'))phonePanel.classList.add('hidden');if(e.code==='Escape')document.querySelector('#quickAccessWheel')?.classList.add('hidden');if(e.code==='Escape'&&!e.repeat&&(!jobPanel||jobPanel.classList.contains('hidden'))&&(!shopPanel||shopPanel.classList.contains('hidden'))&&(!phonePanel||phonePanel.classList.contains('hidden'))&&(!dealerPanel||dealerPanel.classList.contains('hidden')))togglePauseMenu();if(e.code==='Escape'&&dealerPanel&&!dealerPanel.classList.contains('hidden'))dealerPanel.classList.add('hidden');if(['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code))e.preventDefault();});
+document.addEventListener('keydown',e=>{keys[e.code]=true;keyboardKeys[e.code]=true;if(e.code==='Escape'&&!e.repeat){const overlays=[jobPanel,shopPanel,phonePanel,dealerPanel];const visible=overlays.find(p=>p&&!p.classList.contains('hidden'));if(visible){visible.classList.add('hidden');return;}togglePauseMenu();return;}if(e.code==='F1'){e.preventDefault();if(!e.repeat)togglePhone();return;}if(e.code==='KeyQ'&&!e.repeat){e.preventDefault();toggleQuickAccessWheel();return;}if(e.code==='KeyE'&&!e.repeat){if(!flToggleHome()&&!tryRefuelAtPump())toggleShopOrDealer();}if(e.code==='KeyF'&&!e.repeat){if(!tryStartBoat()&&!tryStartFlight())toggleVehicle();}if(e.code==='KeyG'&&!e.repeat)tryTakeoverVehicle();if(e.code==='KeyJ'&&!e.repeat)toggleJobs();if(e.code==='KeyL'&&!e.repeat)toggleFlashlight();if(e.code==='F5'&&!e.repeat){e.preventDefault();flSaveGame(true);}if(e.code==='KeyC'&&!e.repeat)cycleCamera();if(e.code==='Escape'&&jobPanel&&!jobPanel.classList.contains('hidden'))jobPanel.classList.add('hidden');if(e.code==='Escape'&&shopPanel&&!shopPanel.classList.contains('hidden'))shopPanel.classList.add('hidden');if(e.code==='Escape'&&phonePanel&&!phonePanel.classList.contains('hidden'))phonePanel.classList.add('hidden');if(e.code==='Escape')document.querySelector('#quickAccessWheel')?.classList.add('hidden');if(e.code==='Escape'&&!e.repeat&&(!jobPanel||jobPanel.classList.contains('hidden'))&&(!shopPanel||shopPanel.classList.contains('hidden'))&&(!phonePanel||phonePanel.classList.contains('hidden'))&&(!dealerPanel||dealerPanel.classList.contains('hidden')))togglePauseMenu();if(e.code==='Escape'&&dealerPanel&&!dealerPanel.classList.contains('hidden'))dealerPanel.classList.add('hidden');if(['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code))e.preventDefault();});
 document.addEventListener('keyup',e=>{keys[e.code]=false;keyboardKeys[e.code]=false;});
 window.addEventListener('resize',resize);
 

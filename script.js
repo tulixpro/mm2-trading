@@ -631,6 +631,29 @@ function makeCar(x,z,color,police=false,model='sedan',performanceOverride=null){
     const reservoir=new THREE.Mesh(new THREE.CylinderGeometry(.095,.095,.18,12),new THREE.MeshStandardMaterial({color:side===-1?0x2876a8:0xc3a72d,roughness:.35,metalness:.12}));
     reservoir.position.set(side*W*.39,.91,L*.34+.22);engineBay.add(reservoir);
   }
+  // Zusätzliche Motorraum-Details: Kühler, Lüfter, Batterie, Leitungen und Domlager.
+  const bayMetal=new THREE.MeshStandardMaterial({color:0x69747c,metalness:.78,roughness:.32});
+  const bayDark=new THREE.MeshStandardMaterial({color:0x151a1f,metalness:.35,roughness:.65});
+  const rubber=new THREE.MeshStandardMaterial({color:0x101316,roughness:.9});
+  const alloy=new THREE.MeshStandardMaterial({color:0xb2bbc0,metalness:.88,roughness:.24});
+  const radiator=new THREE.Mesh(new THREE.BoxGeometry(W*.7,.27,.075),new THREE.MeshStandardMaterial({color:0x28343b,metalness:.55,roughness:.55}));
+  radiator.position.set(0,.83,L*.34+profile.hood*.39);engineBay.add(radiator);
+  for(let n=0;n<11;n++){const fin=new THREE.Mesh(new THREE.BoxGeometry(W*.66,.012,.012),bayMetal);fin.position.set(0,.72+n*.022,L*.34+profile.hood*.405);engineBay.add(fin);}
+  const fan=new THREE.Mesh(new THREE.CylinderGeometry(.14,.14,.045,16),bayDark);fan.rotation.x=Math.PI/2;fan.position.set(0,.86,L*.34+profile.hood*.31);engineBay.add(fan);
+  for(let n=0;n<7;n++){const blade=new THREE.Mesh(new THREE.BoxGeometry(.035,.012,.22),alloy);blade.position.set(0,.89,L*.34+profile.hood*.31);blade.rotation.z=n*Math.PI/3.5;engineBay.add(blade);}
+  const battery=new THREE.Mesh(new THREE.BoxGeometry(.24,.2,.3),new THREE.MeshStandardMaterial({color:0x202a31,roughness:.72}));battery.position.set(W*.34,.91,L*.34+profile.hood*.12);engineBay.add(battery);
+  for(const side of [-1,1]){
+    const tower=new THREE.Mesh(new THREE.CylinderGeometry(.105,.13,.07,12),bayMetal);tower.position.set(side*W*.36,.85,L*.34-profile.hood*.28);engineBay.add(tower);
+    const towerCap=new THREE.Mesh(new THREE.CylinderGeometry(.065,.065,.025,12),alloy);towerCap.position.set(side*W*.36,.9,L*.34-profile.hood*.28);engineBay.add(towerCap);
+    const hose=new THREE.Mesh(new THREE.TorusGeometry(.13,.022,6,16,Math.PI),rubber);hose.rotation.x=Math.PI/2;hose.position.set(side*W*.22,1.02,L*.34+profile.hood*.12);engineBay.add(hose);
+    const brace=new THREE.Mesh(new THREE.CylinderGeometry(.018,.018,profile.hood*.43,7),alloy);brace.rotation.x=Math.PI/2;brace.position.set(side*W*.31,.84,L*.34+profile.hood*.1);engineBay.add(brace);
+  }
+  const oilCap=new THREE.Mesh(new THREE.CylinderGeometry(.045,.045,.035,10),new THREE.MeshStandardMaterial({color:0xe0b52d,metalness:.25,roughness:.5}));oilCap.position.set(-W*.13,1.2,L*.34-profile.hood*.04);engineBay.add(oilCap);
+  const dipstick=new THREE.Mesh(new THREE.CylinderGeometry(.012,.012,.19,6),new THREE.MeshStandardMaterial({color:0xd7a52c,metalness:.4,roughness:.45}));dipstick.position.set(W*.13,1.04,L*.34-profile.hood*.12);dipstick.rotation.z=.18;engineBay.add(dipstick);
+  // Verstärkungsrippen auf der Innenseite der Motorhaube.
+  const hoodInner=new THREE.MeshStandardMaterial({color:0x252b30,metalness:.42,roughness:.72});
+  const hoodRib=new THREE.Mesh(new THREE.BoxGeometry(W*.72,.035,.07),hoodInner);hoodRib.position.set(0,-.105,profile.hood*.48);hoodPivot.add(hoodRib);
+  for(const side of [-1,1]){const rib=new THREE.Mesh(new THREE.BoxGeometry(.055,.035,profile.hood*.78),hoodInner);rib.position.set(side*W*.34,-.105,profile.hood*.5);hoodPivot.add(rib);}
   car.userData.hoodPivot=hoodPivot;car.userData.hoodOpen=false;car.userData.engineBay=engineBay;engineBay.visible=false;
   const rear=new THREE.Mesh(new THREE.BoxGeometry(W*.94,.22,Math.max(.65,L-profile.hood-1.7)),paint);rear.position.set(0,.79,-L*.34);car.add(rear);
   const cabin=new THREE.Mesh(new THREE.BoxGeometry(W*.78,profile.cabin,L*.43),glass);cabin.position.set(0,1.08,-.12);cabin.material.opacity=.24;car.add(cabin);

@@ -2162,7 +2162,7 @@ function flCallTowService(){
  if(!liftShop){scene.remove(truck.truck);scene.remove(truck.cable);status.textContent='WERKSTATT NICHT VERFÜGBAR';return;}
  const lift=liftShop.lift;
  const liftX=lift.group.position.x,liftZ=lift.group.position.z;
- flTowService={...truck,car:jobCar,phase:'approach',timer:0,heading,target:jobCar.position.clone().addScaledVector(forward,6.8),garage:new THREE.Vector3(liftX,0,liftZ),lift,carAttached:false};
+ flTowService={...truck,car:jobCar,phase:'approach',timer:0,heading,target:jobCar.position.clone().addScaledVector(forward,6.8),garage:new THREE.Vector3(liftX,0,liftZ),transportTarget:new THREE.Vector3(liftX,0,liftZ).addScaledVector(forward,7.15),lift,carAttached:false};
  status.textContent='ABSCHLEPPDIENST GERUFEN · GELBER WAGEN IST UNTERWEGS';
 }
 function flUpdateTowService(dt){
@@ -2184,22 +2184,20 @@ function flUpdateTowService(dt){
   tow.boom.rotation.x=THREE.MathUtils.lerp(tow.boom.rotation.x,-.18,Math.min(1,dt*1.5));
   if(tow.timer>1.8){
    scene.updateMatrixWorld(true);tow.truck.updateMatrixWorld(true);tow.truck.attach(tow.car);
-   tow.car.position.set(0,.34,-5.15);tow.car.rotation.set(-.12,0,0);tow.car.updateMatrixWorld(true);
+   tow.car.position.set(0,.18,-7.15);tow.car.rotation.set(-.12,0,0);tow.car.updateMatrixWorld(true);
    tow.carAttached=true;tow.phase='lifting';tow.timer=0;
    status.textContent='RADHEBER EINGEKUPPELT · VORDERACHSE WIRD ANGEHOBEN';
   }
  }else if(tow.phase==='lifting'){
   tow.boom.rotation.x=THREE.MathUtils.lerp(tow.boom.rotation.x,0,Math.min(1,dt*1.15));
   const front=tow.car.localToWorld(new THREE.Vector3(0,.55,2.15));
-  const hook=tow.truck.localToWorld(new THREE.Vector3(0,.62,-4.55));
+  const hook=tow.truck.localToWorld(new THREE.Vector3(0,.85,-4.8));
   tow.cable.geometry.setFromPoints([hook,front]);
   if(tow.timer>1.6){tow.phase='transport';tow.timer=0;status.textContent='FAHRZEUG GESICHERT · TRANSPORT ZUM TUNINGWERK';}
  }else if(tow.phase==='transport'){
-  const direction=new THREE.Vector3(Math.sin(tow.truck.rotation.y),0,Math.cos(tow.truck.rotation.y));
-  const target=tow.garage.clone().addScaledVector(direction,5.2);
-  if(moveTow(target,5.4)){tow.phase='unloading';tow.timer=0;status.textContent='WERKSTATT ERREICHT · FAHRZEUG WIRD ABGESETZT';}
+  if(moveTow(tow.transportTarget,5.4)){tow.phase='unloading';tow.timer=0;status.textContent='WERKSTATT ERREICHT · FAHRZEUG WIRD ABGESETZT';}
   const front=tow.car.localToWorld(new THREE.Vector3(0,.55,2.15));
-  const hook=tow.truck.localToWorld(new THREE.Vector3(0,.62,-4.55));
+  const hook=tow.truck.localToWorld(new THREE.Vector3(0,.85,-4.8));
   tow.cable.geometry.setFromPoints([hook,front]);
  }else if(tow.phase==='unloading'){
   tow.boom.rotation.x=THREE.MathUtils.lerp(tow.boom.rotation.x,-.12,Math.min(1,dt*1.2));

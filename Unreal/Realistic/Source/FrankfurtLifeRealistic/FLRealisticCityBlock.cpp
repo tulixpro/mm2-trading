@@ -24,12 +24,13 @@ void AFLRealisticCityBlock::BeginPlay()
     BuildDistrict();
 }
 
-void AFLRealisticCityBlock::AddBox(const FVector& Location, const FVector& Scale, const FLinearColor& Tint)
+void AFLRealisticCityBlock::AddBox(const FVector& Location, const FVector& Scale, const FLinearColor& Tint, const FRotator& Rotation)
 {
     if (!CubeMesh) return;
     UStaticMeshComponent* Part = NewObject<UStaticMeshComponent>(this);
     Part->SetStaticMesh(CubeMesh);
     Part->SetRelativeLocation(Location);
+    Part->SetRelativeRotation(Rotation);
     Part->SetRelativeScale3D(Scale);
     if (UMaterialInterface* BaseMaterial = Part->GetMaterial(0))
     {

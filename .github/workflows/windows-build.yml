@@ -11,6 +11,9 @@ on:
       - main
     paths:
       - 'index.html'
+      - 'launcher.html'
+      - 'launcher.css'
+      - 'launcher.js'
       - 'game.html'
       - 'manifest.webmanifest'
       - 'sw.js'

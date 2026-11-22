@@ -94,6 +94,29 @@ void AFLVehicleShowcaseActor::BuildSedan()
     for (int32 X : {-145,145})
         for (int32 Y : {-105,105})
             AddPart(CylinderMesh, FVector(X,Y,42), FVector(0.19f,0.08f,0.19f), Metal, FRotator(90,0,0));
+
+    // Additional exterior detail pass: lamp housings, grille texture bars,
+    // door seams, handles, mirrors, rocker trim and rear light clusters.
+    const FLinearColor Lamp(0.92f,0.88f,0.72f,1.0f);
+    const FLinearColor RearLamp(0.62f,0.035f,0.025f,1.0f);
+    const FLinearColor Rubber(0.025f,0.028f,0.03f,1.0f);
+    const FLinearColor Chrome(0.52f,0.56f,0.58f,1.0f);
+    for (int32 Side : {-1,1})
+    {
+        AddPart(CubeMesh, FVector(172,Side*83,105), FVector(0.18f,0.035f,0.10f), Lamp);
+        AddPart(CubeMesh, FVector(-211,Side*83,105), FVector(0.12f,0.04f,0.13f), RearLamp);
+        AddPart(CubeMesh, FVector(18,Side*91,78), FVector(0.72f,0.018f,0.012f), Rubber);
+        AddPart(CubeMesh, FVector(-92,Side*91,78), FVector(0.012f,0.018f,0.24f), Rubber);
+        AddPart(CubeMesh, FVector(62,Side*96,112), FVector(0.11f,0.035f,0.025f), Chrome);
+        AddPart(CubeMesh, FVector(90,Side*96,132), FVector(0.15f,0.10f,0.055f), Metal);
+        AddPart(CubeMesh, FVector(90,Side*108,135), FVector(0.12f,0.045f,0.035f), Glass);
+        AddPart(CubeMesh, FVector(0,Side*93,48), FVector(1.48f,0.035f,0.055f), Rubber);
+    }
+    for (int32 Bar=0; Bar<5; ++Bar)
+        AddPart(CubeMesh, FVector(222,0,58.0f+Bar*9.0f), FVector(0.025f,0.34f,0.018f), Chrome);
+    AddPart(CubeMesh, FVector(225,0,91), FVector(0.025f,0.18f,0.045f), Rubber);
+    AddPart(CubeMesh, FVector(-225,0,91), FVector(0.025f,0.18f,0.045f), Rubber);
+    AddPart(CubeMesh, FVector(-220,0,44), FVector(0.06f,0.84f,0.045f), Rubber);
 }
 void AFLVehicleShowcaseActor::BuildVan()
 {

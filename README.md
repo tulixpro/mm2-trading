@@ -25,6 +25,16 @@ Ein Electron-Projekt und ein GitHub-Actions-Workflow bereiten Windows-x64-Artefa
 - In Geschäften können Kaffee, Snacks und Stadtpläne mit dem verdienten Spielgeld gekauft werden.
 - Ein einfaches Inventar zählt die gekauften Gegenstände.
 
+## Eigene 3D-Spielsysteme – Audio und Bewegung
+
+Die Browser-/Electron-Edition nutzt Three.js als Rendering-Basis und ergänzt eigene Spielsysteme. Neu im Prototyp:
+- Prozedural erzeugter Motor-Sound über Web Audio: Tonhöhe und Lautstärke reagieren auf Fahrzeugtempo und Gas; es werden keine externen Sounddateien geladen.
+- Prozedurale Schrittgeräusche beim Gehen und schnellere Schrittfolge beim Sprinten.
+- Dezente First-Person-Kopfbewegung beim Laufen.
+- Fußgänger-NPCs besitzen bereits einfache gegenläufige Arm- und Beinbewegungen; dies ist noch keine Motion-Capture- oder Skelettanimation.
+
+Die Sounds sind synthetische Platzhalter und keine echten Motoraufnahmen. Für eine realistische Produktion braucht es aufgenommene/lizenzierte Motor-, Reifen-, Fahrbahn-, Tür-, Innenraum- und Umgebungsgeräusche sowie überarbeitete Charakter-Rigs, Fußkontakt, Übergänge zwischen Gehen/Laufen und Animationen für verschiedene Bewegungen. Der Prototyp wurde nach diesen Änderungen nicht in einem Browser-Laufzeittest geprüft.
+
 ## Noch nicht enthalten
 - fotorealistische Frankfurt-Karte oder echte 1:1-Stadt
 - ausgefeilte NPC-KI, Verkehr, Fahrphysik oder begehbare Innenräume

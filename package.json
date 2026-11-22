@@ -1,7 +1,7 @@
 {
   "name": "frankfurt-life",
   "version": "0.5.1",
-  "description": "Frankfurt Life - Windows desktop game packaged with Electron",
+  "description": "Frankfurt Life - Desktop launcher and Electron game",
   "main": "electron/main.cjs",
   "author": "Frankfurt Life Community",
   "license": "UNLICENSED",
@@ -28,7 +28,10 @@
       "style.css",
       "script.js",
       "electron/**/*",
-      "assets/**/*"
+      "assets/**/*",
+      "launcher.html",
+      "launcher.css",
+      "launcher.js"
     ],
     "win": {
       "target": [

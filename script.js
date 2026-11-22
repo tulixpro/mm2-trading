@@ -618,7 +618,8 @@ function makePedestrian(x,z,index){
   const shirts=[0x345b80,0x8c5747,0x526c54,0x454b59,0xb18b4d,0x6c557f,0x287d83,0x9a493f,0x526b91,0x737b4c];
   const pants=[0x263342,0x343b49,0x4b4039,0x202b31,0x5b6067],skins=[0xc99570,0x9b684d,0xe0b18d,0x704832,0xb77f5d,0xe8c7a6],hairs=[0x30251f,0x5b3b27,0x17191d,0x9b7548,0x77716b];
   const shirtMat=new THREE.MeshStandardMaterial({color:shirts[index%shirts.length],roughness:.9}),pantsMat=new THREE.MeshStandardMaterial({color:pants[index%pants.length],roughness:.95}),skinMat=new THREE.MeshStandardMaterial({color:skins[(index*3)%skins.length],roughness:.88}),hairMat=new THREE.MeshStandardMaterial({color:hairs[(index*7)%hairs.length],roughness:1}),shoeMat=new THREE.MeshStandardMaterial({color:index%3===0?0xe5e7e8:0x20252b,roughness:.8});
-  const torso=new THREE.Mesh(new THREE.BoxGeometry(.55,.76,.32),shirtMat);torso.position.y=1.18;group.add(torso);
+  const torso=new THREE.Group();torso.position.y=1.18;
+  const chest=new THREE.Mesh(new THREE.BoxGeometry(.55,.76,.32),shirtMat);chest.position.y=0;torso.add(chest);group.add(torso);
   const hips=new THREE.Mesh(new THREE.BoxGeometry(.43,.2,.29),pantsMat);hips.position.y=.72;group.add(hips);
   const neck=new THREE.Mesh(new THREE.CylinderGeometry(.085,.095,.18,8),skinMat);neck.position.y=1.62;group.add(neck);
   const head=new THREE.Group(),face=new THREE.Mesh(new THREE.SphereGeometry(.205,12,10),skinMat);face.scale.set(.9,1.08,.88);head.add(face);
@@ -626,18 +627,21 @@ function makePedestrian(x,z,index){
   const eyeMat=new THREE.MeshStandardMaterial({color:0x20252b,roughness:1});
   for(const side of [-1,1]){const eye=new THREE.Mesh(new THREE.SphereGeometry(.022,6,5),eyeMat);eye.position.set(side*.073,.025,.18);head.add(eye);}
   const nose=new THREE.Mesh(new THREE.SphereGeometry(.035,7,6),skinMat);nose.scale.set(.72,.8,.8);nose.position.set(0,-.025,.19);head.add(nose);head.position.y=1.83;group.add(head);
-  const arms=[],legs=[];
+  const arms=[],legs=[],knees=[],feet=[];
   for(const side of [-1,1]){
     const arm=new THREE.Group();arm.position.set(side*.34,1.43,0);
     const upper=new THREE.Mesh(new THREE.CapsuleGeometry(.075,.35,3,6),shirtMat);upper.position.y=-.22;arm.add(upper);
     const hand=new THREE.Mesh(new THREE.SphereGeometry(.085,7,6),skinMat);hand.position.y=-.48;arm.add(hand);group.add(arm);arms.push(arm);
     const leg=new THREE.Group();leg.position.set(side*.14,.67,0);
-    const lower=new THREE.Mesh(new THREE.CapsuleGeometry(.085,.34,3,6),pantsMat);lower.position.y=-.23;leg.add(lower);
-    const shoe=new THREE.Mesh(new THREE.BoxGeometry(.17,.12,.28),shoeMat);shoe.position.set(0,-.47,.055);leg.add(shoe);group.add(leg);legs.push(leg);
+    const thigh=new THREE.Mesh(new THREE.CapsuleGeometry(.085,.29,3,7),pantsMat);thigh.position.y=-.17;leg.add(thigh);
+    const knee=new THREE.Group();knee.position.y=-.36;
+    const shin=new THREE.Mesh(new THREE.CapsuleGeometry(.07,.31,3,7),pantsMat);shin.position.y=-.17;knee.add(shin);
+    const shoe=new THREE.Mesh(new THREE.BoxGeometry(.17,.12,.28),shoeMat);shoe.position.set(0,-.35,.075);knee.add(shoe);
+    leg.add(knee);group.add(leg);legs.push(leg);knees.push(knee);feet.push(shoe);
   }
   if(index%5===0){const bag=new THREE.Mesh(new THREE.BoxGeometry(.25,.32,.13),new THREE.MeshStandardMaterial({color:0x654a36,roughness:.95}));bag.position.set(-.36,1.05,-.02);group.add(bag);}
   if(index%7===0){const cap=new THREE.Mesh(new THREE.CylinderGeometry(.19,.2,.07,10),new THREE.MeshStandardMaterial({color:shirts[(index+3)%shirts.length]}));cap.position.y=2.08;group.add(cap);}
-  group.position.set(x,0,z);group.userData={originX:x,originZ:z,phase:index*.8,speed:.35+(index%4)*.09,arms,legs,torso,head};pedestrians.push(group);scene.add(group);
+  group.position.set(x,0,z);group.userData={originX:x,originZ:z,phase:index*.8,speed:.35+(index%4)*.09,arms,legs,knees,torso,head,lastX:x,lastZ:z};pedestrians.push(group);scene.add(group);
 }
 function makeCar(x,z,color,police=false,model='sedan',performanceOverride=null){
   const car=new THREE.Group();
@@ -1849,11 +1853,17 @@ function updateWorld(dt){
     if(traffic.direction<0&&car.position.z<-122)car.position.z=52;
   }
   if((performanceFrame%2)===0)for(const p of pedestrians){
-    const u=p.userData;
+    const u=p.userData,oldX=p.position.x,oldZ=p.position.z;
     p.position.z=u.originZ+Math.sin(t*u.speed+u.phase)*2.6;
     p.position.x=u.originX+Math.sin(t*u.speed*.55+u.phase)*.55;
-    p.rotation.y=Math.cos(t*u.speed+u.phase)*.18;
-    if(u.legs){u.legs[0].rotation.x=Math.sin(t*5+u.phase)*.42;u.legs[1].rotation.x=-Math.sin(t*5+u.phase)*.42;}if(u.arms){u.arms[0].rotation.x=-Math.sin(t*5+u.phase)*.24;u.arms[1].rotation.x=Math.sin(t*5+u.phase)*.24;}if(u.head)u.head.rotation.y=Math.sin(t*.7+u.phase)*.07;
+    const dx=p.position.x-oldX,dz=p.position.z-oldZ,travel=Math.hypot(dx,dz);
+    if(travel>.0001)p.rotation.y=Math.atan2(dx,dz);
+    const gait=t*(5.2+u.speed*2.4)+u.phase,step=Math.sin(gait),lift=Math.max(0,Math.cos(gait));
+    if(u.legs){u.legs[0].rotation.x=step*.48;u.legs[1].rotation.x=-step*.48;}
+    if(u.knees){u.knees[0].rotation.x=Math.max(0,-step)*.72;u.knees[1].rotation.x=Math.max(0,step)*.72;}
+    if(u.arms){u.arms[0].rotation.x=-step*.3;u.arms[1].rotation.x=step*.3;}
+    if(u.torso){u.torso.position.y=1.18+Math.abs(step)*.025;u.torso.rotation.x=.025+Math.abs(step)*.018;}
+    if(u.head){u.head.rotation.y=Math.sin(t*.7+u.phase)*.07;u.head.rotation.x=Math.sin(t*1.1+u.phase)*.018;}
   }
   if(flNearMissCooldown>0)flNearMissCooldown=Math.max(0,flNearMissCooldown-dt);
   if(driving&&jobCar&&flNearMissCooldown===0){

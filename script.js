@@ -870,8 +870,8 @@ function createShop(x,z,side,name,subtitle,color){
  const frontLeft=new THREE.Mesh(new THREE.BoxGeometry(.24,8,2.1),wallMat);frontLeft.position.set(frontX,4,-3.95);g.add(frontLeft);
  const frontRight=new THREE.Mesh(new THREE.BoxGeometry(.24,8,2.1),wallMat);frontRight.position.set(frontX,4,3.95);g.add(frontRight);
  const frontHeader=new THREE.Mesh(new THREE.BoxGeometry(.24,3.0,5.8),wallMat);frontHeader.position.set(frontX,6.5,0);g.add(frontHeader);
- const glassLeft=new THREE.Mesh(new THREE.BoxGeometry(.09,2.65,3.55),glassMat);glassLeft.position.set(frontX,2.35,-2.0);g.add(glassLeft);
- const glassRight=new THREE.Mesh(new THREE.BoxGeometry(.09,2.65,3.55),glassMat);glassRight.position.set(frontX,2.35,2.0);g.add(glassRight);
+ const glassLeft=new THREE.Mesh(new THREE.BoxGeometry(.09,2.65,2.6),glassMat);glassLeft.position.set(frontX,2.35,-3.2);g.add(glassLeft);
+ const glassRight=new THREE.Mesh(new THREE.BoxGeometry(.09,2.65,2.6),glassMat);glassRight.position.set(frontX,2.35,3.2);g.add(glassRight);
  // Der Eingangsbereich bleibt frei, damit die Spielfigur in den Laden gehen kann.
  // Offener Ladeneingang: die Figur kann ohne Tür-Kollision hineingehen.
  const frame=new THREE.Mesh(new THREE.BoxGeometry(.2,.22,8.1),trimMat);frame.position.set(frontX*1.02,3.82,0);g.add(frame);
@@ -955,8 +955,8 @@ shops.push({name,subtitle,x,z,side,products,lift:liftData});
   {x:queueX,z:z+2.35,state:'queue'},
   {x:x+frontX*1.22,z:z+.05,state:'leave'}
  ];
- const customer=makePedestrian(route[0].x,route[0].z,pedestrians.length+900);
- customer.userData.shopRoutine={role:'customer',state:'walk',route,index:1,timer:0,shopName:name};
+ const customer=makePedestrian(route[0].x+frontX*.38,route[0].z,pedestrians.length+900);
+ customer.userData.shopRoutine={role:'customer',state:'walk',route,index:0,timer:0,shopName:name};
 }
 
 function buildFuelPumps(){
@@ -2515,18 +2515,20 @@ function updateWorld(dt){
           const travel=Math.min(dist,1.05*stepDt);p.position.x+=dx/dist*travel;p.position.z+=dz/dist*travel;p.rotation.y=Math.atan2(dx,dz);
         }else if(r.state==='walk'){
           r.state=target.state;r.timer=0;
+        }else if(r.state==='enter'&&r.timer>1.1){
+          r.state='walk';r.index=1;
         }else if(r.state==='browse'&&r.timer>3.2){
           r.state='walk';r.index=2;
         }else if(r.state==='queue'&&r.timer>4.5){
           r.state='walk';r.index=3;
         }else if(r.state==='leave'&&dist<.3){
-          r.index=1;r.state='walk';r.timer=0;
+          r.index=0;r.state='walk';r.timer=0;
           r.route[0]={x:r.route[0].x+(Math.random()-.5)*1.2,z:r.route[0].z+(Math.random()-.5)*.8,state:'enter'};
         }
         const moving=r.state==='walk',gait=t*(moving?7.2:1.2)+u.phase,step=moving?Math.sin(gait):0;
         if(u.legs){u.legs[0].rotation.x=step*.48;u.legs[1].rotation.x=-step*.48;}
         if(u.knees){u.knees[0].rotation.x=Math.max(0,-step)*.7;u.knees[1].rotation.x=Math.max(0,step)*.7;}
-        if(u.arms){u.arms[0].rotation.x=r.state==='browse'?.72:-step*.28;u.arms[1].rotation.x=r.state==='queue'?-.08:step*.28;}
+        if(u.arms){u.arms[0].rotation.x=r.state==='browse'?.72:r.state==='queue'?-.24:-step*.28;u.arms[1].rotation.x=r.state==='queue'?-.52+Math.sin(t*5+u.phase)*.08:step*.28;}
         if(u.torso)u.torso.position.y=1.18+(moving?Math.abs(step)*.025:Math.sin(t*2+u.phase)*.008);
         if(u.head){u.head.rotation.y=r.state==='browse'?Math.sin(t*1.3)*.24:Math.sin(t*.7+u.phase)*.06;u.head.rotation.x=r.state==='queue'?.035:r.state==='browse'?.1:0;}
       }

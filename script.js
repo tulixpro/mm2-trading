@@ -2210,7 +2210,7 @@ function updateWorld(dt){
     traffic.laneTimer-=dt;
     if(traffic.laneTimer<=0&&traffic.laneChange<=0){
       // Seltene, etwas unaufmerksame Spurwechsel bringen Leben in den Verkehr.
-      if(Math.random()<.42){traffic.targetLane=traffic.baseLane===-3.2?3.2:-3.2;traffic.laneChange=3.2+Math.random()*1.6;}
+      if(Math.random()<.16){traffic.targetLane=traffic.baseLane===-3.2?3.2:-3.2;traffic.laneChange=3.2+Math.random()*1.6;}
       traffic.laneTimer=45+Math.random()*65;
     }
     if(traffic.laneChange>0){
@@ -2238,6 +2238,8 @@ function updateWorld(dt){
       if(Math.abs(dx)<2.05&&Math.abs(dz)<3.7&&damageCooldown<=0){
         const hit=Math.min(1,Math.abs(carSpeed)*1.5+.25),side=dx===0?1:Math.sign(dx);
         damageLevel=Math.min(1,damageLevel+.16+hit*.2);damageFlash=1;damageCooldown=1.15;
+        jobCar.userData.damageLevel=Math.min(1,(jobCar.userData.damageLevel||0)+.16+hit*.2);
+        if(jobCar.userData.damageGroup){const ownSide=Math.abs(dx)>Math.abs(dz)?(dx>0?3:2):(dz>0?0:1);jobCar.userData.damageGroup.visible=true;jobCar.userData.damageParts.forEach((part,index)=>{if(index!==ownSide)part.visible=false;});}
         other.userData.damageLevel=Math.min(1,(other.userData.damageLevel||0)+.18+hit*.2);
         if(other.userData.damageGroup){other.userData.damageGroup.visible=true;other.userData.damageParts.forEach((part,index)=>{if(index!==(Math.abs(dx)>Math.abs(dz)?(dx>0?2:3):(dz>0?1:0)))part.visible=false;});}
         if(other.userData.traffic){other.userData.traffic.stun=1.1;other.userData.traffic.collisionCooldown=1.5;}
@@ -2265,6 +2267,7 @@ function updateWorld(dt){
       for(const [v,hitSide] of [[a,hitA],[b,hitB]]){
         v.userData.damageLevel=Math.min(1,(v.userData.damageLevel||0)+.28+impact*.18);
         if(v.userData.damageGroup){v.userData.damageGroup.visible=true;v.userData.damageParts.forEach((part,index)=>{if(index!==hitSide)part.visible=false;});}
+        if(v.userData.damageLevel>.82)v.userData.traffic.stun=7;
       }
       flPlayTrafficImpact();
       if(Math.random()<.35)status.textContent='VERKEHRSUNFALL · NPC-FAHRZEUGE KOLLIDIERTEN';

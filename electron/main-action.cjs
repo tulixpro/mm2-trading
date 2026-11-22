@@ -1,8 +1,9 @@
 const { app, BrowserWindow, shell } = require('electron');
 const path = require('node:path');
-function createWindow() {
- const win = new BrowserWindow({width:1440,height:900,minWidth:900,minHeight:600,backgroundColor:'#080b12',autoHideMenuBar:true,webPreferences:{contextIsolation:true,nodeIntegration:false,sandbox:true}});
- win.loadFile(path.join(__dirname,'..','game.html'),{query:{edition:'action'}});
+function createWindow(){
+ const win=new BrowserWindow({width:1440,height:900,minWidth:980,minHeight:680,show:false,backgroundColor:'#07111f',autoHideMenuBar:true,title:'Frankfurt Life Launcher',webPreferences:{contextIsolation:true,nodeIntegration:false,sandbox:true}});
+ win.once('ready-to-show',()=>win.show());
+ win.loadFile(path.join(__dirname,'..','launcher.html'),{query:{edition:'realistic'}});
  win.webContents.setWindowOpenHandler(({url})=>{if(url.startsWith('https://'))shell.openExternal(url);return {action:'deny'};});
 }
 app.whenReady().then(()=>{createWindow();app.on('activate',()=>{if(BrowserWindow.getAllWindows().length===0)createWindow();});});

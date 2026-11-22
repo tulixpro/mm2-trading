@@ -137,12 +137,66 @@ function flUpdateSuspensionVisuals(){
   const active=driving&&car===jobCar;
   const speed=active?Math.min(1,Math.abs(carSpeed)/Math.max(.1,car.userData.maxForwardSpeed||.5)):0;
   const bumpCompression=active?Math.min(1,Math.abs(car.userData.suspensionBounceOffset||0)*14):0;
+  const offroadMotion=active&&car.position.x>43&&car.position.x<181&&car.position.z>-24&&car.position.z<174?Math.abs(Math.sin(time*8)*.12):0;
   visuals.forEach((part,index)=>{
    const pulse=active?Math.sin(time*17+index*Math.PI*.5)*.012*speed:0;
-   part.springGroup.scale.y=1-speed*.045-bumpCompression*.075+pulse;
-   part.strut.scale.y=1-speed*.035-bumpCompression*.05+pulse*.6;
+   part.springGroup.scale.y=1-speed*.045-bumpCompression*.075-offroadMotion*.16+pulse;
+   part.strut.scale.y=1-speed*.035-bumpCompression*.05-offroadMotion*.1+pulse*.6;
   });
  }
+}
+function flBuildParkingGarage(){
+ const g=new THREE.Group();
+ const concrete=new THREE.MeshStandardMaterial({color:0x737b82,roughness:.88});
+ const dark=new THREE.MeshStandardMaterial({color:0x222a31,roughness:.9});
+ const stripe=new THREE.MeshStandardMaterial({color:0xe5d18a,roughness:.8});
+ const floor=(y)=>{const slab=new THREE.Mesh(new THREE.BoxGeometry(30,.48,38),concrete);slab.position.set(0,y,0);g.add(slab);};
+ floor(0);floor(4.2);floor(8.4);
+ // Offene Geschosse mit Stützen, damit die Rampen frei befahrbar bleiben.
+ for(const y of [2.1,6.3])for(const x of [-13.8,13.8])for(const z of [-17.5,0,17.5]){
+  const col=new THREE.Mesh(new THREE.BoxGeometry(.65,4.2,.65),concrete);col.position.set(x,y,z);g.add(col);
+ }
+ // Auffahrtsrampen an der Nordseite, breite befahrbare Fahrbahnen.
+ for(let level=0;level<2;level++){
+  const ramp=new THREE.Mesh(new THREE.BoxGeometry(7,.35,17),concrete);
+  ramp.position.set(-9,2.1+level*4.2,10);ramp.rotation.x=-.235;g.add(ramp);
+  const rail1=new THREE.Mesh(new THREE.BoxGeometry(.18,.48,17),dark);rail1.position.set(-12.4,2.35+level*4.2,10);rail1.rotation.x=-.235;g.add(rail1);
+  const rail2=rail1.clone();rail2.position.x=-5.6;g.add(rail2);
+ }
+ for(const y of [2.4,6.6])for(let i=0;i<5;i++){
+  const line=new THREE.Mesh(new THREE.BoxGeometry(.12,.015,4.8),stripe);line.position.set(4+i*1.8,y, -10);g.add(line);
+ }
+ const sign=new THREE.Mesh(new THREE.BoxGeometry(5,1.2,.15),dark);sign.position.set(0,10.1,-19.1);g.add(sign);
+ g.position.set(34,.24,-210);scene.add(g);
+}
+function flBuildForest(){
+ const forest=new THREE.Group();
+ const soil=new THREE.MeshStandardMaterial({color:0x4c5940,roughness:1});
+ const grass=new THREE.MeshStandardMaterial({color:0x536b42,roughness:1});
+ const trunk=new THREE.MeshStandardMaterial({color:0x594331,roughness:1});
+ const pine=new THREE.MeshStandardMaterial({color:0x294b38,roughness:1});
+ const broadleaf=new THREE.MeshStandardMaterial({color:0x426b43,roughness:1});
+ const patch=new THREE.Mesh(new THREE.PlaneGeometry(150,190),soil);patch.rotation.x=-Math.PI/2;patch.position.set(0,-.075,0);forest.add(patch);
+ for(let i=0;i<95;i++){
+  const x=-70+Math.random()*140,z=-88+Math.random()*176;
+  if(Math.abs(x)<12&&Math.abs(z)<24)continue;
+  const tree=new THREE.Group(),h=4.5+Math.random()*4.5,r=.65+Math.random()*.65;
+  const stem=new THREE.Mesh(new THREE.CylinderGeometry(.18,.32,h*.48,7),trunk);stem.position.y=h*.24;tree.add(stem);
+  if(i%3===0){
+   for(let k=0;k<3;k++){const crown=new THREE.Mesh(new THREE.ConeGeometry(r*(1-k*.18),h*.38,7),pine);crown.position.y=h*.43+k*h*.18;tree.add(crown);}
+  }else{
+   const crown=new THREE.Mesh(new THREE.IcosahedronGeometry(r*1.55,1),broadleaf);crown.position.y=h*.72;tree.add(crown);
+   const crown2=new THREE.Mesh(new THREE.IcosahedronGeometry(r*1.12,1),grass);crown2.position.set(.35,h*.9,.12);tree.add(crown2);
+  }
+  tree.position.set(x,0,z);tree.rotation.y=Math.random()*Math.PI*2;forest.add(tree);
+ }
+ // Ein unbefestigter, leicht gewundener Waldweg als sichtbare Offroad-Strecke.
+ const dirt=new THREE.MeshStandardMaterial({color:0x756348,roughness:1});
+ for(let i=0;i<9;i++){
+  const segment=new THREE.Mesh(new THREE.BoxGeometry(8,.035,24),dirt);
+  segment.position.set(Math.sin(i*.72)*11,.005,-78+i*19);segment.rotation.y=Math.sin(i*.72)*.18;forest.add(segment);
+ }
+ forest.position.set(112,0,75);scene.add(forest);
 }
 function flBuildSpeedBumps(){
  flSpeedBumps.length=0;
@@ -763,6 +817,9 @@ function makeCar(x,z,color,police=false,model='sedan',performanceOverride=null){
     pickup:{length:5.25,width:2.02,height:.84,cabin:1.55,roof:1.32,hood:1.52}
   }[model]||{length:4.5,width:1.9,height:.65,cabin:1.55,roof:1.35,hood:1.5};
   const L=profile.length,W=profile.width;
+  const rideHeightByModel={hatch:.045,sedan:.055,sportback:.05,coupe:.035,super:.015,van:.10,suv:.19,wagon:.07,pickup:.17};
+  car.userData.rideHeight=rideHeightByModel[model]??.055;
+  car.position.y=car.userData.rideHeight;
   const vehiclePerformance={
     hatch:{top:175,power:.82},sedan:{top:215,power:1.0},
     sportback:{top:245,power:1.12},coupe:{top:265,power:1.2},
@@ -1864,6 +1921,8 @@ function makeCity(){
   const road=new THREE.Mesh(new THREE.PlaneGeometry(18,520),asphaltMat);road.rotation.x=-Math.PI/2;road.position.set(0,0,-45);scene.add(road);
   // Mehrere flache, gut sichtbare Bremsschwellen auf der Hauptstraße.
   flBuildSpeedBumps();
+  flBuildParkingGarage();
+  flBuildForest();
   const wetMain=new THREE.Mesh(new THREE.PlaneGeometry(17.8,519),new THREE.MeshPhongMaterial({color:0x526574,transparent:true,opacity:0,shininess:105,specular:0x8fa8bb,depthWrite:false}));wetMain.rotation.x=-Math.PI/2;wetMain.position.set(0,.012,-45);scene.add(wetMain);flWetRoadMaterials.push(wetMain.material);
   for(let z=-300;z<225;z+=12){const line=new THREE.Mesh(new THREE.PlaneGeometry(.18,5),new THREE.MeshBasicMaterial({color:0xe5dfc5}));line.rotation.x=-Math.PI/2;line.position.set(0,.015,z);scene.add(line);}
   const sidewalkMat=new THREE.MeshLambertMaterial({color:0x92999b});
@@ -2500,7 +2559,14 @@ function move(dt=1/60){
     bounceOffset+=bounceVelocity*dt;
     jobCar.userData.suspensionBounceOffset=bounceOffset;
     jobCar.userData.suspensionBounceVelocity=bounceVelocity;
-    jobCar.position.y=bounceOffset;
+    // Auf dem Waldweg erzeugen kleine Bodenunebenheiten fortlaufende Rad-/Karosseriebewegung.
+    const inForest=jobCar.position.x>43&&jobCar.position.x<181&&jobCar.position.z>-24&&jobCar.position.z<174;
+    const terrainRoughness=inForest?1:0;
+    const roughSignal=inForest?(Math.sin(jobCar.position.x*.72+jobCar.position.z*.31)+Math.sin(jobCar.position.z*.93-jobCar.position.x*.22))*.018:0;
+    const rideHeight=jobCar.userData.rideHeight||.055;
+    const suspensionTravel=jobCar.userData.suspensionTravel||.13;
+    const terrainImpulse=terrainRoughness?roughSignal*(rideHeight>.12?1.55:1):0;
+    jobCar.position.y=rideHeight+bounceOffset+terrainImpulse;
     updateBreakableCollisions(dt);
     if(jobActive&&jobDestination&&jobCar.position.distanceTo(jobDestination)<4){
       jobStopIndex++;

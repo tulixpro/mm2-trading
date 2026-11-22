@@ -275,6 +275,16 @@ Hinweis: NPCs bleiben stilisierte Low-Poly-Figuren. Die Shop-Sequenz ist eine ku
 Hinweis zum Teststatus: Der Windows-Build kann automatisiert gebaut werden; das beweist noch nicht, dass das Spiel auf jedem älteren Laptop startet oder dort eine bestimmte FPS-Zahl erreicht. Ein echter Test auf dem betroffenen Gerät ist weiterhin nötig.
 
 
+
+## Fahrzeug-Detailpass – Unterboden, Fahrwerk und Motorcharakter
+
+- Die prozeduralen 3D-Fahrzeuge erhalten zusätzliche Unterboden-Bauteile: Motor-/Getriebebereich, Tunnel, Differential, Hitzeschutzbleche, Auspuffrohre und Schalldämpfer.
+- Sichtbare Fahrwerksdetails ergänzen Federbeine, Schraubenfedern, Querlenker und Verbindungen an allen vier Radpositionen. Die Feder-/Dämpferdarstellung bewegt sich beim Fahren leicht mit der Geschwindigkeit.
+- Das TUNINGWERK bietet zusätzlich ein Gewindefahrwerk in drei Stufen. Die Stufe wird lokal gespeichert und wirkt sich im Arcade-Fahrmodell leicht auf den Grip aus.
+- Motor-Upgrades und Turbo bleiben verfügbar. Die synthetische Audio-Schicht erhält je Fahrzeugklasse unterschiedliche Leerlaufbereiche, Drehzahlverläufe, Klangwellenformen und Filtercharakteristik.
+- Wichtig: Das sind prozedural aufgebaute Spielmodelle und synthetisch erzeugte Sounds, keine hochauflösenden Hersteller-Scans oder echten Motoraufnahmen. Die Fahrwerksbewegung ist eine visuelle Animation; es gibt noch keine echte Radaufhängungs-, Dämpfer-, Reifen- oder Mehrkörperphysik. Die Arcade-Fahrphysik wurde nicht durch eine vollständige Simulation ersetzt.
+- Der neue Stand wurde in GitHub gespeichert, aber hier nicht im Browser gestartet oder auf verschiedenen Geräten getestet.
+
 ## Native Unreal Engine projects (in development)
 
 Two separate Unreal starter projects now live under [Unreal/](Unreal/):

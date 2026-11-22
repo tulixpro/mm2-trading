@@ -2364,7 +2364,9 @@ function move(dt=1/60){
     if(keys.KeyA||keys.ArrowLeft)camera.position.addScaledVector(right,-speed);
     if(keys.KeyD||keys.ArrowRight)camera.position.addScaledVector(right,speed);
     camera.position.x=Math.max(-178,Math.min(178,camera.position.x));camera.position.z=Math.max(-298,Math.min(360,camera.position.z));
-    camera.position.y=2.1;
+    const walking=!!(keys.KeyW||keys.KeyA||keys.KeyS||keys.KeyD||keys.ArrowUp||keys.ArrowDown||keys.ArrowLeft||keys.ArrowRight);
+    const walkRate=(keys.ShiftLeft||keys.ShiftRight)?12.5:8.5;
+    camera.position.y=2.1+(walking?Math.abs(Math.sin(clock.elapsedTime*walkRate))*.045:0);
   }
   updateSpeedometer();
   camera.rotation.order='YXZ';camera.rotation.set(pitch,yaw,0);

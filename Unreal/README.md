@@ -39,6 +39,15 @@ Both editions expose roadside-assistance logic on the vehicle damage component:
 
 This is the gameplay hook, not a finished phone menu or autonomous tow-truck AI yet. The arrival, pickup, transport to a garage and repair interaction still need to be connected in the level/vehicle Blueprints.
 
+## Realistic edition – added detail pass
+
+The realistic C++ prototype now also includes:
+- A basic fuel reserve on the drivable showcase pawn: fuel decreases while throttle is held, the HUD shows a percentage/bar, and the prototype stops accepting drive input when the tank is empty. This is a gameplay placeholder; a fuel-station/refuelling interaction and a proper instrument-cluster mesh are still future work.
+- More facade breakup: weathered/stained wall-color patches, deeper window surrounds, sills, balconies, roof parapets and service boxes, shopfront glazing/sign bands/awnings.
+- A first abandoned-site blockout: boarded windows, a partly damaged roof silhouette, rust-colored perimeter fencing, warning board, debris and weeds.
+
+These additions are procedural primitive-mesh blockout details. They are not photogrammetry, finished PBR grime/dust decals, interior exploration, or a complete fuel simulation. The new district site is a visual environment prototype and still needs level dressing, collision/navigation review and editor testing.
+
 ## Graphics status – important
 
 The district currently uses Unreal's basic primitive meshes, now with a denser procedural architectural-detail pass. It is still a **greybox/blockout**, not a photorealistic Frankfurt city. The tree shapes are placeholders, not realistic foliage. Renderer settings enable modern UE5 features, but they do not create detailed art assets by themselves. A finished visual pass still needs modular architecture, tree/foliage meshes, PBR materials, road markings, decals, street furniture, authored lighting, sky/cloud actors and a designed level.

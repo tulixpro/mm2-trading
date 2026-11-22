@@ -568,8 +568,8 @@ function createShop(x,z,side,name,subtitle,color){
    const pouch=new THREE.Mesh(new THREE.BoxGeometry(.32,.43,.16),packageMat);pouch.position.y=.22;pack.add(pouch);
    const top=new THREE.Mesh(new THREE.BoxGeometry(.3,.055,.17),new THREE.MeshStandardMaterial({color:0xe8dfc8,roughness:.8}));top.position.y=.46;pack.add(top);
   }
-  pack.position.set(x+localX,1.2,z+localZ);g.add(pack);
-  shopPickupItems.push({mesh:pack,item,shopName:name,taken:false});
+  pack.position.set(localX,1.2,localZ);g.add(pack);
+  shopPickupItems.push({mesh:pack,item,shopName:name,worldPosition:new THREE.Vector3(x+localX,1.2,z+localZ),taken:false});
  });
  
 shops.push({name,subtitle,x,z,side,products,lift:liftData});
@@ -1317,7 +1317,7 @@ function tryPickupShopItem(){
  let nearest=null,best=2.35;
  for(const entry of shopPickupItems){
   if(entry.taken||!entry.mesh.visible)continue;
-  const d=camera.position.distanceTo(entry.mesh.position);
+  const d=camera.position.distanceTo(entry.worldPosition);
   if(d<best){best=d;nearest=entry;}
  }
  if(!nearest)return false;

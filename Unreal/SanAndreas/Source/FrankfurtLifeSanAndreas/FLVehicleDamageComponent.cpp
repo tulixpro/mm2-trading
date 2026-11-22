@@ -128,6 +128,38 @@ void UFLVehicleDamageComponent::RepairVehicle(float RepairAmount)
     BroadcastCondition();
 }
 
+bool UFLVehicleDamageComponent::IsTowRequired() const
+{
+    if (!IsDriveable())
+    {
+        return true;
+    }
+
+    for (const bool bDetached : WheelDetached)
+    {
+        if (bDetached)
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool UFLVehicleDamageComponent::RequestMechanicTow()
+{
+    if (!IsTowRequired() || bMechanicTowRequested)
+    {
+        return false;
+    }
+
+    bMechanicTowRequested = true;
+    const FString Reason = EngineHealth <= 8.0f
+        ? TEXT("Motorschaden")
+        : (TyreHealth <= 5.0f ? TEXT("Reifenschaden") : TEXT("Rad abgerissen"));
+    OnMechanicTowRequested.Broadcast(Reason);
+    return true;
+}
+
 void UFLVehicleDamageComponent::BroadcastCondition()
 {
     OnConditionChanged.Broadcast(BodyHealth, EngineHealth, TyreHealth);

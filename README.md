@@ -367,3 +367,11 @@ These are **project scaffolds only**, not finished playable Unreal games. The ex
 - Fahrwerksdarstellung reagiert stärker auf Lastwechsel: sichtbares Eintauchen beim Bremsen, leichtes Entlasten beim Beschleunigen, Seitenneigung in Kurven sowie animierte Feder-/Dämpfer-Kompression.
 - Unebenheiten und Bremsschwellen lösen weiterhin gedämpfte Karosseriebewegungen aus; die Darstellung ist eine Arcade-Visualisierung und keine physikalisch vollständige Rad-/Reifen-Simulation.
 - NPC-Routinen sind einfache lokale Verhaltenszustände, noch keine komplexe Terminplanung, echte Dialog-KI oder vollständige Laden-/Arbeitsplatz-Simulation.
+
+
+## Belebte Geschäfte mit Kunden und Kasse
+- Jede reguläre Filiale erhält eine einfache Kassenkraft und einen autonomen Kunden-NPC.
+- Kunden laufen durch eine offene Ladenfront hinein, gehen zu einem Regal, halten dort zum Stöbern an, stellen sich an der Kasse an und verlassen anschließend das Geschäft. Danach beginnt die Routine erneut.
+- Kassenkräfte bleiben hinter dem Tresen, zeigen dezente Arbeits-/Bewegungsgesten und schauen sich gelegentlich um.
+- Ladenfronten besitzen nun eine tatsächliche zentrale Öffnung, damit die NPC-Laufwege nicht durch eine geschlossene Fassadenwand führen.
+- Das ist eine sichtbare Alltagssimulation: Es gibt noch keine echte Warenbuchung, Geldtransaktion zwischen NPCs, Warteschlangen mit mehreren Kunden oder individuelle Dialoge. Spieler können weiterhin selbst über das Shop-Menü einkaufen.

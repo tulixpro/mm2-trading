@@ -97,7 +97,7 @@ function flInitProceduralAudio(){
  try{flAudioContext=flAudioContext||new AC();if(flAudioContext.state==='suspended')flAudioContext.resume();if(flAudioReady)return;
  flEngineOsc=flAudioContext.createOscillator();flEngineOsc.type='sawtooth';flEngineSub=flAudioContext.createOscillator();flEngineSub.type='triangle';
  flEngineFilter=flAudioContext.createBiquadFilter();flEngineFilter.type='lowpass';flEngineFilter.frequency.value=360;
- flEngineGain=flAudioContext.createGain();flEngineGain.gain.value=0;const subGain=flAudioContext.createGain();subGain.gain.value=.28;
+ flEngineGain=flAudioContext.createGain();flEngineGain.gain.value=0;const subGain=flAudioContext.createGain();subGain.gain.value=.42;
  flEngineOsc.connect(flEngineFilter);flEngineFilter.connect(flEngineGain);flEngineSub.connect(subGain);subGain.connect(flEngineGain);flEngineGain.connect(flAudioContext.destination);
  flEngineOsc.start();flEngineSub.start();
   const noiseLength=flAudioContext.sampleRate*2,noiseBuffer=flAudioContext.createBuffer(1,noiseLength,flAudioContext.sampleRate),noiseData=noiseBuffer.getChannelData(0);
@@ -136,10 +136,11 @@ function flUpdateSuspensionVisuals(){
   const visuals=car.userData.suspensionVisuals;if(!visuals)continue;
   const active=driving&&car===jobCar;
   const speed=active?Math.min(1,Math.abs(carSpeed)/Math.max(.1,car.userData.maxForwardSpeed||.5)):0;
+  const bumpCompression=active?Math.min(1,Math.abs(car.userData.suspensionBounceOffset||0)*14):0;
   visuals.forEach((part,index)=>{
    const pulse=active?Math.sin(time*17+index*Math.PI*.5)*.012*speed:0;
-   part.springGroup.scale.y=1-speed*.045+pulse;
-   part.strut.scale.y=1-speed*.035+pulse*.6;
+   part.springGroup.scale.y=1-speed*.045-bumpCompression*.075+pulse;
+   part.strut.scale.y=1-speed*.035-bumpCompression*.05+pulse*.6;
   });
  }
 }
@@ -184,7 +185,7 @@ function flUpdateProceduralAudio(){
  const frequency=profile.idle+rpmLoad*profile.range;
  flEngineOsc.type=profile.wave;flEngineSub.type='triangle';
  flEngineOsc.frequency.setTargetAtTime(frequency,now,.075);flEngineSub.frequency.setTargetAtTime(frequency*.5,now,.085);
- flEngineFilter.frequency.setTargetAtTime(180+rpmLoad*profile.filter,now,.1);flEngineGain.gain.setTargetAtTime(engineActive?.052+throttle*.045+turboLevel*.006:.0001,now,.13);
+ flEngineFilter.frequency.setTargetAtTime(180+rpmLoad*profile.filter,now,.1);flEngineGain.gain.setTargetAtTime(engineActive?.06+throttle*.06+turboLevel*.009:.0001,now,.13);
  flRoadFilter.frequency.setTargetAtTime(350+speed*1800,now,.18);flRoadGain.gain.setTargetAtTime(engineActive?speed*.025:0,now,.22);
  if(!driving&&!activeBoat&&!planeFlying&&flCharacterType!=='wheelchair'&&moving&&now>=flFootstepAt){flPlayFootstep();flFootstepAt=now+((keys.ShiftLeft||keys.ShiftRight)?.31:.46);}
 }

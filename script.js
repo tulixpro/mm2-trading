@@ -3,6 +3,58 @@ const classicEdition=editionParam==='sanandreas'||editionParam==='classic';
 if(classicEdition){document.body.classList.add('classic-edition');document.title='Frankfurt Life San Andreas – Retro-3D';}else{document.body.classList.add('modern-edition');document.title='Frankfurt Life 3D – Moderne Edition';}
 const THREE = await import('./node_modules/three/build/three.module.js').catch(()=>import('https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js'));
 
+const {GLTFLoader}=await import('./node_modules/three/examples/jsm/loaders/GLTFLoader.js').catch(()=>import('https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/loaders/GLTFLoader.js'));
+const flVehicleLoader=new GLTFLoader();
+const flVehicleAssets={
+  hatch:'https://tevy.dev/models/hatchback/v1/lod1.glb',
+  sedan:'https://tevy.dev/models/family-sedan/v1/lod1.glb',
+  sportback:'https://tevy.dev/models/family-sedan/v1/lod1.glb',
+  suv:'https://tevy.dev/models/suv/v1/lod1.glb',
+  wagon:'https://tevy.dev/models/estate-car/v1/lod1.glb',
+  van:'https://tevy.dev/models/estate-car/v1/lod1.glb',
+  coupe:'https://tevy.dev/models/supercar/v2/lod1.glb',
+  super:'https://tevy.dev/models/supercar/v2/lod1.glb',
+  police:'https://tevy.dev/models/police-car/v1/lod1.glb'
+};
+const flVehicleCache=new Map();
+function flLoadVehicleVisual(car,model,color,W,L){
+  const key=flVehicleAssets[model]?'asset:'+flVehicleAssets[model]:null;
+  if(!key)return;
+  let pending=flVehicleCache.get(key);
+  if(!pending){
+    pending=new Promise((resolve,reject)=>flVehicleLoader.load(flVehicleAssets[model],g=>resolve(g.scene),undefined,reject));
+    flVehicleCache.set(key,pending);
+    pending.catch(()=>flVehicleCache.delete(key));
+  }
+  pending.then(source=>{
+    if(!car.parent)return;
+    const visual=source.clone(true);
+    visual.traverse(node=>{
+      if(!node.isMesh)return;
+      node.castShadow=true;node.receiveShadow=true;
+      const mats=Array.isArray(node.material)?node.material:[node.material];
+      node.material=mats.map(mat=>{
+        const copy=mat.clone();
+        if(copy.color&&/paint|body|shell|car.?paint/i.test(copy.name||''))copy.color.setHex(color);
+        if('envMapIntensity' in copy)copy.envMapIntensity=1.25;
+        return copy;
+      }).length>1?mats.map(mat=>mat.clone()):mats[0].clone();
+    });
+    visual.updateMatrixWorld(true);
+    const bounds=new THREE.Box3().setFromObject(visual);
+    const size=new THREE.Vector3();bounds.getSize(size);
+    const scale=Math.min((W*.98)/Math.max(size.x,.001),(L*.98)/Math.max(size.z,.001));
+    visual.scale.setScalar(scale);
+    visual.position.set(-((bounds.min.x+bounds.max.x)*.5)*scale,-bounds.min.y*scale,-((bounds.min.z+bounds.max.z)*.5)*scale);
+    visual.updateMatrixWorld(true);
+    car.children.forEach(child=>child.visible=false);
+    visual.name='FrankfurtLifeDetailedVehicle';
+    car.add(visual);
+    car.userData.detailedVehicle=true;
+  }).catch(error=>console.warn('Frankfurt Life: 3D-Fahrzeugmodell konnte nicht geladen werden:',error));
+}
+
+
 // Defensive Speicher-Schicht: verhindert einen kompletten Spielabbruch, wenn
 // der Browser lokalen Speicher blockiert (z. B. privater Modus/strenge Richtlinien).
 const flStorage=(()=>{
@@ -1635,6 +1687,7 @@ function makeCar(x,z,color,police=false,model='sedan',performanceOverride=null){
       aeroFin.position.set(side*W*.47,.39,L*.35);aeroFin.rotation.x=-.12;car.add(aeroFin);
     }
   }
+  flLoadVehicleVisual(car,police?'police':model,color,W,L);
   car.position.set(x,0,z);scene.add(car);return car;
 }
 const fleet=[

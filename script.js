@@ -267,7 +267,8 @@ function openDealer(){
   button.addEventListener('click',()=>{
    const msg=dealerPanel.querySelector('#dealerMessage');
    if(!owned&&careerMoney<car.price){msg.textContent='Nicht genug Geld. Verdiene Geld mit Missionen.';return;}
-   if(!owned){careerMoney-=car.price;ownedCars.push(car.id);if(careerHud)careerHud.innerHTML='KONTO: '+careerMoney.toLocaleString('de-DE')+' €<br>AUFTRÄGE: '+completedJobs+'<br>★ RUF: '+Math.min(5,1+Math.floor(completedJobs/2))+'/5';msg.textContent=car.name+' gekauft! Es steht jetzt in deiner Garage.';button.querySelector('span').textContent=car.desc+' · IN GARAGE';}
+   if(!owned){careerMoney-=car.price;ownedCars.push(car.id);flSaveGame();
+   if(careerHud)careerHud.innerHTML='KONTO: '+careerMoney.toLocaleString('de-DE')+' €<br>AUFTRÄGE: '+completedJobs+'<br>★ RUF: '+Math.min(5,1+Math.floor(completedJobs/2))+'/5';msg.textContent=car.name+' gekauft! Es steht jetzt in deiner Garage.';button.querySelector('span').textContent=car.desc+' · IN GARAGE';}
    else{if(jobCar)scene.remove(jobCar);jobCar=makeCar(camera.position.x+3,camera.position.z-5,car.color,false,car.model,car.performance);jobCar.rotation.y=yaw;applyCarTuning(jobCar);damageLevel=flSavedDamage;applyCarDamage(jobCar,damageLevel);if(damageLevel)refreshDamageHud();msg.textContent=car.name+' bereitgestellt. Gehe hin und drücke F.';}
   });list.appendChild(button);
  }
@@ -430,7 +431,7 @@ function createShop(x,z,side,name,subtitle,color){
  }
  const base=new THREE.Mesh(new THREE.BoxGeometry(8.3,.24,10.3),trimMat);base.position.y=.12;g.add(base);
  g.position.set(x,0,z);scene.add(g);
- const products=name.startsWith('TANKSTELLE')?[{name:'Benzin 25%',price:90,kind:'fuel'},{name:'Benzin 50%',price:170,kind:'fuel'},{name:'Benzin 100%',price:300,kind:'fuel'}]:name.startsWith('BÄCKEREI')?[{name:'Brot',price:4},{name:'Brezel',price:3},{name:'Croissant',price:4},{name:'Kuchen',price:5},{name:'Kaffee',price:4}]:name.startsWith('PIZZERIA')?[{name:'Pizza',price:9},{name:'Pasta',price:8},{name:'Limo',price:3}]:name.startsWith('RESTAURANT')?[{name:'Burger-Menü',price:12},{name:'Schnitzel',price:16},{name:'Salat',price:9},{name:'Cola',price:3},{name:'Kaffee',price:4}]:name==='TUNINGWERK'?[{name:'Motor-Upgrade · Stufe 1–3',price:850,kind:'tuning',id:'engine'},{name:'Turbo-Kit',price:1450,kind:'tuning',id:'turbo'},{name:'Sonderlackierung',price:280,kind:'tuning',id:'paint'},{name:'Sportfelgen',price:420,kind:'tuning',id:'wheels'},{name:'Heckspoiler',price:620,kind:'tuning',id:'spoiler'},{name:'Sportfahrwerk · tieferlegen',price:780,kind:'tuning',id:'lowered'},{name:'Scheibentönung',price:340,kind:'tuning',id:'tint'},{name:'Unfallschäden reparieren',price:Math.max(120,damageLevel*260),kind:'tuning',id:'repair'}]:[{name:'Kaffee',price:4},{name:'Snack',price:3},{name:'Stadtplan',price:8}];
+ const products=name.startsWith('TANKSTELLE')?[{name:'Benzin 25%',price:90,kind:'fuel'},{name:'Benzin 50%',price:170,kind:'fuel'},{name:'Benzin 100%',price:300,kind:'fuel'},{name:'Wasser',price:2},{name:'Schokoriegel',price:3},{name:'Chips',price:3},{name:'Stadtplan',price:8}]:name.startsWith('BÄCKEREI')?[{name:'Brot',price:4},{name:'Brezel',price:3},{name:'Croissant',price:4},{name:'Kuchen',price:5},{name:'Kaffee',price:4}]:name.startsWith('PIZZERIA')?[{name:'Pizza',price:9},{name:'Pasta',price:8},{name:'Limo',price:3}]:name.startsWith('RESTAURANT')?[{name:'Burger-Menü',price:12},{name:'Schnitzel',price:16},{name:'Salat',price:9},{name:'Cola',price:3},{name:'Kaffee',price:4}]:name==='TUNINGWERK'?[{name:'Motor-Upgrade · Stufe 1–3',price:850,kind:'tuning',id:'engine'},{name:'Turbo-Kit',price:1450,kind:'tuning',id:'turbo'},{name:'Sonderlackierung',price:280,kind:'tuning',id:'paint'},{name:'Sportfelgen',price:420,kind:'tuning',id:'wheels'},{name:'Heckspoiler',price:620,kind:'tuning',id:'spoiler'},{name:'Sportfahrwerk · tieferlegen',price:780,kind:'tuning',id:'lowered'},{name:'Scheibentönung',price:340,kind:'tuning',id:'tint'},{name:'Unfallschäden reparieren',price:Math.max(120,damageLevel*260),kind:'tuning',id:'repair'}]:name==='WESTEND MARKT'?[{name:'Brot',price:4},{name:'Snack',price:3},{name:'Kaffee',price:4},{name:'Cola',price:3},{name:'Wasser',price:2},{name:'Stadtplan',price:8},{name:'Regenschirm',price:12},{name:'Batterien',price:6}]:name==='CITY SPORT'?[{name:'Laufschuhe',price:65},{name:'Sporttasche',price:35},{name:'Fußball',price:22},{name:'Fahrradhelm',price:28},{name:'Wasser',price:2}]:name==='OSTEND CAFÉ'?[{name:'Kaffee',price:4},{name:'Croissant',price:4},{name:'Kuchen',price:5},{name:'Limo',price:3}]:name==='SÜDQUARTIER KIOSK'?[{name:'Snack',price:3},{name:'Cola',price:3},{name:'Wasser',price:2},{name:'Stadtplan',price:8},{name:'Regenschirm',price:12}]:[{name:'Kaffee',price:4},{name:'Snack',price:3},{name:'Stadtplan',price:8}];
  shops.push({name,subtitle,x,z,side,products});
 }
 
@@ -1028,7 +1029,8 @@ function toggleShop(){
  const products=shopPanel.querySelector('#shopProducts');products.replaceChildren();
  for(const item of shop.products){
   const button=document.createElement('button');button.className='ingame-job-choice';
-  button.innerHTML='<b>'+item.name+' · '+item.price+' €</b><span>Im Geschäft kaufen</span>';
+  const stockCount=inventory[item.name]||0;
+  button.innerHTML='<b>'+item.name+' · '+item.price.toLocaleString('de-DE')+' €</b><span>'+(item.kind==='tuning'?'Werkstatt-Service':item.kind==='fuel'?'Tankfüllung':'Kaufen · Im Inventar: '+stockCount)+'</span>';
   button.addEventListener('click',()=>{
    const message=shopPanel.querySelector('#shopMessage');
    if(careerMoney<item.price){message.textContent='Dafür fehlt dir noch Geld. Erledige einen Auftrag mit J.';return;}

@@ -211,9 +211,21 @@ function flBuildForest(){
  }
  forest.position.set(112,0,75);scene.add(forest);
 }
+function flMakeEmergencyUnit(color,kind){
+ const group=new THREE.Group(),paint=new THREE.MeshStandardMaterial({color,roughness:.52,metalness:.22}),glass=new THREE.MeshStandardMaterial({color:0x1d3542,roughness:.2,metalness:.12,transparent:true,opacity:.72}),dark=new THREE.MeshStandardMaterial({color:0x14191e,roughness:.8});
+ const base=new THREE.Mesh(new THREE.BoxGeometry(2.05,.72,4.65),paint);base.position.y=.76;group.add(base);
+ const cabin=new THREE.Mesh(new THREE.BoxGeometry(1.72,.72,2.1),glass);cabin.position.set(0,1.43,-.1);group.add(cabin);
+ for(const side of [-1,1])for(const z of [-1.5,1.5]){const wheel=new THREE.Mesh(new THREE.CylinderGeometry(.39,.39,.22,12),dark);wheel.rotation.z=Math.PI/2;wheel.position.set(side*1.04,.39,z);group.add(wheel);}
+ const lights=[];
+ for(const side of [-1,1]){const light=new THREE.Mesh(new THREE.BoxGeometry(.48,.15,.22),new THREE.MeshStandardMaterial({color:side<0?0x256ee8:0xe33c3c,emissive:side<0?0x174dcb:0xb51e27,emissiveIntensity:1.4}));light.position.set(side*.34,1.86,-.1);group.add(light);lights.push(light);}
+ if(kind==='fire'||kind==='ambulance'){
+  const stripe=new THREE.Mesh(new THREE.BoxGeometry(2.08,.14,3.9),new THREE.MeshStandardMaterial({color:kind==='fire'?0xf0d9c1:0xe8e9e7,roughness:.7}));stripe.position.set(0,.95,0);group.add(stripe);
+ }
+ group.userData.lights=lights;return group;
+}
 function flBuildAmbientEvents(){
  const root=new THREE.Group();
- const accident=new THREE.Group(),forestry=new THREE.Group();
+ const accident=new THREE.Group(),forestry=new THREE.Group(),response=new THREE.Group(),robbery=new THREE.Group();
  const bodyMat=new THREE.MeshStandardMaterial({color:0x56616a,roughness:.72,metalness:.18});
  const darkMat=new THREE.MeshStandardMaterial({color:0x17212a,roughness:.85});
  const redMat=new THREE.MeshStandardMaterial({color:0xb52c2c,roughness:.55});
@@ -258,9 +270,27 @@ function flBuildAmbientEvents(){
  const warning=new THREE.Mesh(new THREE.BoxGeometry(2.3,1.35,.12),new THREE.MeshStandardMaterial({color:0xf0bd37,roughness:.75}));
  warning.position.set(-3.5,1.1,-3.6);forestry.add(warning);
  const warningText=new THREE.Mesh(new THREE.BoxGeometry(1.4,.16,.04),darkMat);warningText.position.set(-3.5,1.15,-3.51);forestry.add(warningText);
+ // Einsatzkräfte stehen abseits der Fahrbahn; ihre Blaulichter werden ereignisabhängig aktiviert.
+ const police=flMakeEmergencyUnit(0xf0f1f3,'police'),fire=flMakeEmergencyUnit(0xd52d25,'fire'),ambulance=flMakeEmergencyUnit(0xf2f2ee,'ambulance');
+ police.position.set(-5.8,0,-43);police.rotation.y=Math.PI/2;
+ fire.position.set(-5.8,0,-49);fire.rotation.y=Math.PI/2;
+ ambulance.position.set(-5.8,0,-55);ambulance.rotation.y=Math.PI/2;
+ response.add(police,fire,ambulance);
+ const tapeMat=new THREE.MeshStandardMaterial({color:0xf0bd37,roughness:.7});
+ for(let i=0;i<3;i++){const barrier=new THREE.Mesh(new THREE.BoxGeometry(.12,.8,3.5),tapeMat);barrier.position.set(8.2,.42,-48+i*4);barrier.rotation.y=Math.PI/2;response.add(barrier);}
+ // Nicht-grafischer, rein fiktiver Bankviertel-Polizeieinsatz ohne nachgebildete Überfallmethoden.
+ const bankFront=new THREE.Mesh(new THREE.BoxGeometry(8,4.5,.65),new THREE.MeshStandardMaterial({color:0x596c78,roughness:.65,metalness:.15}));bankFront.position.set(0,2.25,0);robbery.add(bankFront);
+ const bankGlass=new THREE.Mesh(new THREE.BoxGeometry(5.2,2.1,.08),glass);bankGlass.position.set(0,1.55,.36);robbery.add(bankGlass);
+ const bankSign=new THREE.Mesh(new THREE.BoxGeometry(3.1,.55,.16),new THREE.MeshStandardMaterial({color:0x1b4b69,roughness:.5}));bankSign.position.set(0,4.05,.38);robbery.add(bankSign);
+ const robberyPolice1=flMakeEmergencyUnit(0xf0f1f3,'police'),robberyPolice2=flMakeEmergencyUnit(0x202a35,'police');
+ robberyPolice1.position.set(-5.8,0,4.5);robberyPolice1.rotation.y=Math.PI/2;robberyPolice2.position.set(5.8,0,4.5);robberyPolice2.rotation.y=-Math.PI/2;
+ robbery.add(robberyPolice1,robberyPolice2);
+ const barrierMat=new THREE.MeshStandardMaterial({color:0xeab52e,roughness:.7});
+ for(let i=0;i<4;i++){const barrier=new THREE.Mesh(new THREE.BoxGeometry(2.4,.85,.16),barrierMat);barrier.position.set(-3.6+i*2.4,.44,7.4);robbery.add(barrier);}
+ response.visible=false;robbery.visible=false;robbery.position.set(0,0,-178);
  accident.visible=false;forestry.visible=false;forestry.position.set(112,0,75);
- root.add(accident,forestry);root.position.set(0,0,0);scene.add(root);
- flAmbientEvents={root,accident,forestry,beaconLight,workBody,boom,kind:null};
+ root.add(accident,forestry,response,robbery);root.position.set(0,0,0);scene.add(root);
+ flAmbientEvents={root,accident,forestry,response,robbery,beaconLight,workBody,boom,emergencyUnits:[police,fire,ambulance,robberyPolice1,robberyPolice2],kind:null};
 }
 function flPlayBirdChirp(){
  if(!flAudioContext||flAudioContext.state!=='running')return;
@@ -275,6 +305,16 @@ function flPlayBirdChirp(){
    osc.connect(filter);filter.connect(gain);gain.connect(flAudioContext.destination);osc.start(start);osc.stop(start+.19);
   }
  }catch(_){}
+}
+function flAddSkidMarks(x,z,angle,intensity=1){
+ if(!scene)return;
+ for(const side of [-1,1]){
+  const material=new THREE.MeshBasicMaterial({color:0x17191b,transparent:true,opacity:.34+intensity*.18,depthWrite:false,side:THREE.DoubleSide});
+  const mark=new THREE.Mesh(new THREE.PlaneGeometry(.13+intensity*.035,1.45+intensity*.9),material);
+  mark.rotation.set(-Math.PI/2,angle,0);mark.position.set(x+Math.cos(angle)*side*.62,.024,z-Math.sin(angle)*side*.62);
+  scene.add(mark);flSkidMarks.push({mesh:mark,life:65+Math.random()*25,maxLife:90});
+ }
+ if(flSkidMarks.length>90){const old=flSkidMarks.shift();scene.remove(old.mesh);old.mesh.geometry.dispose();old.mesh.material.dispose();}
 }
 function flPlayTrafficImpact(){
  if(!flAudioContext||flAudioContext.state!=='running')return;
@@ -311,21 +351,25 @@ function flUpdateAmbientEvents(dt,t){
  if(!flAmbientEvents)return;
  const e=flAmbientEvents;
  if(e.kind){
-  if(e.kind==='accident'){e.beaconLight.material.emissiveIntensity=.45+Math.abs(Math.sin(t*5))*1.8;}
-  else{e.workBody.rotation.y=Math.sin(t*1.4)*.012;e.boom.rotation.x=-.35+Math.sin(t*1.8)*.045;}
+  if(e.kind==='accident'){
+   e.beaconLight.material.emissiveIntensity=.45+Math.abs(Math.sin(t*5))*1.8;
+   e.response.visible=true;
+  }else if(e.kind==='forest'){e.workBody.rotation.y=Math.sin(t*1.4)*.012;e.boom.rotation.x=-.35+Math.sin(t*1.8)*.045;e.response.visible=false;}
+  else if(e.kind==='robbery'){e.robbery.visible=true;e.response.visible=false;}
+  for(const unit of e.emergencyUnits){if(unit.userData.lights)unit.userData.lights.forEach((light,index)=>{light.material.emissiveIntensity=(Math.floor(t*7+index)%2===0)?2.1:.12;});}
   e.duration-=dt;
-  if(e.duration<=0){e.accident.visible=false;e.forestry.visible=false;e.kind=null;flAmbientEventCooldown=65+Math.random()*55;flAmbientEventTimer=35+Math.random()*45;}
+  if(e.duration<=0){e.accident.visible=false;e.forestry.visible=false;e.response.visible=false;e.robbery.visible=false;e.kind=null;flAmbientEventCooldown=85+Math.random()*95;flAmbientEventTimer=45+Math.random()*65;}
  }else{
   flAmbientEventCooldown=Math.max(0,flAmbientEventCooldown-dt);
   flAmbientEventTimer-=dt;
   if(flAmbientEventTimer<=0&&flAmbientEventCooldown<=0){
-   e.kind=Math.random()<.56?'accident':'forest';e.duration=48+Math.random()*35;
-   e.accident.visible=e.kind==='accident';e.forestry.visible=e.kind==='forest';
+   const roll=Math.random();e.kind=roll<.48?'accident':roll<.83?'forest':'robbery';e.duration=52+Math.random()*42;
+   e.accident.visible=e.kind==='accident';e.forestry.visible=e.kind==='forest';e.response.visible=e.kind==='accident';e.robbery.visible=e.kind==='robbery';
    const px=driving&&jobCar?jobCar.position.x:camera.position.x,pz=driving&&jobCar?jobCar.position.z:camera.position.z;
-   const target=e.kind==='forest'?new THREE.Vector3(112,0,75):new THREE.Vector3(13,0,-43);
-   const near=Math.hypot(px-target.x,pz-target.z)<95;
-   if(near)flPlayAmbientEventSound(e.kind);
-   if(near)status.textContent=e.kind==='forest'?'FORSTARBEITEN · WALDWEG ZEITWEISE EINGESCHRÄNKT':'VERKEHRSUNFALL · BITTE LANGSAM AN DER EINSATZSTELLE VORBEIFAHREN';
+   const target=e.kind==='forest'?new THREE.Vector3(112,0,75):e.kind==='robbery'?new THREE.Vector3(0,0,-178):new THREE.Vector3(13,0,-43);
+   const near=Math.hypot(px-target.x,pz-target.z)<105;
+   if(near)flPlayAmbientEventSound(e.kind==='forest'?'forest':'accident');
+   if(near)status.textContent=e.kind==='forest'?'FORSTARBEITEN · WALDWEG ZEITWEISE EINGESCHRÄNKT':e.kind==='robbery'?'POLIZEIEINSATZ IM BANKVIERTEL · BEREICH BITTE MEIDEN':'VERKEHRSUNFALL · POLIZEI, FEUERWEHR UND RETTUNGSDIENST SICHERN DIE STELLE';
   }
  }
 }
@@ -1392,7 +1436,7 @@ let flEngineOn=false,flEngineStartingUntil=0;
 let damageLevel=0,damageHud=null,damageFlash=0,cameraLookOffset=0,damageCooldown=0,flSavedDamage=0;
 let speedometerHud=null,speedometerLastGear=1;
 const emergencyVehicles=[];
-const breakableProps=[];let lookDrag=false,lastPointerX=0,lastPointerY=0;
+const breakableProps=[];const flSkidMarks=[];let lookDrag=false,lastPointerX=0,lastPointerY=0;
 function buildCutsceneUI(){
  cutsceneOverlay=document.createElement('div');cutsceneOverlay.id='cutsceneOverlay';cutsceneOverlay.className='cutscene-overlay hidden';
  cutsceneOverlay.innerHTML='<div class="cinema-top"></div><div class="cinema-bottom"><div class="cinema-kicker">FRANKFURT LIFE · AUFTRAG</div><div id="cinemaTitle">EIN NEUER TAG IN FRANKFURT</div><p id="cinemaCaption">Dein nächster Auftrag beginnt.</p></div><button id="skipCutscene">ÜBERSPRINGEN ⏭</button><div class="cinema-count" id="cinemaCount">SZENE 1 / 3</div>';
@@ -2181,6 +2225,7 @@ let flNearMissCooldown=0;
 function updateWorld(dt){
   const t=clock.elapsedTime;
   flUpdateAmbientEvents(dt,t);
+  for(let i=flSkidMarks.length-1;i>=0;i--){const mark=flSkidMarks[i];mark.life-=dt;mark.mesh.material.opacity=Math.max(0,mark.life/mark.maxLife)*.48;if(mark.life<=0){scene.remove(mark.mesh);mark.mesh.geometry.dispose();mark.mesh.material.dispose();flSkidMarks.splice(i,1);}}
   const forestNearby=Math.hypot((driving&&jobCar?jobCar.position.x:camera.position.x)-112,(driving&&jobCar?jobCar.position.z:camera.position.z)-75)<92;
   for(const bird of flBirds){const phase=t*bird.speed+bird.phase;bird.mesh.position.set(bird.x+Math.sin(phase)*3,bird.y+Math.sin(phase*1.7)*.55,bird.z+Math.cos(phase*.7)*3);bird.mesh.rotation.y=Math.sin(phase*.7)*.4;bird.mesh.children[1].rotation.z=Math.sin(phase*8)*.55;bird.mesh.children[2].rotation.z=-Math.sin(phase*8)*.55;}
   if(forestNearby&&flAudioContext?.state==='running'){flBirdChirpTimer-=dt;if(flBirdChirpTimer<=0){flPlayBirdChirp();flBirdChirpTimer=6+Math.random()*9;}}
@@ -2227,6 +2272,9 @@ function updateWorld(dt){
       if(Math.abs(other.position.x-car.position.x)<2.25&&ahead>0&&ahead<8&&other.userData.traffic.direction===traffic.direction){followScale=Math.min(followScale,THREE.MathUtils.clamp((ahead-1.8)/6.2,0,1));}
     }
     const moveScale=traffic.stun>0?.12:1;
+    car.position.x+=(traffic.slideX||0)*dt;car.position.z+=(traffic.slideZ||0)*dt;
+    traffic.slideX=(traffic.slideX||0)*Math.exp(-dt*1.9);traffic.slideZ=(traffic.slideZ||0)*Math.exp(-dt*1.9);
+    car.rotation.z+=(0-car.rotation.z)*Math.min(1,dt*1.5);
     car.position.z+=traffic.direction*traffic.speed*followScale*moveScale*dt*60;
     if(traffic.direction>0&&car.position.z>52)car.position.z=-122;
     if(traffic.direction<0&&car.position.z<-122)car.position.z=52;
@@ -2242,7 +2290,9 @@ function updateWorld(dt){
         if(jobCar.userData.damageGroup){const ownSide=Math.abs(dx)>Math.abs(dz)?(dx>0?3:2):(dz>0?0:1);jobCar.userData.damageGroup.visible=true;jobCar.userData.damageParts.forEach((part,index)=>{if(index!==ownSide)part.visible=false;});}
         other.userData.damageLevel=Math.min(1,(other.userData.damageLevel||0)+.18+hit*.2);
         if(other.userData.damageGroup){other.userData.damageGroup.visible=true;other.userData.damageParts.forEach((part,index)=>{if(index!==(Math.abs(dx)>Math.abs(dz)?(dx>0?2:3):(dz>0?1:0)))part.visible=false;});}
-        if(other.userData.traffic){other.userData.traffic.stun=1.1;other.userData.traffic.collisionCooldown=1.5;}
+        if(other.userData.traffic){other.userData.traffic.stun=1.1;other.userData.traffic.collisionCooldown=1.5;other.userData.traffic.slideX=(other.userData.traffic.slideX||0)+side*1.6;other.userData.traffic.slideZ=(other.userData.traffic.slideZ||0)+Math.sign(dz||1)*1.2;}
+        flAddSkidMarks(jobCar.position.x,jobCar.position.z,jobCar.rotation.y,hit);
+        flAddSkidMarks(other.position.x,other.position.z,other.rotation.y,hit);
         carSpeed*=.48;carSlip+=side*.08;flPlayTrafficImpact();
         status.textContent='KOLLISION · DEIN FAHRZEUG UND DAS NPC-AUTO WURDEN BESCHÄDIGT';
         break;
@@ -2257,6 +2307,9 @@ function updateWorld(dt){
     if(Math.abs(dx)<2.05&&Math.abs(dz)<3.85){
       const impact=Math.min(1,Math.abs(ta.speed*ta.direction-tb.speed*tb.direction)*8+.35);
       ta.stun=1.5+impact;tb.stun=1.5+impact;ta.collisionCooldown=tb.collisionCooldown=3.2;
+      ta.slideX=(ta.slideX||0)-Math.sign(dx||1)*(.7+impact*1.8);tb.slideX=(tb.slideX||0)+Math.sign(dx||1)*(.7+impact*1.8);
+      ta.slideZ=(ta.slideZ||0)-ta.direction*(.8+impact*1.6);tb.slideZ=(tb.slideZ||0)+tb.direction*(.8+impact*1.6);
+      flAddSkidMarks(a.position.x,a.position.z,a.rotation.y,impact);flAddSkidMarks(b.position.x,b.position.z,b.rotation.y,impact);
       ta.speed=Math.max(.018,ta.speed*(1-impact*.48));tb.speed=Math.max(.018,tb.speed*(1-impact*.48));
       const side=dx===0?(Math.random()<.5?-1:1):Math.sign(dx);
       a.position.x-=side*.42;b.position.x+=side*.42;

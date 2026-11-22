@@ -3,6 +3,9 @@ productName: Frankfurt Life San Andreas
 directories:
   output: dist-sanandreas
 files:
+  - launcher.html
+  - launcher.css
+  - launcher.js
   - game.html
   - game.css
   - script.js

@@ -36,4 +36,5 @@ private:
     void AddStreetLight(const FVector& Location);
     void AddBuilding(const FVector& Center, float Width, float Depth, float Height, int32 Seed);
     void BuildDistrict();
+    void AddAbandonedSite(const FVector& Center);
 };

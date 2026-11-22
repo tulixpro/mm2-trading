@@ -137,13 +137,22 @@ function flUpdateSuspensionVisuals(){
  for(const car of cars){
   const visuals=car.userData.suspensionVisuals;if(!visuals)continue;
   const active=driving&&car===jobCar;
-  const speed=active?Math.min(1,Math.abs(carSpeed)/Math.max(.1,car.userData.maxForwardSpeed||.5)):0;
+  const speed=active?Math.min(1,Math.abs(carSpeed)/Math.max(.1,car.userData.maxForwardSpeed||.5)):Math.min(1,Math.abs(car.userData.traffic?.speed||0)*2.2);
   const bumpCompression=active?Math.min(1,Math.abs(car.userData.suspensionBounceOffset||0)*14):0;
   const offroadMotion=active&&car.position.x>43&&car.position.x<181&&car.position.z>-24&&car.position.z<174?Math.abs(Math.sin(time*8)*.12):0;
+  const targetPitch=active?(car.userData.suspensionTargetPitch||0):Math.sin(time*2.1+car.position.x)*.006*speed;
+  const targetRoll=active?(car.userData.suspensionTargetRoll||0):Math.sin(time*1.7+car.position.z)*.004*speed;
+  car.userData.suspensionPitch+=(targetPitch-car.userData.suspensionPitch)*.16;
+  car.userData.suspensionRoll+=(targetRoll-car.userData.suspensionRoll)*.16;
+  car.rotation.x=car.userData.suspensionPitch;car.rotation.z=car.userData.suspensionRoll;
   visuals.forEach((part,index)=>{
-   const pulse=active?Math.sin(time*17+index*Math.PI*.5)*.012*speed:0;
-   part.springGroup.scale.y=1-speed*.045-bumpCompression*.075-offroadMotion*.16+pulse;
-   part.strut.scale.y=1-speed*.035-bumpCompression*.05-offroadMotion*.1+pulse*.6;
+   const wheelPhase=time*13+index*Math.PI*.5+(car.position.x+car.position.z)*.035;
+   const wheelLoad=active?Math.sin(wheelPhase)*.018*speed:Math.sin(wheelPhase)*.009*speed;
+   const bumpLoad=active?Math.max(0,Math.sin(time*18+index*Math.PI*.5))*bumpCompression*.11:0;
+   const pulse=wheelLoad-bumpLoad-offroadMotion*.08;
+   part.springGroup.scale.y=1-speed*.035-bumpCompression*.075-offroadMotion*.16+pulse;
+   part.strut.scale.y=1-speed*.025-bumpCompression*.05-offroadMotion*.1+pulse*.6;
+   part.springGroup.position.y=.48+pulse*.22;part.strut.position.y=.59+pulse*.18;
   });
  }
 }
@@ -1077,6 +1086,7 @@ function makeCar(x,z,color,police=false,model='sedan',performanceOverride=null){
   const L=profile.length,W=profile.width;
   const rideHeightByModel={hatch:.045,sedan:.055,sportback:.05,coupe:.035,super:.015,van:.10,suv:.19,wagon:.07,pickup:.17};
   car.userData.rideHeight=rideHeightByModel[model]??.055;
+  car.userData.suspensionPitch=0;car.userData.suspensionRoll=0;car.userData.suspensionTargetPitch=0;car.userData.suspensionTargetRoll=0;
   car.position.y=car.userData.rideHeight;
   const vehiclePerformance={
     hatch:{top:175,power:.82},sedan:{top:215,power:1.0},
@@ -2469,18 +2479,36 @@ function updateWorld(dt){
     }
   }
   if((performanceFrame%2)===0)for(const p of pedestrians){
-    const u=p.userData,oldX=p.position.x,oldZ=p.position.z;
-    p.position.z=u.originZ+Math.sin(t*u.speed+u.phase)*2.6;
-    p.position.x=u.originX+Math.sin(t*u.speed*.55+u.phase)*.55;
-    const dx=p.position.x-oldX,dz=p.position.z-oldZ,travel=Math.hypot(dx,dz);
-    if(travel>.0001)p.rotation.y=Math.atan2(dx,dz);
-    const gait=t*(5.2+u.speed*2.4)+u.phase,step=Math.sin(gait),lift=Math.max(0,Math.cos(gait));
+    const u=p.userData,stepDt=Math.min(.06,dt*2);
+    if(!u.cityAI)u.cityAI={state:'walk',timer:0,targetX:u.originX+(Math.random()-.5)*7,targetZ:u.originZ+(Math.random()-.5)*7,look:0};
+    const ai=u.cityAI;ai.timer-=stepDt;
+    if(ai.state==='walk'){
+      const dx=ai.targetX-p.position.x,dz=ai.targetZ-p.position.z,dist=Math.hypot(dx,dz);
+      if(dist<.24||ai.timer<-1){
+        const activities=['browse','phone','wait','chat'];
+        ai.state=activities[Math.floor(Math.random()*activities.length)];ai.timer=2.4+Math.random()*5.2;ai.look=(Math.random()-.5)*.65;
+      }else{
+        const travel=Math.min(dist,(.82+u.speed*.7)*stepDt);
+        p.position.x+=dx/dist*travel;p.position.z+=dz/dist*travel;p.rotation.y=Math.atan2(dx,dz);
+      }
+    }else if(ai.timer<=0){
+      ai.state='walk';ai.timer=9;ai.targetX=u.originX+(Math.random()-.5)*9;ai.targetZ=u.originZ+(Math.random()-.5)*9;
+    }
+    const walking=ai.state==='walk',gait=t*(walking?7.1:1.4)+u.phase,step=walking?Math.sin(gait):0;
     if(u.legs){u.legs[0].rotation.x=step*.48;u.legs[1].rotation.x=-step*.48;}
     if(u.knees){u.knees[0].rotation.x=Math.max(0,-step)*.72;u.knees[1].rotation.x=Math.max(0,step)*.72;}
     if(u.feet){u.feet[0].rotation.x=-Math.max(0,step)*.18;u.feet[1].rotation.x=-Math.max(0,-step)*.18;}
-    if(u.arms){u.arms[0].rotation.x=-step*.3;u.arms[1].rotation.x=step*.3;}
-    if(u.torso){u.torso.position.y=1.18+Math.abs(step)*.025;u.torso.rotation.x=.025+Math.abs(step)*.018;}
-    if(u.head){u.head.rotation.y=Math.sin(t*.7+u.phase)*.07;u.head.rotation.x=Math.sin(t*1.1+u.phase)*.018;}
+    if(u.arms){
+      let left=-step*.3,right=step*.3;
+      if(ai.state==='browse'){left=-.72;right=.18;}
+      if(ai.state==='phone'){left=-.15;right=-1.02;}
+      if(ai.state==='chat'){left=-.35-Math.sin(t*3+u.phase)*.22;right=-.35+Math.sin(t*3+u.phase)*.22;}
+      if(ai.state==='wait'){left=-.06;right=.06;}
+      u.arms[0].rotation.x=left;u.arms[1].rotation.x=right;
+      u.arms[0].rotation.z=ai.state==='phone'?.22:0;u.arms[1].rotation.z=ai.state==='phone'?.3:0;
+    }
+    if(u.torso){u.torso.position.y=1.18+(walking?Math.abs(step)*.025:Math.sin(t*2+u.phase)*.008);u.torso.rotation.x=walking?.025+Math.abs(step)*.018:0;}
+    if(u.head){u.head.rotation.y=walking?Math.sin(t*.7+u.phase)*.07:ai.look+Math.sin(t*.55+u.phase)*.035;u.head.rotation.x=ai.state==='browse'?.12:ai.state==='phone'?.08:Math.sin(t*1.1+u.phase)*.018;}
   }
   if(flNearMissCooldown>0)flNearMissCooldown=Math.max(0,flNearMissCooldown-dt);
   if(driving&&jobCar&&flNearMissCooldown===0){
@@ -2931,6 +2959,8 @@ function move(dt=1/60){
     if(handbrake)carSpeed*=Math.pow(.91,frameScale);
     const steer=(keys.KeyA||keys.ArrowLeft?1:0)-(keys.KeyD||keys.ArrowRight?1:0);
     const speedRatio=Math.min(1,Math.abs(carSpeed)/Math.max(.1,maxForward));
+    jobCar.userData.suspensionTargetPitch=(accelerating&&flEngineOn?-.035:braking?.052:0)*speedRatio;
+    jobCar.userData.suspensionTargetRoll=-steer*speedRatio*.038*(1+(1-tireGrip)*.5);
     // Bei höherem Tempo wird die Lenkreaktion direkter, aber die Reifen können überfordern.
     const steeringResponse=(.0018+speedRatio*.016)*Math.max(.55,tireGrip)*(carSpeed<0?-1:1);
     const lateralGrip=handbrake?.965:(.78+(1-tireGrip)*.15);

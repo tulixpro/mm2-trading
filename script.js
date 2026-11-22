@@ -24,7 +24,7 @@ const legacyMode=new URLSearchParams(location.search).get('legacy')==='1';
 const cpuCores=navigator.hardwareConcurrency||4;
 const memoryGb=navigator.deviceMemory||8;
 const lowEndDevice=legacyMode||cpuCores<=4||memoryGb<=4;
-const liteMode=lowEndDevice;
+const liteMode=classicEdition||lowEndDevice;
 const performanceTier=lowEndDevice?'balanced':'full';
 let performanceFrame=0;
 const qualitySettings={
@@ -41,7 +41,7 @@ let sunLight=null,hemiLight=null,flashlight=null,flashlightTarget=null,flashligh
 function applyQuality(){
  if(!renderer||!scene)return;
  const mode=qualitySelect?.value||'medium',q=qualitySettings[mode]||qualitySettings.medium;
- renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,(classicEdition?Math.min(q.pixelRatio,.68):q.pixelRatio)*autoResolutionScale));
+ renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,(classicEdition?Math.min(q.pixelRatio,.58):q.pixelRatio)*autoResolutionScale));
  renderer.shadowMap.enabled=classicEdition?false:q.shadows;
  renderer.shadowMap.type=THREE.PCFSoftShadowMap;
  renderer.shadowMap.autoUpdate=true;
@@ -51,7 +51,7 @@ function applyQuality(){
  if(hemiLight)hemiLight.intensity=q.ambient;
  scene.traverse(obj=>{if(obj.isMesh){obj.castShadow=q.shadows;obj.receiveShadow=q.shadows;}});
  const hint=document.querySelector('#graphicsHint')||document.querySelector('#qualityStatus');
- if(hint)hint.textContent=classicEdition?'SAN ANDREAS RETRO-3D · KLASSISCHER LOOK':'Grafik: '+q.label+' · '+(q.shadows?'Schatten AN':'Schatten AUS');
+ if(hint)hint.textContent=classicEdition?'SAN ANDREAS RETRO-3D · SPEICHERSPARMODUS':'Grafik: '+q.label+' · '+(q.shadows?'Schatten AN':'Schatten AUS');
  if(viewport)viewport.dataset.graphics=mode;
  resize();
 }
@@ -2199,7 +2199,7 @@ function begin(){
   status.textContent=lowEndDevice?'OLD-SCHOOL-MODUS · STADT BLEIBT GUT ERKENNBAR':'STADT GELADEN · KLICKE INS SPIEL';
   try{
     renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance',stencil:false,depth:true,preserveDrawingBuffer:false});
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,classicEdition?.66:lowEndDevice?.68:1));
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,classicEdition?.58:lowEndDevice?.68:1));
     renderer.outputColorSpace=THREE.SRGBColorSpace;
     renderer.toneMapping=THREE.ACESFilmicToneMapping;
     renderer.shadowMap.type=THREE.PCFSoftShadowMap;

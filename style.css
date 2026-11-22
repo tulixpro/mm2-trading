@@ -8,3 +8,17 @@
 #gameViewport{position:relative}.ingame-jobs{position:absolute;z-index:5;inset:5%;overflow:auto;max-width:680px;margin:auto;padding:22px;border:1px solid rgba(103,210,226,.4);border-radius:14px;background:rgba(7,15,27,.96);color:#edf7ff;box-shadow:0 20px 80px #000b}.ingame-jobs.hidden{display:none}.ingame-jobs-head{display:flex;justify-content:space-between;align-items:center;color:#79dce9;font-size:.75rem;letter-spacing:.12em}.ingame-jobs-head button{border:0;background:transparent;color:#fff;font-size:1.8rem;cursor:pointer}.ingame-jobs h3{font-size:1.6rem;margin:.8rem 0 .25rem}.ingame-jobs-hint,.ingame-jobs small{color:#9fb2c5;font-size:.85rem}.ingame-jobs small{display:block;margin-top:12px}.ingame-job-choice{display:flex;flex-direction:column;gap:4px;width:100%;padding:10px 12px;margin:5px 0;border:1px solid #30465d;border-radius:8px;background:#111f30;color:#edf7ff;text-align:left;cursor:pointer}.ingame-job-choice span{font-size:.78rem;color:#9fb2c5}.ingame-job-choice.selected{border-color:#49d7df;background:#163244}.ingame-start{width:100%;padding:12px;margin-top:12px;border:0;border-radius:8px;background:#36cbd1;color:#06131d;font-weight:800;cursor:pointer}.ingame-start:disabled{opacity:.45;cursor:not-allowed}#ingameJobDetail{margin-top:10px;color:#b9d0df;font-size:.9rem;line-height:1.5}@media(min-width:620px){#ingameJobChoices{display:grid;grid-template-columns:1fr 1fr;gap:4px 10px}}
 
 .brand-mark{display:block;width:38px;height:38px;border:0;object-fit:contain;transform:none;border-radius:9px;box-shadow:0 0 20px #42c5df30}
+
+/* Gameplay preview and clearer download recommendation */
+.trailer-section{padding-top:34px;padding-bottom:95px}
+.trailer-frame{overflow:hidden;border:1px solid #3c6b8c;background:#0b1421;box-shadow:0 24px 70px #0006}
+.trailer-screen{position:relative;aspect-ratio:16/9;min-height:260px;background:linear-gradient(135deg,#14283e,#080e18)}
+.trailer-screen iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+.trailer-caption{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:18px 22px;background:#101d2d;border-top:1px solid #263c53}
+.trailer-caption b,.trailer-caption span{display:block}
+.trailer-caption b{font:700 19px 'Barlow Condensed';letter-spacing:1px}
+.trailer-caption span,.trailer-note{color:var(--muted);font-size:11px}
+.trailer-note{margin:12px 0 0;line-height:1.6}
+.download-card.recommended{border-color:#62c9ec;background:linear-gradient(115deg,#15334a,#102236);box-shadow:0 10px 35px #0003}
+.tag.best{background:#1c594b;color:#a5ffdb}
+@media(max-width:760px){.trailer-section{padding-bottom:65px}.trailer-caption{align-items:flex-start;flex-direction:column}.trailer-screen{aspect-ratio:4/3;min-height:300px}}

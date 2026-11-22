@@ -334,3 +334,11 @@ These are **project scaffolds only**, not finished playable Unreal games. The ex
 - Über dem Wald kreisen einfache Vogel-Silhouetten. In Waldnähe werden gelegentlich kurze, synthetisch erzeugte Vogelrufe abgespielt.
 - Zusammenstoß- und Ereignistöne werden ebenfalls prozedural mit Web Audio erzeugt. Es werden keine echten Tier- oder Fahrzeugaufnahmen mitgeliefert.
 - Die Simulation ist weiterhin Arcade-Physik: keine vollständige Soft-Body-Verformung, keine realen Crash-Daten, keine komplexe Versicherungs-/Polizeiabwicklung und keine authentischen Motoraufnahmen.
+
+
+## Dynamische Notfälle, Schleuderspuren und Polizeieinsätze
+- Bei NPC-NPC- und Spieler-NPC-Kollisionen werden dunkle Reifenschleifspuren auf der Fahrbahn angelegt. Sie verblassen nach einiger Zeit und werden begrenzt gespeichert, damit die Szene nicht unbegrenzt anwächst.
+- NPC-Fahrzeuge erhalten nach Zusammenstößen einen seitlichen und längs gerichteten Rutschimpuls, der über vereinfachte Reibungsdämpfung ausläuft.
+- Zufällige Unfall-Ereignisse können eine Einsatzstelle mit Polizei und Feuerwehr auslösen; gelegentlich kommt ein Rettungswagen hinzu. Blaulichter blinken, Absperrelemente markieren den Bereich.
+- Ein seltener, fiktiver Bankviertel-Polizeieinsatz wird als nicht-grafische Szene mit NPC-Silhouetten, Polizeifahrzeugen und Absperrungen dargestellt. Es werden keine realen Überfallabläufe simuliert.
+- Die Einsätze sind zeitlich begrenzte, geskriptete Welt-Ereignisse. Einsatzfahrzeuge fahren derzeit nicht dynamisch von einer Wache zum Unfallort; echte Einsatz-KI, Straßensperren mit Verkehrs-Umleitung, Rettungsanimationen, physikalisch korrekte Reifenmodelle und realistische Karosserieverformung sind noch nicht umgesetzt.

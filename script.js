@@ -503,8 +503,7 @@ function createShop(x,z,side,name,subtitle,color){
  const glassLeft=new THREE.Mesh(new THREE.BoxGeometry(.09,2.65,5.0),glassMat);glassLeft.position.set(frontX,2.35,-.85);g.add(glassLeft);
  const glassRight=new THREE.Mesh(new THREE.BoxGeometry(.09,2.65,.55),glassMat);glassRight.position.set(frontX,2.35,2.0);g.add(glassRight);
  // Der Eingangsbereich bleibt frei, damit die Spielfigur in den Laden gehen kann.
- const door=new THREE.Mesh(new THREE.BoxGeometry(.14,2.8,1.35),new THREE.MeshStandardMaterial({color:0x243747,roughness:.25,metalness:.2}));door.position.set(frontX*1.015,1.45,3.15);g.add(door);
- const doorPane=new THREE.Mesh(new THREE.BoxGeometry(.16,1.75,.82),glassMat);doorPane.position.set(frontX*1.03,1.72,3.15);g.add(doorPane);
+ // Offener Ladeneingang: die Figur kann ohne Tür-Kollision hineingehen.
  const frame=new THREE.Mesh(new THREE.BoxGeometry(.2,.22,8.1),trimMat);frame.position.set(frontX*1.02,3.82,0);g.add(frame);
  const awning=new THREE.Mesh(new THREE.BoxGeometry(1.05,.22,8.4),new THREE.MeshStandardMaterial({color,roughness:.65}));awning.position.set(frontX-side*.48,3.35,0);g.add(awning);
  const signCanvas=document.createElement('canvas');signCanvas.width=1024;signCanvas.height=180;

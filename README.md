@@ -383,3 +383,9 @@ These are **project scaffolds only**, not finished playable Unreal games. The ex
 - An ausgewählten Übergängen laufen Fußgänger-NPCs zwischen den Gehwegen hin und her und warten auf die Freigabe.
 - Der simulierte Verkehr reduziert vor roten Signalen seine Geschwindigkeit und hält vor dem Übergang.
 - Die Ampel- und Querungslogik ist ein vereinfachtes lokales Verkehrssystem; sie bildet noch keine vollständige deutsche Verkehrsregel- oder Vorfahrts-Simulation für jede Nebenstraße ab.
+
+### Lebendige Wald- und Stadtereignisse
+- Forstbereich mit Holzanhänger, gestapelten Stämmen, Warnkegeln, Arbeitsfahrzeug und einem animierten Forstarbeiter mit Schutzhelm und Warnkleidung.
+- Während des Forsteinsatzes bewegen sich Arbeitsausleger und Mitarbeiter dezent; die Szene wird zeitweise als Arbeitsbereich markiert.
+- Stadtunfälle werden als nicht-grafische Einsatzszenen mit Absicherung, Warnleuchten sowie Polizei-, Feuerwehr- und Rettungsfahrzeugen dargestellt.
+- Die Abläufe sind inszenierte Umgebungsereignisse und keine vollständige Simulation: keine echte Baumfällphysik, kein dynamisches Rettungs-/Abschleppsystem und keine komplexe Einsatzleitstellen-KI.

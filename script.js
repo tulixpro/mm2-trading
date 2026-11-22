@@ -833,7 +833,7 @@ function makeCar(x,z,color,police=false,model='sedan',performanceOverride=null){
   }
   car.userData.damageParts={paint,bumper,crack,frontBumper,rearBumper,hoodDent,smoke,scratches,sideDents,headlights,originalColor:paint.color.getHex()};
   // Zusätzliche Rad- und Karosseriedetails für eine deutlich ausgearbeitete Silhouette.
-  const rubber=new THREE.MeshStandardMaterial({color:0x090c10,roughness:.96});
+  const wheelTrimRubber=new THREE.MeshStandardMaterial({color:0x090c10,roughness:.96});
   const rimDark=new THREE.MeshStandardMaterial({color:0x26313b,metalness:.72,roughness:.3});
   const brakeMetal=new THREE.MeshStandardMaterial({color:0x89939c,metalness:.86,roughness:.28});
   for(const side of [-1,1]){

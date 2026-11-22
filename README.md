@@ -33,6 +33,11 @@ Die Browser-/Electron-Edition nutzt Three.js als Rendering-Basis und ergänzt ei
 - Dezente First-Person-Kopfbewegung beim Laufen.
 - Fußgänger-NPCs besitzen bereits einfache gegenläufige Arm- und Beinbewegungen; dies ist noch keine Motion-Capture- oder Skelettanimation.
 
+Zusätzlicher Bewegungs-/Audio-Pass:
+- Fußgänger besitzen jetzt getrennte Oberschenkel-/Unterschenkel-Gruppen mit Kniebeugung, gegengleichem Armschwung, leichter Oberkörperfederung und kleinen Kopfbewegungen.
+- Der Fahrzeugsound enthält jetzt auch einen hörbaren Leerlauf und eine prozedurale Roll-/Reifenrauschschicht, die mit der Geschwindigkeit zunimmt.
+- Die First-Person-Schritt- und Kopfbewegung bleibt aktiv.
+
 Die Sounds sind synthetische Platzhalter und keine echten Motoraufnahmen. Für eine realistische Produktion braucht es aufgenommene/lizenzierte Motor-, Reifen-, Fahrbahn-, Tür-, Innenraum- und Umgebungsgeräusche sowie überarbeitete Charakter-Rigs, Fußkontakt, Übergänge zwischen Gehen/Laufen und Animationen für verschiedene Bewegungen. Der Prototyp wurde nach diesen Änderungen nicht in einem Browser-Laufzeittest geprüft.
 
 ## Noch nicht enthalten

@@ -24,10 +24,19 @@ Both native projects now contain a reusable `UFLVehicleDamageComponent`:
 - Estimates impact speed from relative component velocity and applies bounded gameplay damage above a configurable threshold.
 - Wheel/tire-named hit bones reduce tyre condition; other impacts can reduce engine condition.
 - Blueprint-callable `ApplyWheelImpact(WheelIndex, ImpactSpeedKmh)` progressively bends an assigned wheel visual, then detaches it with physics after configurable high-speed and accumulated-damage thresholds.
-- Exposes Blueprint-callable repair and damage functions plus a condition-changed event.
+- Exposes Blueprint-callable repair and damage functions plus a condition-changed event.\n- Detects when the car needs towing (engine/tyre failure or detached wheel) and exposes a mechanic-call request with a reason event.
 - Vehicle Blueprints must assign their wheel visual components, route wheel collision events to `ApplyWheelImpact`, and enable hit notifications. This is a visual/gameplay prototype, **not** a soft-body deformation or production Chaos suspension simulation; handling degradation, accurate wheel hub breakage, deformation meshes, broken glass and garage UI remain future work.
 
 The component is an integration foundation only. The current static greybox car props do not yet use it, and no vehicle actor with drivable physics is present.
+
+## Breakdown and mechanic-call foundation
+
+Both editions expose roadside-assistance logic on the vehicle damage component:
+- A vehicle is marked as requiring a tow when engine/tyre condition makes it undriveable or a wheel has detached.
+- The phone/UI Blueprint can call `RequestMechanicTow()`. It only succeeds when towing is actually required and prevents duplicate calls.
+- The `OnMechanicTowRequested` event supplies a reason (engine, tyre or detached wheel). A level Blueprint can use that event to show the call confirmation, dispatch a mechanic/tow-truck NPC and start the pickup flow.
+
+This is the gameplay hook, not a finished phone menu or autonomous tow-truck AI yet. The arrival, pickup, transport to a garage and repair interaction still need to be connected in the level/vehicle Blueprints.
 
 ## Graphics status – important
 

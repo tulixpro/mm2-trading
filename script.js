@@ -232,13 +232,13 @@ let shopPanel=null,currentShop=null;
 const clock=new THREE.Clock();
 
 /* Procedural local audio layer: generated WebAudio tones/noise, no external audio files. */
-let flAudioContext=null,flEngineOsc=null,flEngineSub=null,flEngineGain=null,flEngineFilter=null,flRoadNoise=null,flRoadGain=null,flRoadFilter=null,flFootstepAt=0,flAudioReady=false;
+let flAudioContext=null,flEngineOsc=null,flEngineSub=null,flEngineHarmonic=null,flEngineHarmonicGain=null,flEngineGain=null,flEngineFilter=null,flRoadNoise=null,flRoadGain=null,flRoadFilter=null,flFootstepAt=0,flAudioReady=false;\nconst flWindTrees=[];
 function flInitProceduralAudio(){
  const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return;
  try{flAudioContext=flAudioContext||new AC();if(flAudioContext.state==='suspended')flAudioContext.resume();if(flAudioReady)return;
  flEngineOsc=flAudioContext.createOscillator();flEngineOsc.type='sawtooth';flEngineSub=flAudioContext.createOscillator();flEngineSub.type='triangle';
  flEngineFilter=flAudioContext.createBiquadFilter();flEngineFilter.type='lowpass';flEngineFilter.frequency.value=360;
- flEngineGain=flAudioContext.createGain();flEngineGain.gain.value=0;const subGain=flAudioContext.createGain();subGain.gain.value=.42;
+ flEngineGain=flAudioContext.createGain();flEngineGain.gain.value=0;const subGain=flAudioContext.createGain();subGain.gain.value=.42;\n  flEngineHarmonic=flAudioContext.createOscillator();flEngineHarmonic.type='square';flEngineHarmonicGain=flAudioContext.createGain();flEngineHarmonicGain.gain.value=0;flEngineHarmonic.connect(flEngineHarmonicGain);flEngineHarmonicGain.connect(flAudioContext.destination);flEngineHarmonic.start();
  flEngineOsc.connect(flEngineFilter);flEngineFilter.connect(flEngineGain);flEngineSub.connect(subGain);subGain.connect(flEngineGain);flEngineGain.connect(flAudioContext.destination);
  flEngineOsc.start();flEngineSub.start();
   const noiseLength=flAudioContext.sampleRate*2,noiseBuffer=flAudioContext.createBuffer(1,noiseLength,flAudioContext.sampleRate),noiseData=noiseBuffer.getChannelData(0);
@@ -338,7 +338,7 @@ function flBuildForest(){
    const crown=new THREE.Mesh(new THREE.IcosahedronGeometry(r*1.55,1),broadleaf);crown.position.y=h*.72;tree.add(crown);
    const crown2=new THREE.Mesh(new THREE.IcosahedronGeometry(r*1.12,1),grass);crown2.position.set(.35,h*.9,.12);tree.add(crown2);
   }
-  tree.position.set(x,0,z);tree.rotation.y=Math.random()*Math.PI*2;forest.add(tree);
+  tree.position.set(x,0,z);tree.rotation.y=Math.random()*Math.PI*2;tree.userData.windPhase=Math.random()*Math.PI*2;tree.userData.windStrength=.009+Math.random()*.012;flWindTrees.push(tree);forest.add(tree);
   if(i%6===0)flLoadEnvironmentVisual(tree,i%12===0?'planeTree':'rowan',{x:h*1.05,y:h,z:h*1.05},true);
  }
  // Kleine Vögel kreisen als dezente Silhouetten über den Baumkronen.
@@ -674,7 +674,7 @@ function flUpdateProceduralAudio(){
  const rpmLoad=engineActive?Math.min(1,.18+speed*.62+throttle*.2+turboLevel*.035):0;
  const frequency=profile.idle+rpmLoad*profile.range;
  flEngineOsc.type=profile.wave;flEngineSub.type='triangle';
- flEngineOsc.frequency.setTargetAtTime(frequency,now,.075);flEngineSub.frequency.setTargetAtTime(frequency*.5,now,.085);
+ flEngineOsc.frequency.setTargetAtTime(frequency,now,.075);flEngineSub.frequency.setTargetAtTime(frequency*.5,now,.085);\n  flEngineHarmonic.frequency.setTargetAtTime(frequency*2.02,now,.065);flEngineHarmonicGain.gain.setTargetAtTime(engineActive?.008+throttle*.012:.0001,now,.1);
  flEngineFilter.frequency.setTargetAtTime(180+rpmLoad*profile.filter,now,.1);flEngineGain.gain.setTargetAtTime(engineActive?.06+throttle*.06+turboLevel*.009:.0001,now,.13);
  flRoadFilter.frequency.setTargetAtTime(350+speed*1800,now,.18);flRoadGain.gain.setTargetAtTime(engineActive?speed*.025:0,now,.22);
  if(!driving&&!activeBoat&&!planeFlying&&flCharacterType!=='wheelchair'&&moving&&now>=flFootstepAt){flPlayFootstep();flFootstepAt=now+((keys.ShiftLeft||keys.ShiftRight)?.31:.46);}
@@ -3588,7 +3588,7 @@ function buildPerformanceHud(){
   perfHud.style.cssText='position:absolute;right:14px;top:14px;z-index:9;padding:7px 10px;border:1px solid #ffffff35;border-radius:7px;background:#081321dd;color:#d9f4ff;font:700 11px/1.45 system-ui;letter-spacing:.3px;pointer-events:none;white-space:pre-line';
   perfHud.textContent='FPS: --\nRender-Skalierung: 100%';viewport.appendChild(perfHud);
 }
-function loop(now=0){
+function flUpdateFoliageWind(time){\n  for(const tree of flWindTrees){const phase=time*.62+(tree.userData.windPhase||0),strength=tree.userData.windStrength||.01;tree.rotation.z=Math.sin(phase)*strength;tree.rotation.x=Math.cos(phase*.83)*strength*.65;}\n}\nfunction loop(now=0){
   if(document.hidden)return;
   raf=requestAnimationFrame(loop);
   if(maxFps&&now-lastFrame<1000/maxFps)return;

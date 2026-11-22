@@ -31,7 +31,7 @@ private:
     UPROPERTY()
     UStaticMesh* SphereMesh;
 
-    void AddBox(const FVector& Location, const FVector& Scale, const FLinearColor& Tint = FLinearColor::White);
+    void AddBox(const FVector& Location, const FVector& Scale, const FLinearColor& Tint = FLinearColor::White, const FRotator& Rotation = FRotator::ZeroRotator);
     void AddTree(const FVector& Location, float Height);
     void AddStreetLight(const FVector& Location);
     void AddBuilding(const FVector& Center, float Width, float Depth, float Height, int32 Seed);

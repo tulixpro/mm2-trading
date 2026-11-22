@@ -17,6 +17,17 @@ Two native Unreal Engine projects are maintained alongside the existing Three.js
 - Lumen, virtual shadow maps, Nanite project support, anti-aliasing and texture-streaming configuration
 - Sky-atmosphere and volumetric-fog project support
 
+## Vehicle condition and impact damage foundation
+
+Both native projects now contain a reusable `UFLVehicleDamageComponent`:
+- Tracks body, engine and tyre condition separately on a 0–100 scale.
+- Estimates impact speed from relative component velocity and applies bounded gameplay damage above a configurable threshold.
+- Wheel/tire-named hit bones reduce tyre condition; other impacts can reduce engine condition.
+- Exposes Blueprint-callable repair and damage functions plus a condition-changed event.
+- Vehicle Blueprints must enable hit notifications and add this component. It is a lightweight condition system, **not** a soft-body deformation simulation; visible dents, broken glass, detachable parts, vehicle handling degradation and garage UI remain future work.
+
+The component is an integration foundation only. The current static greybox car props do not yet use it, and no vehicle actor with drivable physics is present.
+
 ## Graphics status – important
 
 The district currently uses Unreal's basic primitive meshes. It is a **greybox/blockout**, not a photorealistic Frankfurt city. The tree shapes are placeholders, not realistic foliage. Renderer settings enable modern UE5 features, but they do not create detailed art assets by themselves. A finished visual pass still needs modular architecture, tree/foliage meshes, PBR materials, road markings, decals, street furniture, authored lighting, sky/cloud actors and a designed level.

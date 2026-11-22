@@ -611,7 +611,27 @@ function makeCar(x,z,color,police=false,model='sedan',performanceOverride=null){
   car.userData.enginePower=vehiclePerformance.power;
   car.userData.maxForwardSpeed=.47*(vehiclePerformance.top/240)*vehiclePerformance.power;
   const lower=new THREE.Mesh(new THREE.BoxGeometry(W,.48,L),paint);lower.position.y=.58;car.add(lower);
-  const hood=new THREE.Mesh(new THREE.BoxGeometry(W*.96,.2,profile.hood),paint);hood.position.set(0,.83,L*.34);car.add(hood);
+  // Öffnende Motorhaube mit sichtbarem, generischem Motorraum.
+  const hoodPivot=new THREE.Group();
+  hoodPivot.position.set(0,.84,L*.34-profile.hood*.5);
+  const hood=new THREE.Mesh(new THREE.BoxGeometry(W*.96,.2,profile.hood),paint);
+  hood.position.set(0,0,profile.hood*.5);hood.castShadow=true;hoodPivot.add(hood);car.add(hoodPivot);
+  const engineBay=new THREE.Group();engineBay.position.set(0,0,0);car.add(engineBay);
+  const engineBlock=new THREE.Mesh(new THREE.BoxGeometry(W*.43,.34,profile.hood*.53),new THREE.MeshStandardMaterial({color:0x252b31,metalness:.62,roughness:.58}));
+  engineBlock.position.set(0,.91,L*.34);engineBay.add(engineBlock);
+  const engineCover=new THREE.Mesh(new THREE.BoxGeometry(W*.31,.12,profile.hood*.34),new THREE.MeshStandardMaterial({color:0x111820,metalness:.38,roughness:.42}));
+  engineCover.position.set(0,1.13,L*.34);engineBay.add(engineCover);
+  const engineAccent=new THREE.Mesh(new THREE.BoxGeometry(W*.19,.025,profile.hood*.2),new THREE.MeshStandardMaterial({color:0x9c2028,metalness:.55,roughness:.3}));
+  engineAccent.position.set(0,1.2,L*.34);engineBay.add(engineAccent);
+  const intake=new THREE.Mesh(new THREE.CylinderGeometry(.075,.09,profile.hood*.42,10),new THREE.MeshStandardMaterial({color:0x303b43,metalness:.72,roughness:.38}));
+  intake.rotation.x=Math.PI/2;intake.position.set(-W*.24,1.0,L*.34);engineBay.add(intake);
+  for(const side of [-1,1]){
+    const pipe=new THREE.Mesh(new THREE.CylinderGeometry(.035,.045,profile.hood*.48,8),new THREE.MeshStandardMaterial({color:0x89949b,metalness:.82,roughness:.26}));
+    pipe.rotation.x=Math.PI/2;pipe.position.set(side*W*.29,.91,L*.34);engineBay.add(pipe);
+    const reservoir=new THREE.Mesh(new THREE.CylinderGeometry(.095,.095,.18,12),new THREE.MeshStandardMaterial({color:side===-1?0x2876a8:0xc3a72d,roughness:.35,metalness:.12}));
+    reservoir.position.set(side*W*.39,.91,L*.34+.22);engineBay.add(reservoir);
+  }
+  car.userData.hoodPivot=hoodPivot;car.userData.hoodOpen=false;car.userData.engineBay=engineBay;
   const rear=new THREE.Mesh(new THREE.BoxGeometry(W*.94,.22,Math.max(.65,L-profile.hood-1.7)),paint);rear.position.set(0,.79,-L*.34);car.add(rear);
   const cabin=new THREE.Mesh(new THREE.BoxGeometry(W*.78,profile.cabin,L*.43),glass);cabin.position.set(0,1.08,-.12);cabin.material.opacity=.24;car.add(cabin);
   // Sichtbare NPC-Fahrer sitzen in jedem KI-Fahrzeug hinter dem Lenkrad.
@@ -2202,6 +2222,20 @@ function updateSpeedometer(){
   if(vehicleEl)vehicleEl.textContent=jobCar.userData.maxSpeedKmh+' KM/H · '+(jobCar.userData.traffic?'VERKEHR':'FAHRZEUG');
   if(fuelEl)fuelEl.textContent='TANK '+Math.round(flFuel)+'%';
 }
+function toggleCarHood(){
+  if(driving){status.textContent='STEIGE AUS, UM DIE MOTORHAUBE ZU ÖFFNEN';return;}
+  if(!scene||!camera){return;}
+  let nearest=null,best=8;
+  for(const candidate of scene.children){
+    if(!candidate?.userData?.hoodPivot)continue;
+    const distance=camera.position.distanceTo(candidate.position);
+    if(distance<best){best=distance;nearest=candidate;}
+  }
+  if(!nearest){status.textContent='GEHE NÄHER AN EIN FAHRZEUG, UM DIE MOTORHAUBE ZU ÖFFNEN';return;}
+  nearest.userData.hoodOpen=!nearest.userData.hoodOpen;
+  nearest.userData.hoodPivot.rotation.x=nearest.userData.hoodOpen?-.92:0;
+  status.textContent=nearest.userData.hoodOpen?'MOTORHAUBE OFFEN · MOTORRAUM SICHTBAR':'MOTORHAUBE GESCHLOSSEN';
+}
 function toggleVehicle(){
   if(activeBoat){tryStartBoat();return;}
   if(planeFlying){planeFlying=false;planeSpeed=0;status.textContent='FLUG BEENDET · ZURÜCK AM FLUGHAFEN';if(takeoverHud)takeoverHud.classList.add('hidden');camera.position.set(airportPlane.position.x+5,2.1,airportPlane.position.z+5);return;}
@@ -2302,7 +2336,7 @@ function begin(){
 startButton?.addEventListener('click',begin);
 // In der eigenständigen Windows-Spielansicht direkt in die 3D-Stadt starten.
 if(document.body.classList.contains('game-app')) begin();
-document.addEventListener('keydown',e=>{keys[e.code]=true;keyboardKeys[e.code]=true;if(e.code==='Escape'&&!e.repeat){const overlays=[jobPanel,shopPanel,phonePanel,dealerPanel];const visible=overlays.find(p=>p&&!p.classList.contains('hidden'));if(visible){visible.classList.add('hidden');return;}togglePauseMenu();return;}if(e.code==='F1'){e.preventDefault();if(!e.repeat)togglePhone();return;}if(e.code==='KeyQ'&&!e.repeat){e.preventDefault();toggleQuickAccessWheel();return;}if(e.code==='KeyE'&&!e.repeat){if(!flToggleHome()&&!tryRefuelAtPump())toggleShopOrDealer();}if(e.code==='KeyF'&&!e.repeat){if(!tryStartBoat()&&!tryStartFlight())toggleVehicle();}if(e.code==='KeyG'&&!e.repeat)tryTakeoverVehicle();if(e.code==='KeyJ'&&!e.repeat)toggleJobs();if(e.code==='KeyL'&&!e.repeat)toggleFlashlight();if(e.code==='F5'&&!e.repeat){e.preventDefault();flSaveGame(true);}if(e.code==='KeyC'&&!e.repeat)cycleCamera();if(e.code==='Escape'&&jobPanel&&!jobPanel.classList.contains('hidden'))jobPanel.classList.add('hidden');if(e.code==='Escape'&&shopPanel&&!shopPanel.classList.contains('hidden'))shopPanel.classList.add('hidden');if(e.code==='Escape'&&phonePanel&&!phonePanel.classList.contains('hidden'))phonePanel.classList.add('hidden');if(e.code==='Escape')document.querySelector('#quickAccessWheel')?.classList.add('hidden');if(e.code==='Escape'&&!e.repeat&&(!jobPanel||jobPanel.classList.contains('hidden'))&&(!shopPanel||shopPanel.classList.contains('hidden'))&&(!phonePanel||phonePanel.classList.contains('hidden'))&&(!dealerPanel||dealerPanel.classList.contains('hidden')))togglePauseMenu();if(e.code==='Escape'&&dealerPanel&&!dealerPanel.classList.contains('hidden'))dealerPanel.classList.add('hidden');if(['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code))e.preventDefault();});
+document.addEventListener('keydown',e=>{keys[e.code]=true;keyboardKeys[e.code]=true;if(e.code==='Escape'&&!e.repeat){const overlays=[jobPanel,shopPanel,phonePanel,dealerPanel];const visible=overlays.find(p=>p&&!p.classList.contains('hidden'));if(visible){visible.classList.add('hidden');return;}togglePauseMenu();return;}if(e.code==='F1'){e.preventDefault();if(!e.repeat)togglePhone();return;}if(e.code==='KeyQ'&&!e.repeat){e.preventDefault();toggleQuickAccessWheel();return;}if(e.code==='KeyE'&&!e.repeat){if(!flToggleHome()&&!tryRefuelAtPump())toggleShopOrDealer();}if(e.code==='KeyF'&&!e.repeat){if(!tryStartBoat()&&!tryStartFlight())toggleVehicle();}if(e.code==='KeyH'&&!e.repeat)toggleCarHood();if(e.code==='KeyG'&&!e.repeat)tryTakeoverVehicle();if(e.code==='KeyJ'&&!e.repeat)toggleJobs();if(e.code==='KeyL'&&!e.repeat)toggleFlashlight();if(e.code==='F5'&&!e.repeat){e.preventDefault();flSaveGame(true);}if(e.code==='KeyC'&&!e.repeat)cycleCamera();if(e.code==='Escape'&&jobPanel&&!jobPanel.classList.contains('hidden'))jobPanel.classList.add('hidden');if(e.code==='Escape'&&shopPanel&&!shopPanel.classList.contains('hidden'))shopPanel.classList.add('hidden');if(e.code==='Escape'&&phonePanel&&!phonePanel.classList.contains('hidden'))phonePanel.classList.add('hidden');if(e.code==='Escape')document.querySelector('#quickAccessWheel')?.classList.add('hidden');if(e.code==='Escape'&&!e.repeat&&(!jobPanel||jobPanel.classList.contains('hidden'))&&(!shopPanel||shopPanel.classList.contains('hidden'))&&(!phonePanel||phonePanel.classList.contains('hidden'))&&(!dealerPanel||dealerPanel.classList.contains('hidden')))togglePauseMenu();if(e.code==='Escape'&&dealerPanel&&!dealerPanel.classList.contains('hidden'))dealerPanel.classList.add('hidden');if(['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code))e.preventDefault();});
 document.addEventListener('keyup',e=>{keys[e.code]=false;keyboardKeys[e.code]=false;});
 window.addEventListener('resize',resize);
 

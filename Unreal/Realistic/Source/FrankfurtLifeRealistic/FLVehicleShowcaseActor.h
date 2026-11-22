@@ -15,6 +15,7 @@ class FRANKFURTLIFEREALISTIC_API AFLVehicleShowcaseActor : public APawn
     GENERATED_BODY()
 public:
     AFLVehicleShowcaseActor();
+    virtual void Tick(float DeltaSeconds) override;
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Vehicle")
     int32 VehicleStyle = 0;
     void EnterVehicle(AFLRealisticCharacter* Character);

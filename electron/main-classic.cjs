@@ -1,5 +1,9 @@
 const { app, BrowserWindow, shell } = require('electron');
 const path = require('node:path');
+// Prefer hardware WebGL, but allow Chromium's bundled SwiftShader fallback on blocked/unsupported GPUs.
+app.commandLine.appendSwitch('enable-webgl');
+app.commandLine.appendSwitch('ignore-gpu-blocklist');
+app.commandLine.appendSwitch('enable-unsafe-swiftshader');
 function createWindow(){
  const win=new BrowserWindow({width:1440,height:900,minWidth:980,minHeight:680,show:false,backgroundColor:'#07111f',autoHideMenuBar:true,title:'Frankfurt Life Launcher',webPreferences:{contextIsolation:true,nodeIntegration:false,sandbox:true}});
  win.once('ready-to-show',()=>win.show());

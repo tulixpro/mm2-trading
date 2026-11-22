@@ -82,6 +82,7 @@ let flPolicePursuit=null,flPoliceCooldown=0;
 const shops=[];
 const shopPickupItems=[];
 const flSpeedBumps=[];
+let flAmbientEvents=null,flAmbientEventTimer=38,flAmbientEventCooldown=0,flForestSoundTimer=9;
 const inventory={Kaffee:0,Snack:0,Stadtplan:0,Brot:0,Brezel:0,Croissant:0,Kuchen:0};
 let miniMapCanvas=null,miniMapCtx=null,tuningLevel=0,paintLevel=0,turboLevel=0,suspensionLevel=0,tuningMods={spoiler:false,lowered:false,tinted:false,rims:false},mouseSensitivity=1,cameraFov=68;
 let appetite=65;
@@ -197,6 +198,97 @@ function flBuildForest(){
   segment.position.set(Math.sin(i*.72)*11,.005,-78+i*19);segment.rotation.y=Math.sin(i*.72)*.18;forest.add(segment);
  }
  forest.position.set(112,0,75);scene.add(forest);
+}
+function flBuildAmbientEvents(){
+ const root=new THREE.Group();
+ const accident=new THREE.Group(),forestry=new THREE.Group();
+ const bodyMat=new THREE.MeshStandardMaterial({color:0x56616a,roughness:.72,metalness:.18});
+ const darkMat=new THREE.MeshStandardMaterial({color:0x17212a,roughness:.85});
+ const redMat=new THREE.MeshStandardMaterial({color:0xb52c2c,roughness:.55});
+ const amberMat=new THREE.MeshStandardMaterial({color:0xffb52e,emissive:0xff8a12,emissiveIntensity:1.2});
+ const blueMat=new THREE.MeshStandardMaterial({color:0x2678d8,emissive:0x1259d0,emissiveIntensity:1.2});
+ const makeIncidentCar=(x,z,rot,color)=>{
+  const car=new THREE.Group();
+  const shell=new THREE.Mesh(new THREE.BoxGeometry(2, .68, 4.1),new THREE.MeshStandardMaterial({color,roughness:.55,metalness:.22}));
+  shell.position.y=.72;car.add(shell);
+  const cabin=new THREE.Mesh(new THREE.BoxGeometry(1.62,.62,1.9),new THREE.MeshStandardMaterial({color:0x263b49,roughness:.22,metalness:.12,transparent:true,opacity:.8}));
+  cabin.position.set(0,1.31,-.12);car.add(cabin);
+  for(const side of [-1,1])for(const zoff of [-1.35,1.35]){
+   const wheel=new THREE.Mesh(new THREE.CylinderGeometry(.37,.37,.2,12),darkMat);wheel.rotation.z=Math.PI/2;wheel.position.set(side*1.02,.38,zoff);car.add(wheel);
+  }
+  car.position.set(x,0,z);car.rotation.y=rot;return car;
+ };
+ accident.add(makeIncidentCar(11.3,-42,.18,0x8a4440),makeIncidentCar(14.4,-45,-.28,0x7a858b));
+ for(let i=0;i<6;i++){
+  const cone=new THREE.Mesh(new THREE.ConeGeometry(.28,.72,8),new THREE.MeshStandardMaterial({color:0xf08b28,roughness:.7}));
+  cone.position.set(10.4+(i%3)*2.1,.36,-49+Math.floor(i/3)*3.2);accident.add(cone);
+ }
+ const beacon=new THREE.Group();
+ const beaconBase=new THREE.Mesh(new THREE.CylinderGeometry(.42,.5,.24,12),darkMat);beaconBase.position.y=.12;beacon.add(beaconBase);
+ const beaconLight=new THREE.Mesh(new THREE.SphereGeometry(.27,12,8),amberMat);beaconLight.position.y=.42;beacon.add(beaconLight);
+ beacon.position.set(13,0,-40);accident.add(beacon);
+ const workBody=new THREE.Mesh(new THREE.BoxGeometry(2.4,1.25,3.5),new THREE.MeshStandardMaterial({color:0xd6a52b,roughness:.68}));
+ workBody.position.set(0,1.05,0);forestry.add(workBody);
+ const cabin=new THREE.Mesh(new THREE.BoxGeometry(1.2,1.2,1.25),new THREE.MeshStandardMaterial({color:0x263c42,metalness:.12,roughness:.28,transparent:true,opacity:.82}));
+ cabin.position.set(0,2.05,-.72);forestry.add(cabin);
+ for(const side of [-1,1])for(const z of [-1.15,1.15]){
+  const wheel=new THREE.Mesh(new THREE.CylinderGeometry(.58,.58,.34,12),darkMat);wheel.rotation.z=Math.PI/2;wheel.position.set(side*1.22,.58,z);forestry.add(wheel);
+ }
+ const boom=new THREE.Mesh(new THREE.BoxGeometry(.28,.28,3.2),new THREE.MeshStandardMaterial({color:0xb88924,metalness:.3,roughness:.55}));
+ boom.position.set(0,2.55,2.15);boom.rotation.x=-.35;forestry.add(boom);
+ const head=new THREE.Mesh(new THREE.BoxGeometry(.8,.55,.75),darkMat);head.position.set(0,1.75,3.48);forestry.add(head);
+ // Gestapelte Stämme und ein frisch geschnittener Baumstumpf als sichtbare Forstarbeit.
+ const logMat=new THREE.MeshStandardMaterial({color:0x8a6745,roughness:1});
+ for(let i=0;i<5;i++){
+  const log=new THREE.Mesh(new THREE.CylinderGeometry(.24,.24,3.7,10),logMat);log.rotation.z=Math.PI/2;log.position.set(3.1, .25+(i%2)*.48, -1.5+Math.floor(i/2)*.72);forestry.add(log);
+ }
+ const stump=new THREE.Mesh(new THREE.CylinderGeometry(.38,.46,.52,10),logMat);stump.position.set(-3.2,.26,2.3);forestry.add(stump);
+ const warning=new THREE.Mesh(new THREE.BoxGeometry(2.3,1.35,.12),new THREE.MeshStandardMaterial({color:0xf0bd37,roughness:.75}));
+ warning.position.set(-3.5,1.1,-3.6);forestry.add(warning);
+ const warningText=new THREE.Mesh(new THREE.BoxGeometry(1.4,.16,.04),darkMat);warningText.position.set(-3.5,1.15,-3.51);forestry.add(warningText);
+ accident.visible=false;forestry.visible=false;
+ root.add(accident,forestry);root.position.set(0,0,0);scene.add(root);
+ flAmbientEvents={root,accident,forestry,beaconLight,workBody,boom,kind:null};
+}
+function flPlayAmbientEventSound(kind){
+ if(!flAudioContext||flAudioContext.state!=='running')return;
+ const now=flAudioContext.currentTime;
+ try{
+  if(kind==='forest'){
+   const osc=flAudioContext.createOscillator(),filter=flAudioContext.createBiquadFilter(),gain=flAudioContext.createGain();
+   osc.type='sawtooth';osc.frequency.setValueAtTime(92,now);osc.frequency.linearRampToValueAtTime(145,now+1.4);
+   filter.type='lowpass';filter.frequency.setValueAtTime(280,now);filter.frequency.linearRampToValueAtTime(620,now+1.4);
+   gain.gain.setValueAtTime(.0001,now);gain.gain.linearRampToValueAtTime(.028,now+.12);gain.gain.setValueAtTime(.028,now+1.1);gain.gain.linearRampToValueAtTime(.0001,now+1.8);
+   osc.connect(filter);filter.connect(gain);gain.connect(flAudioContext.destination);osc.start(now);osc.stop(now+1.85);
+  }else{
+   const osc=flAudioContext.createOscillator(),gain=flAudioContext.createGain();
+   osc.type='sine';osc.frequency.setValueAtTime(95,now);osc.frequency.exponentialRampToValueAtTime(38,now+.24);
+   gain.gain.setValueAtTime(.0001,now);gain.gain.linearRampToValueAtTime(.07,now+.018);gain.gain.exponentialRampToValueAtTime(.0001,now+.42);
+   osc.connect(gain);gain.connect(flAudioContext.destination);osc.start(now);osc.stop(now+.45);
+  }
+ }catch(_){}
+}
+function flUpdateAmbientEvents(dt,t){
+ if(!flAmbientEvents)return;
+ const e=flAmbientEvents;
+ if(e.kind){
+  if(e.kind==='accident'){e.beaconLight.material.emissiveIntensity=.45+Math.abs(Math.sin(t*5))*1.8;}
+  else{e.workBody.rotation.y=Math.sin(t*1.4)*.012;e.boom.rotation.x=-.35+Math.sin(t*1.8)*.045;}
+  e.duration-=dt;
+  if(e.duration<=0){e.accident.visible=false;e.forestry.visible=false;e.kind=null;flAmbientEventCooldown=65+Math.random()*55;flAmbientEventTimer=35+Math.random()*45;}
+ }else{
+  flAmbientEventCooldown=Math.max(0,flAmbientEventCooldown-dt);
+  flAmbientEventTimer-=dt;
+  if(flAmbientEventTimer<=0&&flAmbientEventCooldown<=0){
+   e.kind=Math.random()<.56?'accident':'forest';e.duration=48+Math.random()*35;
+   e.accident.visible=e.kind==='accident';e.forestry.visible=e.kind==='forest';
+   const px=driving&&jobCar?jobCar.position.x:camera.position.x,pz=driving&&jobCar?jobCar.position.z:camera.position.z;
+   const target=e.kind==='forest'?new THREE.Vector3(112,0,75):new THREE.Vector3(13,0,-43);
+   const near=Math.hypot(px-target.x,pz-target.z)<95;
+   if(near)flPlayAmbientEventSound(e.kind);
+   if(near)status.textContent=e.kind==='forest'?'FORSTARBEITEN · WALDWEG ZEITWEISE EINGESCHRÄNKT':'VERKEHRSUNFALL · BITTE LANGSAM AN DER EINSATZSTELLE VORBEIFAHREN';
+  }
+ }
 }
 function flBuildSpeedBumps(){
  flSpeedBumps.length=0;
@@ -1923,6 +2015,7 @@ function makeCity(){
   flBuildSpeedBumps();
   flBuildParkingGarage();
   flBuildForest();
+  flBuildAmbientEvents();
   const wetMain=new THREE.Mesh(new THREE.PlaneGeometry(17.8,519),new THREE.MeshPhongMaterial({color:0x526574,transparent:true,opacity:0,shininess:105,specular:0x8fa8bb,depthWrite:false}));wetMain.rotation.x=-Math.PI/2;wetMain.position.set(0,.012,-45);scene.add(wetMain);flWetRoadMaterials.push(wetMain.material);
   for(let z=-300;z<225;z+=12){const line=new THREE.Mesh(new THREE.PlaneGeometry(.18,5),new THREE.MeshBasicMaterial({color:0xe5dfc5}));line.rotation.x=-Math.PI/2;line.position.set(0,.015,z);scene.add(line);}
   const sidewalkMat=new THREE.MeshLambertMaterial({color:0x92999b});
@@ -2041,6 +2134,7 @@ function resize(){
 let flNearMissCooldown=0;
 function updateWorld(dt){
   const t=clock.elapsedTime;
+  flUpdateAmbientEvents(dt,t);
   for(const shop of shops){const lift=shop.lift;if(!lift)continue;if(lift.phase==='raising'||lift.phase==='lowering'){
    const direction=lift.phase==='raising'?1:-1;lift.progress=THREE.MathUtils.clamp(lift.progress+direction*dt*.32,0,1);
    lift.deck.position.y=.24+lift.progress*1.85;
@@ -2062,7 +2156,13 @@ function updateWorld(dt){
   if(takeoverTarget){takeoverProgress=Math.min(1,takeoverProgress+dt/1.8);if(takeoverActor){const side=new THREE.Vector3(Math.cos(takeoverTarget.rotation.y),0,-Math.sin(takeoverTarget.rotation.y));takeoverActor.position.copy(takeoverTarget.position).addScaledVector(side,1.25+takeoverProgress*2.2);takeoverActor.rotation.y=takeoverTarget.rotation.y;takeoverActor.children[2].rotation.x=Math.sin(t*8)*.28;takeoverActor.children[3].rotation.x=-Math.sin(t*8)*.28;}if(takeoverHud){const bar=takeoverHud.querySelector('i');if(bar)bar.style.width=(takeoverProgress*100)+'%';}if(takeoverProgress>=1){const target=takeoverTarget;takeoverTarget=null;takeoverProgress=0;if(takeoverActor){scene.remove(takeoverActor);takeoverActor=null;}if(takeoverHud)takeoverHud.classList.add('hidden');const idx=trafficCars.indexOf(target);if(idx>=0)trafficCars.splice(idx,1);target.userData.traffic=null;if(target.userData.npcDriver)target.userData.npcDriver.visible=false;jobCar=target;driving=true;carSpeed=0;carSlip=0;carYawRate=0;cameraLookOffset=0;damageLevel=0;yaw=jobCar.rotation.y-Math.PI;status.textContent='SZENE ABGESCHLOSSEN · FAHRZEUG STEHT JETZT ZUR VERFÜGUNG';}}
   for(const car of trafficCars){
     const traffic=car.userData.traffic;
-    car.position.z+=traffic.direction*traffic.speed*dt*60;
+    let followScale=1;
+    for(const other of trafficCars){
+      if(other===car||!other.userData.traffic)continue;
+      const ahead=(other.position.z-car.position.z)*traffic.direction;
+      if(Math.abs(other.position.x-car.position.x)<2.25&&ahead>0&&ahead<10&&other.userData.traffic.direction===traffic.direction){followScale=Math.min(followScale,THREE.MathUtils.clamp((ahead-3)/7,0,1));}
+    }
+    car.position.z+=traffic.direction*traffic.speed*followScale*dt*60;
     if(traffic.direction>0&&car.position.z>52)car.position.z=-122;
     if(traffic.direction<0&&car.position.z<-122)car.position.z=52;
   }
@@ -2565,7 +2665,7 @@ function move(dt=1/60){
     const roughSignal=inForest?(Math.sin(jobCar.position.x*.72+jobCar.position.z*.31)+Math.sin(jobCar.position.z*.93-jobCar.position.x*.22))*.018:0;
     const rideHeight=jobCar.userData.rideHeight||.055;
     const suspensionTravel=jobCar.userData.suspensionTravel||.13;
-    const terrainImpulse=terrainRoughness?roughSignal*(rideHeight>.12?1.55:1):0;
+    const terrainImpulse=terrainRoughness?THREE.MathUtils.clamp(roughSignal*(rideHeight>.12?1.55:1),-suspensionTravel,suspensionTravel):0;
     jobCar.position.y=rideHeight+bounceOffset+terrainImpulse;
     updateBreakableCollisions(dt);
     if(jobActive&&jobDestination&&jobCar.position.distanceTo(jobDestination)<4){

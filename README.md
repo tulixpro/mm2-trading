@@ -294,3 +294,13 @@ Two separate Unreal starter projects now live under [Unreal/](Unreal/):
 - [San Andreas Edition – Unreal Engine 4.27](Unreal/SanAndreas/FrankfurtLifeSanAndreas.uproject) for a lighter retro-styled target.
 
 These are **project scaffolds only**, not finished playable Unreal games. The existing browser/Electron game remains the playable prototype. The Unreal editions still need the city world, art assets, player/vehicle systems, missions, cutscenes, audio, packaging and hardware testing.
+
+
+## Straßen- und Fahrwerksupdate – Bremsschwellen
+
+- Auf der Hauptstraße stehen mehrere flache, gelb-schwarz markierte Bremsschwellen.
+- Beim Überfahren löst die Arcade-Fahrphysik abhängig vom Tempo einen gedämpften vertikalen Fahrwerksimpuls aus; Feder- und Dämpferdarstellung komprimieren dabei sichtbar.
+- Bei höherem Tempo fällt der Stoß stärker aus. Das ist eine vereinfachte Spielanimation und keine realistische Mehrkörper- oder Reifenphysik.
+- Die Motorprofile wurden mit mehr tiefem Frequenzanteil und kräftigerem Lastklang abgestimmt. Jede Fahrzeugklasse behält ihr eigenes synthetisches Klangprofil.
+- Es werden keine Originalaufnahmen von Fahrzeugherstellern verwendet. Dafür wären passende Lizenzen oder vom Nutzer bereitgestellte, rechtmäßig nutzbare Audiodateien erforderlich.
+- Änderungen sind im Quellcode gespeichert; ein Browser-/Gerätetest wurde noch nicht durchgeführt.

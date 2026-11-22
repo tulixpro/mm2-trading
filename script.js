@@ -181,7 +181,9 @@ const dealerCars=[
  {id:'van',name:'Cargo Van',model:'van',color:0xe6e8e8,price:2400,desc:'Viel Platz für Transportjobs.'},
  {id:'bmw-xm-label',name:'XM Label · 748 PS',model:'suv',color:0x263b35,price:185000,performance:{top:250,power:1.58},desc:'Großes Performance-SUV · 748 PS · prozedurales Platzhaltermodell, kein Original-3D-Scan.'},
  {id:'bmw-m3-touring',name:'BMW M3 Competition Touring · 530 PS',model:'sedan',color:0x1c3548,price:118000,performance:{top:250,power:1.42},desc:'530 PS · 650 Nm · 0–100 km/h: 3,6 s · generische Platzhalter-Karosserie, kein lizenziertes BMW-3D-Modell.'},
- {id:'porsche-911-gts',name:'Porsche 911 Carrera GTS · 541 PS',model:'super',color:0x8f171d,price:165000,performance:{top:312,power:1.5},desc:'541 PS Systemleistung · 610 Nm Systemdrehmoment · 0–100 km/h: 3,0 s · generische Platzhalter-Karosserie, kein lizenziertes Porsche-3D-Modell.'}
+ {id:'porsche-911-gts',name:'Porsche 911 Carrera GTS · 541 PS',model:'super',color:0x8f171d,price:165000,performance:{top:312,power:1.5},desc:'541 PS Systemleistung · 610 Nm Systemdrehmoment · 0–100 km/h: 3,0 s · generische Platzhalter-Karosserie, kein lizenziertes Porsche-3D-Modell.'},
+ {id:'estate-wagon',name:'Executive Touring',model:'wagon',color:0x263b45,price:42000,performance:{top:225,power:1.08},desc:'Langer Kombi mit verlängerter Dachlinie und großem Heckbereich.'},
+ {id:'pickup-4x4',name:'Ranger 4×4',model:'pickup',color:0x6a7467,price:36500,performance:{top:185,power:.98},desc:'Robuster Pickup mit separater offener Ladefläche und hoher Karosserie.'}
 ];
 let dealerPanel=null,dealership={x:-28,z:82,name:'Frankfurt Motors'};
 /* 0.2.9 gameplay systems */
@@ -733,19 +735,21 @@ function makeCar(x,z,color,police=false,model='sedan',performanceOverride=null){
     sportback:{length:4.8,width:1.95,height:.62,cabin:1.7,roof:1.35,hood:1.55},
     coupe:{length:4.9,width:1.98,height:.65,cabin:1.5,roof:1.36,hood:1.6},
     van:{length:5.1,width:2.0,height:.9,cabin:2.05,roof:1.8,hood:1.05},
-    suv:{length:5.1,width:2.05,height:.86,cabin:1.82,roof:1.62,hood:1.45}
+    suv:{length:5.1,width:2.05,height:.86,cabin:1.82,roof:1.62,hood:1.45},
+    wagon:{length:4.95,width:1.92,height:.7,cabin:1.72,roof:1.48,hood:1.48},
+    pickup:{length:5.25,width:2.02,height:.84,cabin:1.55,roof:1.32,hood:1.52}
   }[model]||{length:4.5,width:1.9,height:.65,cabin:1.55,roof:1.35,hood:1.5};
   const L=profile.length,W=profile.width;
   const vehiclePerformance={
     hatch:{top:175,power:.82},sedan:{top:215,power:1.0},
     sportback:{top:245,power:1.12},coupe:{top:265,power:1.2},
     super:{top:335,power:1.55},van:{top:155,power:.72},
-    suv:{top:250,power:1.58}
+    suv:{top:250,power:1.58},wagon:{top:225,power:1.08},pickup:{top:185,power:.98}
   }[model]||{top:190,power:.95};
   if(performanceOverride){vehiclePerformance.top=performanceOverride.top||vehiclePerformance.top;vehiclePerformance.power=performanceOverride.power||vehiclePerformance.power;}
   car.userData.maxSpeedKmh=vehiclePerformance.top;
   car.userData.enginePower=vehiclePerformance.power;
-  const soundProfiles={hatch:{idle:42,range:128,wave:'sawtooth',filter:720},sedan:{idle:34,range:105,wave:'triangle',filter:590},sportback:{idle:48,range:145,wave:'sawtooth',filter:980},coupe:{idle:38,range:138,wave:'sawtooth',filter:840},super:{idle:55,range:185,wave:'sawtooth',filter:1450},van:{idle:28,range:82,wave:'triangle',filter:480},suv:{idle:32,range:112,wave:'square',filter:650}};
+  const soundProfiles={hatch:{idle:42,range:128,wave:'sawtooth',filter:720},sedan:{idle:34,range:105,wave:'triangle',filter:590},sportback:{idle:48,range:145,wave:'sawtooth',filter:980},coupe:{idle:38,range:138,wave:'sawtooth',filter:840},super:{idle:55,range:185,wave:'sawtooth',filter:1450},van:{idle:28,range:82,wave:'triangle',filter:480},suv:{idle:32,range:112,wave:'square',filter:650},wagon:{idle:36,range:118,wave:'triangle',filter:680},pickup:{idle:30,range:96,wave:'square',filter:560}};
   car.userData.engineSoundProfile=soundProfiles[model]||soundProfiles.sedan;
   car.userData.maxForwardSpeed=.47*(vehiclePerformance.top/240)*vehiclePerformance.power;
   const lower=new THREE.Mesh(new THREE.BoxGeometry(W,.48,L),paint);lower.position.y=.58;car.add(lower);
@@ -1082,6 +1086,16 @@ function makeCar(x,z,color,police=false,model='sedan',performanceOverride=null){
       addDetail(new THREE.BoxGeometry(.045,.34,.72),glass,side*W*.505,1.38,-L*.22);
     }
     addDetail(new THREE.BoxGeometry(W*.78,.09,.12),chrome,0,1.76,-L*.49);
+  }
+  if(model==='wagon'){
+    addDetail(new THREE.BoxGeometry(W*.72,.12,L*.43),paint,0,1.08+profile.cabin/2,-.31);
+    for(const side of [-1,1])addDetail(new THREE.BoxGeometry(.045,.05,L*.38),chrome,side*W*.38,1.58,-.28);
+    addDetail(new THREE.BoxGeometry(W*.62,.12,.09),black,0,.72,-L*.52);
+  }
+  if(model==='pickup'){
+    const bedFloor=addDetail(new THREE.BoxGeometry(W*.68,.1,L*.31),black,0,.82,-L*.34);
+    for(const side of [-1,1]){addDetail(new THREE.BoxGeometry(.12,.38,L*.34),paint,side*W*.39,1.0,-L*.34);addDetail(new THREE.BoxGeometry(.12,.34,.12),paint,side*W*.39,1.0,-L*.16);addDetail(new THREE.BoxGeometry(.12,.34,.12),paint,side*W*.39,1.0,-L*.52);}
+    addDetail(new THREE.BoxGeometry(W*.7,.08,.1),chrome,0,1.22,-L*.52);
   }
   if(model==='super'){
     addDetail(new THREE.BoxGeometry(W*.72,.08,.72),trim,0,.68,-L*.28);

@@ -1428,15 +1428,15 @@ function flBuildReflectionEnvironment(){
  scene.environment=tex;scene.environmentIntensity=.9;
 }
 function makeCity(){
-  const skyColor=classicEdition?0xb99a70:0x91b1c8;scene=new THREE.Scene();scene.background=new THREE.Color(skyColor);scene.fog=new THREE.Fog(skyColor,classicEdition?72:95,classicEdition?135:(liteMode?175:260));
+  const skyColor=classicEdition?0xb99a70:0x91b1c8;scene=new THREE.Scene();scene.background=new THREE.Color(skyColor);scene.fog=new THREE.Fog(skyColor,classicEdition?82:105,classicEdition?155:(liteMode?195:340));
   if(!classicEdition)flBuildReflectionEnvironment();
-  camera=new THREE.PerspectiveCamera(cameraFov,viewport.clientWidth/viewport.clientHeight,.1,620);camera.position.set(0,2.1,14);
+  camera=new THREE.PerspectiveCamera(cameraFov,viewport.clientWidth/viewport.clientHeight,.1,900);camera.position.set(0,2.1,14);
   flashlight=new THREE.SpotLight(0xddeeff,0,48,Math.PI/7,.42,1.35);
   flashlight.position.set(0,0,0);flashlightTarget=new THREE.Object3D();flashlightTarget.position.set(0,0,-1);
   camera.add(flashlight,flashlightTarget);flashlight.target=flashlightTarget;
   hemiLight=new THREE.HemisphereLight(classicEdition?0xffd69a:0xd7ecff,classicEdition?0x66513a:0x4a5260,classicEdition?1.65:2);scene.add(hemiLight);
   sunLight=new THREE.DirectionalLight(classicEdition?0xffc078:0xffe0b4,classicEdition?1.25:1.5);sunLight.position.set(-25,45,25);sunLight.castShadow=false;scene.add(sunLight);
-  const ground=new THREE.Mesh(new THREE.PlaneGeometry(900,700),new THREE.MeshLambertMaterial({color:0x58636b}));ground.rotation.x=-Math.PI/2;ground.position.set(0,-.12,-80);scene.add(ground);
+  const ground=new THREE.Mesh(new THREE.PlaneGeometry(1100,900),new THREE.MeshLambertMaterial({color:0x58636b}));ground.rotation.x=-Math.PI/2;ground.position.set(0,-.12,-80);scene.add(ground);
   const road=new THREE.Mesh(new THREE.PlaneGeometry(18,520),new THREE.MeshStandardMaterial({color:0x202a35,roughness:.94,metalness:.02}));road.rotation.x=-Math.PI/2;road.position.set(0,0,-45);scene.add(road);
   const wetMain=new THREE.Mesh(new THREE.PlaneGeometry(17.8,519),new THREE.MeshPhongMaterial({color:0x526574,transparent:true,opacity:0,shininess:105,specular:0x8fa8bb,depthWrite:false}));wetMain.rotation.x=-Math.PI/2;wetMain.position.set(0,.012,-45);scene.add(wetMain);flWetRoadMaterials.push(wetMain.material);
   for(let z=-300;z<225;z+=12){const line=new THREE.Mesh(new THREE.PlaneGeometry(.18,5),new THREE.MeshBasicMaterial({color:0xe5dfc5}));line.rotation.x=-Math.PI/2;line.position.set(0,.015,z);scene.add(line);}
@@ -1518,6 +1518,7 @@ function makeCity(){
   createPedestrianDistrict();
   buildFrankfurtStadiumAndPark();
   buildFrankfurtLuxuryQuarter();
+  buildFrankfurtCityExpansion();
   for(let i=0;i<(liteMode?7:24);i++){
     const side=i%2===0?-1:1;
     makePedestrian(side*(9.1+(i%4)*.38),-108+(i*9.7)%128,i);
@@ -1626,6 +1627,96 @@ function buildFrankfurtLuxuryQuarter(){
  }
  for(const x of [-16,16]){const bollard=new THREE.Mesh(new THREE.CylinderGeometry(.16,.19,.9,10),gold);bollard.position.set(x,.45,35);quarter.add(bollard);}
  quarter.position.set(212,0,132);scene.add(quarter);
+}
+
+function buildFrankfurtCityExpansion(){
+ // Larger outer city ring: northern residential district and an eastern premium boulevard.
+ const roadMat=new THREE.MeshStandardMaterial({color:0x26313b,roughness:.96});
+ const pavementMat=new THREE.MeshStandardMaterial({color:0x9ca2a0,roughness:.92});
+ const curbMat=new THREE.MeshStandardMaterial({color:0x667278,roughness:.86});
+ const lineMat=new THREE.MeshBasicMaterial({color:0xe5dfca});
+ // Extend the central avenue north and south so the original city no longer ends abruptly.
+ const spine=new THREE.Mesh(new THREE.PlaneGeometry(18,690),roadMat);spine.rotation.x=-Math.PI/2;spine.position.set(0,.002,-55);scene.add(spine);
+ for(const x of [-9.2,9.2]){
+  const walk=new THREE.Mesh(new THREE.BoxGeometry(3.5,.22,690),pavementMat);walk.position.set(x,.08,-55);scene.add(walk);
+  const curb=new THREE.Mesh(new THREE.BoxGeometry(.18,.25,690),curbMat);curb.position.set(x+(x<0?1.7:-1.7),.13,-55);scene.add(curb);
+ }
+ for(let z=-385;z<=275;z+=14){
+  const dash=new THREE.Mesh(new THREE.PlaneGeometry(.16,5.8),lineMat);dash.rotation.x=-Math.PI/2;dash.position.set(0,.016,z);scene.add(dash);
+ }
+ // Northern neighbourhood, with a connected grid, apartment blocks and pocket gardens.
+ for(const x of [-150,-95,95,150]){
+  const avenue=new THREE.Mesh(new THREE.PlaneGeometry(9,150),roadMat);avenue.rotation.x=-Math.PI/2;avenue.position.set(x,.006,-330);scene.add(avenue);
+  for(const side of [-1,1]){
+   const walk=new THREE.Mesh(new THREE.BoxGeometry(2.4,.18,150),pavementMat);walk.position.set(x+side*6,.07,-330);scene.add(walk);
+  }
+ }
+ for(const z of [-390,-350,-310,-270]){
+  const cross=new THREE.Mesh(new THREE.PlaneGeometry(330,8),roadMat);cross.rotation.x=-Math.PI/2;cross.position.set(0,.009,z);scene.add(cross);
+  for(const x of [-132,-58,58,132]){
+   const h=18+((Math.abs(x/10)+Math.abs(z/10))%4)*5;
+   if(Math.abs(x)>100)residentialBuilding(x,z+13,15,17,h,[0xbeb7a8,0x9aa9ad,0xc9c0b2,0x83939b][Math.abs(Math.round(z/10))%4]);
+   else building(x,z+13,15,17,h,[0x788993,0xb4b4aa,0x9daeb2,0xc1b6a5][Math.abs(Math.round(x/10))%4]);
+  }
+  for(const x of [-170,-85,85,170]){
+   const dash=new THREE.Mesh(new THREE.PlaneGeometry(3.2,.18),lineMat);dash.rotation.x=-Math.PI/2;dash.position.set(x,.018,z);scene.add(dash);
+  }
+ }
+ for(let z=-390;z<=-270;z+=20)for(const x of [-176,-112,112,176])streetLamp(x,z);
+ for(let z=-375;z<=-285;z+=30)for(const x of [-72,72])tree(x,z);
+ // Eastern extension: a wide boulevard, landscaped median and a second luxury destination.
+ for(const x of [245,305,365]){
+  const avenue=new THREE.Mesh(new THREE.PlaneGeometry(10,360),roadMat);avenue.rotation.x=-Math.PI/2;avenue.position.set(x,.008,-30);scene.add(avenue);
+  for(const side of [-1,1]){
+   const walk=new THREE.Mesh(new THREE.BoxGeometry(2.6,.2,360),pavementMat);walk.position.set(x+side*6.4,.075,-30);scene.add(walk);
+  }
+ }
+ for(const z of [-190,-110,-30,50,130,210]){
+  const cross=new THREE.Mesh(new THREE.PlaneGeometry(190,8),roadMat);cross.rotation.x=-Math.PI/2;cross.position.set(305,.01,z);scene.add(cross);
+  for(const x of [270,340]){
+   if(z>90){
+    building(x,z+14,17,18,25+((Math.abs(x+z)%3)*7),[0x9ba9ac,0xc6bba8,0x7e929d][Math.abs(Math.round(z/10))%3]);
+   }else if(z<-90){
+    residentialBuilding(x,z+14,16,18,18+((Math.abs(x+z)%3)*5),[0xb9b5a9,0x9baab0,0xc5b9a8][Math.abs(Math.round(x/10))%3]);
+   }else{
+    building(x,z+14,16,18,22+((Math.abs(x+z)%3)*6),[0x899da5,0xbdb6a7,0x758992][Math.abs(Math.round(x/10))%3]);
+   }
+  }
+ }
+ // Signature luxury promenade at the new eastern edge.
+ const promenade=new THREE.Group();
+ const marble=new THREE.MeshStandardMaterial({color:0xd5c9b5,roughness:.62});
+ const bronze=new THREE.MeshStandardMaterial({color:0x98794c,roughness:.3,metalness:.76});
+ const waterMat=new THREE.MeshStandardMaterial({color:0x5797a5,roughness:.12,metalness:.38,transparent:true,opacity:.92});
+ const deck=new THREE.Mesh(new THREE.PlaneGeometry(54,82),marble);deck.rotation.x=-Math.PI/2;deck.position.y=.025;promenade.add(deck);
+ for(const z of [-31,31])for(const x of [-20,20]){
+  const planter=new THREE.Mesh(new THREE.BoxGeometry(8,.72,4),bronze);planter.position.set(x,.36,z);promenade.add(planter);
+  for(let i=0;i<5;i++){const shrub=new THREE.Mesh(new THREE.SphereGeometry(.72,8,6),new THREE.MeshStandardMaterial({color:0x426b4d,roughness:1}));shrub.position.set(x-2.5+i*1.25,1.05,z);promenade.add(shrub);}
+ }
+ const pool=new THREE.Mesh(new THREE.BoxGeometry(17,.65,31),bronze);pool.position.set(0,.36,0);promenade.add(pool);
+ const water=new THREE.Mesh(new THREE.BoxGeometry(15,.08,29),waterMat);water.position.set(0,.73,0);promenade.add(water);
+ for(const x of [-23,23])for(const z of [-25,-8,9,26]){
+  const pole=new THREE.Mesh(new THREE.CylinderGeometry(.07,.12,5.8,8),bronze);pole.position.set(x,2.9,z);promenade.add(pole);
+  const glow=new THREE.Mesh(new THREE.SphereGeometry(.3,10,8),new THREE.MeshStandardMaterial({color:0xffe3b4,emissive:0x98703b,emissiveIntensity:.75}));glow.position.set(x,5.85,z);promenade.add(glow);
+ }
+ const pergola=new THREE.Group();
+ for(const x of [-7,7])for(const z of [-8,8]){
+  const post=new THREE.Mesh(new THREE.BoxGeometry(.28,4.8,.28),bronze);post.position.set(x,2.4,z);pergola.add(post);
+ }
+ for(let z=-8;z<=8;z+=2.2){const beam=new THREE.Mesh(new THREE.BoxGeometry(14,.2,.22),bronze);beam.position.set(0,4.9,z);pergola.add(beam);}
+ pergola.position.set(0,0,-38);promenade.add(pergola);
+ promenade.position.set(305,0,165);scene.add(promenade);
+ for(const z of [-190,-150,-70,10,90,170,230])for(const x of [238,312,382])streetLamp(x,z);
+ for(const z of [-165,-95,-25,45,115,185])for(const x of [230,380])tree(x,z);
+ // A compact skyline silhouette at the edge of the playable district.
+ for(const [x,z,w,d,h] of [[392,-145,19,18,62],[392,-45,17,18,48],[392,55,20,18,70],[392,205,18,18,54]]){
+  const tower=new THREE.Group();
+  const shell=new THREE.MeshStandardMaterial({color:0x607783,roughness:.24,metalness:.42});
+  const core=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),shell);core.position.y=h/2;tower.add(core);
+  const crown=new THREE.Mesh(new THREE.BoxGeometry(w*.65,.8,d*.65),bronze);crown.position.y=h+.4;tower.add(crown);
+  for(let y=5;y<h-2;y+=5){const band=new THREE.Mesh(new THREE.BoxGeometry(w+.1,.12,d+.1),marble);band.position.y=y;tower.add(band);}
+  tower.position.set(x,0,z);scene.add(tower);
+ }
 }
 
 function buildFrankfurtStadiumAndPark(){

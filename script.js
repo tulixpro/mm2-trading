@@ -34,9 +34,24 @@ function flLoadVehicleVisual(car,model,color,W,L){
       node.castShadow=true;node.receiveShadow=true;
       const mats=Array.isArray(node.material)?node.material:[node.material];
       const cloned=mats.map(mat=>{
-        const copy=mat.clone();
-        if(copy.color&&/paint|body|shell|car.?paint/i.test(copy.name||''))copy.color.setHex(color);
-        if('envMapIntensity' in copy)copy.envMapIntensity=1.25;
+        const label=((node.name||'')+' '+(mat.name||'')).toLowerCase();
+        let copy=mat.clone();
+        if(mat.isMeshStandardMaterial||mat.isMeshPhysicalMaterial){
+          copy=new THREE.MeshPhysicalMaterial().copy(mat);
+          copy.envMapIntensity=1.3;
+          copy.clearcoat=.28;
+          copy.clearcoatRoughness=.24;
+          if(/body|paint|shell|hood|bonnet|door|fender|bumper|exterior|karosserie/.test(label)){
+            copy.clearcoat=.92;
+            copy.clearcoatRoughness=.12;
+            copy.roughness=Math.min(copy.roughness??.32,.28);
+            copy.metalness=Math.max(copy.metalness??0,.22);
+          }else if(/glass|window|windshield|windscreen/.test(label)){
+            copy.roughness=.12;
+            copy.envMapIntensity=1.55;
+          }
+        }
+        if(copy.color&&/paint|body|shell|car.?paint/i.test(mat.name||''))copy.color.setHex(color);
         return copy;
       });
       node.material=Array.isArray(node.material)?cloned:cloned[0];
@@ -638,7 +653,35 @@ function flClaimDaily(){flCheckDailyDate();if(flDailyClaimed){status.textContent
 
 function flBuildStatus(){flWeatherLabel=document.createElement('div');flWeatherLabel.style.cssText='position:absolute;left:16px;top:16px;z-index:8;padding:7px 10px;border:1px solid #ffffff35;border-radius:8px;background:#101b2ddd;color:#eaf6ff;font:700 11px system-ui;pointer-events:none';viewport.appendChild(flWeatherLabel);flFuelLabel=document.createElement('div');flFuelLabel.style.cssText='position:absolute;left:16px;top:52px;z-index:8;padding:7px 10px;border:1px solid #ffffff35;border-radius:8px;background:#101b2ddd;color:#eaf6ff;font:700 11px system-ui;pointer-events:none';viewport.appendChild(flFuelLabel);flUpdateStatus();}
 function flUpdateStatus(){if(flWeatherLabel)flWeatherLabel.textContent='🕒 '+String(Math.floor(flGameHour)).padStart(2,'0')+':'+String(Math.floor(flGameHour%1*60)).padStart(2,'0')+' · '+flWeather;if(flFuelLabel)flFuelLabel.textContent='⛽ TANK: '+Math.round(flFuel)+'%';}
-function flApplyWeather(){if(!scene||!sunLight||!hemiLight)return;const wet=flWeather==='Regen';const night=flGameHour<6||flGameHour>20;for(const lamp of streetLights){const active=night||flWeather==='Nebel';const wet=flWeather==='Regen';lamp.glow.intensity=active?(classicEdition?.72:1.05):0;lamp.bulb.material.emissiveIntensity=active?(classicEdition?.7:1.05):.12;lamp.halo.material.opacity=active?.18:0;if(lamp.pool)lamp.pool.material.opacity=active?(classicEdition?.055:.075):0;if(lamp.reflection)lamp.reflection.material.opacity=active&&wet?(classicEdition?.12:.2):0;}for(const mat of flWetRoadMaterials){mat.opacity=wet?.34:0;mat.needsUpdate=true;}if(flRainPoints)flRainPoints.visible=wet;const daylight=Math.max(.18,Math.sin((flGameHour-6)/14*Math.PI)),factor=flWeather==='Regen'?.62:flWeather==='Nebel'?.72:flWeather==='Bewölkt'?.82:1;sunLight.intensity=(night?.22:.55+daylight*1.25)*factor;sunLight.color.setHex(night?0x9bb8e8:classicEdition?(flWeather==='Regen'?0xc5a77d:0xffc078):(flWeather==='Regen'?0xaabbd0:0xffe0b4));hemiLight.intensity=(night?.65:1.1+daylight*.85)*factor;const color=night?0x17283d:classicEdition?(flWeather==='Nebel'?0xa99b80:flWeather==='Regen'?0x8c806b:flWeather==='Bewölkt'?0xa69778:0xb99a70):(flWeather==='Nebel'?0xaab6bc:flWeather==='Regen'?0x71899a:flWeather==='Bewölkt'?0x91a2ad:0x91b1c8);scene.background.setHex(color);if(scene.fog)scene.fog.color.setHex(color);}
+let flCarEnvTarget=null,flCarEnvKey='';
+function flUpdateCarEnvironment(){
+  if(classicEdition||!renderer||!scene)return;
+  const hour=Math.floor(flGameHour),weather=flWeather,key=hour+'|'+weather;
+  if(key===flCarEnvKey)return;
+  const canvas=document.createElement('canvas');canvas.width=512;canvas.height=256;
+  const ctx=canvas.getContext('2d');if(!ctx)return;
+  const night=hour<6||hour>20,cloudy=weather==='Bewölkt'||weather==='Nebel'||weather==='Regen';
+  const sky=ctx.createLinearGradient(0,0,0,256);
+  if(night){sky.addColorStop(0,'#071426');sky.addColorStop(.62,'#24384d');sky.addColorStop(1,'#59616a');}
+  else if(cloudy){sky.addColorStop(0,'#667987');sky.addColorStop(.65,'#aab8c0');sky.addColorStop(1,'#777f83');}
+  else{sky.addColorStop(0,'#2878b7');sky.addColorStop(.62,'#a9d3e8');sky.addColorStop(1,'#f2c995');}
+  ctx.fillStyle=sky;ctx.fillRect(0,0,512,256);
+  const sunX=256+Math.sin((hour-12)/12*Math.PI)*174,sunY=night?65:42+Math.abs(hour-12)*3;
+  const glow=ctx.createRadialGradient(sunX,sunY,3,sunX,sunY,cloudy?52:94);
+  glow.addColorStop(0,night?'rgba(180,205,255,.2)':cloudy?'rgba(255,240,215,.22)':'rgba(255,245,205,.9)');
+  glow.addColorStop(1,'rgba(255,235,190,0)');
+  ctx.fillStyle=glow;ctx.fillRect(0,0,512,190);
+  if(!night){ctx.beginPath();ctx.arc(sunX,sunY,cloudy?7:13,0,Math.PI*2);ctx.fillStyle=cloudy?'rgba(255,245,225,.35)':'#fff4cf';ctx.fill();}
+  ctx.fillStyle=night?'#101c2b':'#45535a';
+  for(let x=0;x<512;){const w=12+((x*17)%25),h=18+((x*29)%62);ctx.fillRect(x,184-h,w,h);x+=w+4;}
+  ctx.fillStyle=night?'#182638':'#6b777b';ctx.fillRect(0,184,512,72);
+  const texture=new THREE.CanvasTexture(canvas);texture.mapping=THREE.EquirectangularReflectionMapping;texture.colorSpace=THREE.SRGBColorSpace;
+  const generator=new THREE.PMREMGenerator(renderer);
+  const target=generator.fromEquirectangular(texture);generator.dispose();texture.dispose();
+  if(flCarEnvTarget)flCarEnvTarget.dispose();
+  flCarEnvTarget=target;scene.environment=target.texture;flCarEnvKey=key;
+}
+function flApplyWeather(){if(!scene||!sunLight||!hemiLight)return;const wet=flWeather==='Regen';const night=flGameHour<6||flGameHour>20;for(const lamp of streetLights){const active=night||flWeather==='Nebel';const wet=flWeather==='Regen';lamp.glow.intensity=active?(classicEdition?.72:1.05):0;lamp.bulb.material.emissiveIntensity=active?(classicEdition?.7:1.05):.12;lamp.halo.material.opacity=active?.18:0;if(lamp.pool)lamp.pool.material.opacity=active?(classicEdition?.055:.075):0;if(lamp.reflection)lamp.reflection.material.opacity=active&&wet?(classicEdition?.12:.2):0;}for(const mat of flWetRoadMaterials){mat.opacity=wet?.34:0;mat.needsUpdate=true;}if(flRainPoints)flRainPoints.visible=wet;const daylight=Math.max(.18,Math.sin((flGameHour-6)/14*Math.PI)),factor=flWeather==='Regen'?.62:flWeather==='Nebel'?.72:flWeather==='Bewölkt'?.82:1;sunLight.intensity=(night?.22:.55+daylight*1.25)*factor;sunLight.position.set(Math.sin((flGameHour-12)/12*Math.PI)*65,Math.max(8,Math.cos((flGameHour-12)/12*Math.PI)*68),25);sunLight.color.setHex(night?0x9bb8e8:classicEdition?(flWeather==='Regen'?0xc5a77d:0xffc078):(flWeather==='Regen'?0xaabbd0:0xffe0b4));hemiLight.intensity=(night?.65:1.1+daylight*.85)*factor;const color=night?0x17283d:classicEdition?(flWeather==='Nebel'?0xa99b80:flWeather==='Regen'?0x8c806b:flWeather==='Bewölkt'?0xa69778:0xb99a70):(flWeather==='Nebel'?0xaab6bc:flWeather==='Regen'?0x71899a:flWeather==='Bewölkt'?0x91a2ad:0x91b1c8);scene.background.setHex(color);if(scene.fog)scene.fog.color.setHex(color);flUpdateCarEnvironment();}
 function flAddWetRoad(width,length,x,z){
   const mat=new THREE.MeshPhysicalMaterial({color:0x526574,transparent:true,opacity:0,roughness:.28,metalness:.06,clearcoat:.48,clearcoatRoughness:.2,envMapIntensity:1.05,depthWrite:false});
   const mesh=new THREE.Mesh(new THREE.PlaneGeometry(width,length),mat);mesh.rotation.x=-Math.PI/2;mesh.position.set(x,.018,z);scene.add(mesh);flWetRoadMaterials.push(mat);

@@ -386,7 +386,7 @@ function residentialBuilding(x,z,w,d,h,color){
  const trim=new THREE.MeshStandardMaterial({color:0xe1d8c8,roughness:.8});
  const glass=new THREE.MeshStandardMaterial({color:0x83b8cf,roughness:.25,metalness:.12,emissive:0x152b38,emissiveIntensity:.18});
  const body=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),wall);body.position.y=h/2;g.add(body);
- if(liteMode){const simpleRoof=new THREE.Mesh(new THREE.BoxGeometry(w+.35,.35,d+.35),new THREE.MeshStandardMaterial({color:0x384653}));simpleRoof.position.y=h+.16;g.add(simpleRoof);g.position.set(x,0,z);scene.add(g);return;}
+ if(liteMode){const simpleRoof=new THREE.Mesh(new THREE.BoxGeometry(w+.35,.35,d+.35),new THREE.MeshStandardMaterial({color:0x384653}));simpleRoof.position.y=h+.16;g.add(simpleRoof);g.position.set(x,0,z);scene.add(g);flEnterableHomes.push({x,z,depth:d});return;}
  const roof=new THREE.Mesh(new THREE.BoxGeometry(w+0.35,.35,d+0.35),new THREE.MeshStandardMaterial({color:0x384653}));roof.position.y=h+.16;g.add(roof);
  for(let y=2.2;y<h-1;y+=2.65){
   for(let xx=-w/2+1;xx<w/2-.7;xx+=1.65){
@@ -1517,6 +1517,7 @@ function makeCity(){
   createShop(145,165,1,'CITY SPORT','SPORT · OUTDOOR',0x62884f);
   createPedestrianDistrict();
   buildFrankfurtStadiumAndPark();
+  buildFrankfurtLuxuryQuarter();
   for(let i=0;i<(liteMode?7:24);i++){
     const side=i%2===0?-1:1;
     makePedestrian(side*(9.1+(i%4)*.38),-108+(i*9.7)%128,i);
@@ -1528,6 +1529,7 @@ function resize(){
   if(w<1||h<1)return;
   renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();
 }
+let flNearMissCooldown=0;
 function updateWorld(dt){
   const t=clock.elapsedTime;
   flUpdateSystems(dt);flUpdateRain(dt);if(shopScene)updateShopFilmScene(dt);
@@ -1551,6 +1553,16 @@ function updateWorld(dt){
     p.rotation.y=Math.cos(t*u.speed+u.phase)*.18;
     if(u.legs){u.legs[0].rotation.x=Math.sin(t*5+u.phase)*.42;u.legs[1].rotation.x=-Math.sin(t*5+u.phase)*.42;}if(u.arms){u.arms[0].rotation.x=-Math.sin(t*5+u.phase)*.24;u.arms[1].rotation.x=Math.sin(t*5+u.phase)*.24;}if(u.head)u.head.rotation.y=Math.sin(t*.7+u.phase)*.07;
   }
+  if(flNearMissCooldown>0)flNearMissCooldown=Math.max(0,flNearMissCooldown-dt);
+  if(driving&&jobCar&&flNearMissCooldown===0){
+    const px=jobCar.position.x,pz=jobCar.position.z;
+    for(const p of pedestrians){
+      if(Math.hypot(p.position.x-px,p.position.z-pz)<3.6){
+        status.textContent='ACHTUNG · FUSSGÄNGER IN DER NÄHE — BITTE ABBREMSEN';
+        flNearMissCooldown=3.5;break;
+      }
+    }
+  }
   for(const car of dealerDisplayCars){car.rotation.y=Math.PI/2+Math.sin(t*.45)*.025;}
   updateCutscene(dt);
   if(phonePanel&&!phonePanel.classList.contains('hidden')&&(performanceFrame%30)===0){const clockEl=phonePanel.querySelector('#phoneClock');if(clockEl)clockEl.textContent=new Date().toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'});}
@@ -1563,6 +1575,58 @@ function updateWorld(dt){
   if((performanceFrame%3)===0)for(const car of emergencyVehicles){const [red,blue]=car.userData.emergencyLights;const flash=Math.floor(t*8)%2===0;red.material.color.setHex(flash?0xff2638:0x52121a);blue.material.color.setHex(flash?0x1c7cff:0x142b51);}
 }
 
+
+function buildFrankfurtLuxuryQuarter(){
+ // A fictional premium quarter: glass, warm stone, brass details and a landscaped arrival plaza.
+ const quarter=new THREE.Group();
+ const stone=new THREE.MeshStandardMaterial({color:0xd3c6ae,roughness:.72});
+ const dark=new THREE.MeshStandardMaterial({color:0x202d38,roughness:.42,metalness:.35});
+ const glass=new THREE.MeshStandardMaterial({color:0x6e9aaa,roughness:.16,metalness:.42,emissive:0x10232b,emissiveIntensity:.16});
+ const gold=new THREE.MeshStandardMaterial({color:0xb99555,roughness:.28,metalness:.78});
+ const paving=new THREE.MeshStandardMaterial({color:0xaaa79e,roughness:.88});
+ const plaza=new THREE.Mesh(new THREE.PlaneGeometry(86,76),paving);plaza.rotation.x=-Math.PI/2;plaza.position.set(0,.015,0);quarter.add(plaza);
+ // Two stepped glass-and-stone office towers with repeated illuminated-looking window bays.
+ for(const [x,z,w,d,h] of [[-22,-18,22,18,48],[22,-18,20,18,37]]){
+  const tower=new THREE.Group();
+  const body=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),glass);body.position.y=h/2; tower.add(body);
+  const base=new THREE.Mesh(new THREE.BoxGeometry(w+1,5,d+1),stone);base.position.y=2.5;tower.add(base);
+  for(let y=7;y<h-2;y+=4.2){
+   const band=new THREE.Mesh(new THREE.BoxGeometry(w+.16,.13,d+.16),gold);band.position.y=y;tower.add(band);
+   for(let xx=-w/2+2;xx<w/2-1;xx+=3.1){
+    const mullion=new THREE.Mesh(new THREE.BoxGeometry(.11,3.4,.16),dark);mullion.position.set(xx,y+1.65,d/2+.1);tower.add(mullion);
+   }
+  }
+  const crown=new THREE.Mesh(new THREE.BoxGeometry(w*.72,.65,d*.72),gold);crown.position.y=h+.32;tower.add(crown);
+  tower.position.set(x,0,z);quarter.add(tower);
+ }
+ // Boutique hotel frontage, covered drop-off and a restrained brass sign.
+ const hotel=new THREE.Group();
+ const hotelBody=new THREE.Mesh(new THREE.BoxGeometry(25,13,13),stone);hotelBody.position.y=6.5;hotel.add(hotelBody);
+ for(let floor=0;floor<3;floor++)for(let x=-10;x<=10;x+=4){
+  const win=new THREE.Mesh(new THREE.BoxGeometry(2.25,2.1,.12),glass);win.position.set(x,3.1+floor*3.2,6.58);hotel.add(win);
+  const sill=new THREE.Mesh(new THREE.BoxGeometry(2.6,.12,.2),gold);sill.position.set(x,2+floor*3.2,6.65);hotel.add(sill);
+ }
+ const canopy=new THREE.Mesh(new THREE.BoxGeometry(17,.42,5.2),dark);canopy.position.set(0,4.3,9);hotel.add(canopy);
+ for(const x of [-7,7]){const post=new THREE.Mesh(new THREE.CylinderGeometry(.16,.2,4.2,10),gold);post.position.set(x,2.1,10.8);hotel.add(post);}
+ const signCanvas=document.createElement('canvas');signCanvas.width=768;signCanvas.height=128;
+ const ctx=signCanvas.getContext('2d');ctx.fillStyle='#172632';ctx.fillRect(0,0,768,128);ctx.fillStyle='#d8bd83';ctx.font='bold 48px Georgia';ctx.textAlign='center';ctx.fillText('GRAND HOTEL',384,82);
+ const sign=new THREE.Mesh(new THREE.BoxGeometry(.22,2.2,13),new THREE.MeshStandardMaterial({map:new THREE.CanvasTexture(signCanvas),metalness:.25,roughness:.4}));sign.position.set(0,10,6.7);hotel.add(sign);
+ hotel.position.set(0,0,25);quarter.add(hotel);
+ // Central reflecting fountain, clipped hedges, planters and warm plaza lighting.
+ const basin=new THREE.Mesh(new THREE.CylinderGeometry(5.1,5.4,.65,40),dark);basin.position.set(0,.36,-1);quarter.add(basin);
+ const water=new THREE.Mesh(new THREE.CylinderGeometry(4.65,4.65,.1,40),new THREE.MeshStandardMaterial({color:0x5c9eae,roughness:.12,metalness:.42,transparent:true,opacity:.92}));water.position.set(0,.72,-1);quarter.add(water);
+ const fountainCore=new THREE.Mesh(new THREE.CylinderGeometry(.28,.5,2.1,12),gold);fountainCore.position.set(0,1.7,-1);quarter.add(fountainCore);
+ for(const x of [-34,34])for(const z of [-27,28]){
+  const planter=new THREE.Mesh(new THREE.BoxGeometry(7,.8,3.2),dark);planter.position.set(x,.4,z);quarter.add(planter);
+  for(let i=0;i<5;i++){const shrub=new THREE.Mesh(new THREE.SphereGeometry(.9,8,6),new THREE.MeshStandardMaterial({color:i%2?0x416b4b:0x557b50,roughness:1}));shrub.position.set(x-2.4+i*1.2,1.35,z);quarter.add(shrub);}
+ }
+ for(const x of [-28,-12,12,28]){
+  const pole=new THREE.Mesh(new THREE.CylinderGeometry(.07,.11,5.5,8),dark);pole.position.set(x,2.75,31);quarter.add(pole);
+  const lamp=new THREE.Mesh(new THREE.SphereGeometry(.28,10,8),new THREE.MeshStandardMaterial({color:0xffe3ad,emissive:0x9c6c32,emissiveIntensity:.65}));lamp.position.set(x,5.55,31);quarter.add(lamp);
+ }
+ for(const x of [-16,16]){const bollard=new THREE.Mesh(new THREE.CylinderGeometry(.16,.19,.9,10),gold);bollard.position.set(x,.45,35);quarter.add(bollard);}
+ quarter.position.set(212,0,132);scene.add(quarter);
+}
 
 function buildFrankfurtStadiumAndPark(){
  const detailCount=liteMode?0:1;

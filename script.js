@@ -2179,7 +2179,10 @@ function flUpdateTowService(dt){
   return distance<.45;
  };
  if(tow.phase==='approach'){
-  if(moveTow(tow.target,3.8)){tow.phase='lowering';tow.timer=0;status.textContent='ABSCHLEPPER ANGEKOMMEN · RADHEBER WIRD AUSGEFAHREN';}
+  const approachDelta=tow.target.clone().sub(tow.truck.position);approachDelta.y=0;const approachDistance=approachDelta.length();
+  if(approachDistance>.16)tow.truck.position.addScaledVector(approachDelta.normalize(),Math.min(approachDistance,3.8*dt));
+  tow.truck.rotation.y=tow.heading;
+  if(approachDistance<.45){tow.phase='lowering';tow.timer=0;status.textContent='ABSCHLEPPER ANGEKOMMEN · RADHEBER WIRD AUSGEFAHREN';}
  }else if(tow.phase==='lowering'){
   tow.boom.rotation.x=THREE.MathUtils.lerp(tow.boom.rotation.x,-.18,Math.min(1,dt*1.5));
   if(tow.timer>1.8){
@@ -2195,7 +2198,7 @@ function flUpdateTowService(dt){
   tow.cable.geometry.setFromPoints([hook,front]);
   if(tow.timer>1.6){tow.phase='transport';tow.timer=0;status.textContent='FAHRZEUG GESICHERT · TRANSPORT ZUM TUNINGWERK';}
  }else if(tow.phase==='transport'){
-  if(moveTow(tow.transportTarget,5.4)){tow.phase='unloading';tow.timer=0;status.textContent='WERKSTATT ERREICHT · FAHRZEUG WIRD ABGESETZT';}
+  if(moveTow(tow.transportTarget,5.4)){tow.truck.rotation.y=tow.heading;tow.phase='unloading';tow.timer=0;status.textContent='WERKSTATT ERREICHT · FAHRZEUG WIRD ABGESETZT';}
   const front=tow.car.localToWorld(new THREE.Vector3(0,.55,2.15));
   const hook=tow.truck.localToWorld(new THREE.Vector3(0,.85,-4.8));
   tow.cable.geometry.setFromPoints([hook,front]);

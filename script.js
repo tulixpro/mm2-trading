@@ -670,7 +670,7 @@ function makePedestrian(x,z,index){
   }
   if(index%5===0){const bag=new THREE.Mesh(new THREE.BoxGeometry(.25,.32,.13),new THREE.MeshStandardMaterial({color:0x654a36,roughness:.95}));bag.position.set(-.36,1.05,-.02);group.add(bag);}
   if(index%7===0){const cap=new THREE.Mesh(new THREE.CylinderGeometry(.19,.2,.07,10),new THREE.MeshStandardMaterial({color:shirts[(index+3)%shirts.length]}));cap.position.y=2.08;group.add(cap);}
-  group.position.set(x,0,z);group.userData={originX:x,originZ:z,phase:index*.8,speed:.35+(index%4)*.09,arms,legs,knees,torso,head,lastX:x,lastZ:z};pedestrians.push(group);scene.add(group);
+  group.position.set(x,0,z);group.userData={originX:x,originZ:z,phase:index*.8,speed:.35+(index%4)*.09,arms,legs,knees,feet,torso,head,lastX:x,lastZ:z};pedestrians.push(group);scene.add(group);
 }
 function makeCar(x,z,color,police=false,model='sedan',performanceOverride=null){
   const car=new THREE.Group();

@@ -87,7 +87,7 @@ void AFLRealisticCityBlock::AddStreetLight(const FVector& Location)
 
 void AFLRealisticCityBlock::AddBuilding(const FVector& Center, float Width, float Depth, float Height, int32 Seed)
 {
-    // Color-varied facade blockout; replace with authored PBR facade assets for production.
+    // Detailed procedural placeholder facade. Replace with authored modular PBR assets for production.
     const FLinearColor FacadePalette[] = {
         FLinearColor(0.58f,0.52f,0.43f,1.0f),
         FLinearColor(0.68f,0.65f,0.58f,1.0f),
@@ -95,9 +95,22 @@ void AFLRealisticCityBlock::AddBuilding(const FVector& Center, float Width, floa
         FLinearColor(0.55f,0.39f,0.31f,1.0f)
     };
     const FLinearColor Facade = FacadePalette[Seed % 4];
-    const FLinearColor Window(0.045f,0.14f,0.19f,1.0f);
+    const FLinearColor Window(0.035f,0.105f,0.15f,1.0f);
+    const FLinearColor Frame(0.72f,0.70f,0.64f,1.0f);
+    const FLinearColor DarkMetal(0.12f,0.14f,0.15f,1.0f);
+    const FLinearColor SignColor = (Seed % 2 == 0)
+        ? FLinearColor(0.12f,0.25f,0.29f,1.0f)
+        : FLinearColor(0.36f,0.16f,0.10f,1.0f);
+
     AddBox(Center + FVector(0, 0, Height * 0.5f), FVector(Width * 0.01f, Depth * 0.01f, Height * 0.01f), Facade);
-    AddBox(Center + FVector(0, 0, Height + 18), FVector(Width * 0.01f + 0.18f, Depth * 0.01f + 0.18f, 0.18f), FLinearColor(0.24f,0.25f,0.26f,1.0f));
+
+    // Roof parapet, coping and small rooftop service structures.
+    AddBox(Center + FVector(0, -Depth * 0.5f, Height + 24), FVector(Width * 0.01f + 0.12f, 0.12f, 0.24f), Frame);
+    AddBox(Center + FVector(0, Depth * 0.5f, Height + 24), FVector(Width * 0.01f + 0.12f, 0.12f, 0.24f), Frame);
+    AddBox(Center + FVector(-Width * 0.5f, 0, Height + 24), FVector(0.12f, Depth * 0.01f, 0.24f), Frame);
+    AddBox(Center + FVector(Width * 0.5f, 0, Height + 24), FVector(0.12f, Depth * 0.01f, 0.24f), Frame);
+    AddBox(Center + FVector(Width * 0.22f, Depth * 0.12f, Height + 95), FVector(1.35f, 1.0f, 0.65f), DarkMetal);
+    AddBox(Center + FVector(-Width * 0.20f, Depth * 0.12f, Height + 72), FVector(0.75f, 0.85f, 0.42f), FLinearColor(0.32f,0.34f,0.35f,1.0f));
 
     const int32 Floors = FMath::Max(2, FMath::FloorToInt(Height / 190.0f));
     const int32 Columns = FMath::Max(2, FMath::FloorToInt(Width / 150.0f));
@@ -107,18 +120,55 @@ void AFLRealisticCityBlock::AddBuilding(const FVector& Center, float Width, floa
         for (int32 Col = 0; Col < Columns; ++Col)
         {
             const float X = -Width * 0.5f + 75.0f + Col * (Width / Columns);
-            const float Y = -Depth * 0.5f - 5.0f;
-            AddBox(Center + FVector(X, Y, Z), FVector(0.48f, 0.07f, 0.58f), Window);
-            AddBox(Center + FVector(X, Depth * 0.5f + 5.0f, Z), FVector(0.48f, 0.07f, 0.58f), Window);
+            const float FrontY = -Depth * 0.5f - 6.0f;
+            const float BackY = Depth * 0.5f + 6.0f;
+
+            // Recessed-looking glazing with pale lintels and projecting sills.
+            AddBox(Center + FVector(X, FrontY, Z), FVector(0.48f, 0.07f, 0.58f), Window);
+            AddBox(Center + FVector(X, FrontY - 5.0f, Z + 32.0f), FVector(0.54f, 0.045f, 0.045f), Frame);
+            AddBox(Center + FVector(X, FrontY - 5.0f, Z - 32.0f), FVector(0.56f, 0.10f, 0.055f), Frame);
+            AddBox(Center + FVector(X, BackY, Z), FVector(0.48f, 0.07f, 0.58f), Window);
+            AddBox(Center + FVector(X, BackY + 5.0f, Z - 32.0f), FVector(0.56f, 0.10f, 0.055f), Frame);
+
+            // A few narrow balconies add depth to selected upper-floor bays.
+            if (((Col + Floor + Seed) % 4) == 0 && Floor > 0)
+            {
+                AddBox(Center + FVector(X, FrontY - 32.0f, Z - 62.0f), FVector(0.78f, 0.48f, 0.07f), DarkMetal);
+                AddBox(Center + FVector(X, FrontY - 54.0f, Z - 25.0f), FVector(0.76f, 0.045f, 0.34f), Frame);
+                AddBox(Center + FVector(X - 34.0f, FrontY - 54.0f, Z - 25.0f), FVector(0.045f, 0.42f, 0.34f), Frame);
+                AddBox(Center + FVector(X + 34.0f, FrontY - 54.0f, Z - 25.0f), FVector(0.045f, 0.42f, 0.34f), Frame);
+            }
         }
     }
 
-    // Ground-floor shopfront rhythm.
+    // Side elevation windows, fire-escape/service doors and facade pilasters.
+    const int32 SideFloors = FMath::Max(2, Floors);
+    for (int32 Floor = 0; Floor < SideFloors; ++Floor)
+    {
+        const float Z = 105.0f + Floor * 185.0f;
+        for (int32 SideWindow = 0; SideWindow < 3; ++SideWindow)
+        {
+            const float Y = -Depth * 0.5f + 180.0f + SideWindow * ((Depth - 360.0f) / 2.0f);
+            AddBox(Center + FVector(-Width * 0.5f - 5.0f, Y, Z), FVector(0.07f, 0.48f, 0.58f), Window);
+            AddBox(Center + FVector(Width * 0.5f + 5.0f, Y, Z), FVector(0.07f, 0.48f, 0.58f), Window);
+        }
+    }
+    AddBox(Center + FVector(-Width * 0.5f - 8.0f, 0, Height * 0.5f), FVector(0.10f, 0.055f, Height * 0.01f), Frame);
+    AddBox(Center + FVector(Width * 0.5f + 8.0f, 0, Height * 0.5f), FVector(0.10f, 0.055f, Height * 0.01f), Frame);
+
+    // Ground-floor retail: large shop glazing, doors, sign band and awning.
     for (int32 Shop = 0; Shop < 3; ++Shop)
     {
         const float X = -Width * 0.5f + (Shop + 0.5f) * (Width / 3.0f);
-        AddBox(Center + FVector(X, -Depth * 0.5f - 7.0f, 65.0f), FVector(0.72f, 0.09f, 0.62f), FLinearColor(0.12f,0.18f,0.20f,1.0f));
+        AddBox(Center + FVector(X, -Depth * 0.5f - 8.0f, 72.0f), FVector(0.72f, 0.10f, 0.68f), Window);
+        AddBox(Center + FVector(X, -Depth * 0.5f - 16.0f, 150.0f), FVector(0.92f, 0.08f, 0.13f), SignColor);
+        AddBox(Center + FVector(X, -Depth * 0.5f - 30.0f, 182.0f), FVector(0.98f, 0.38f, 0.055f), DarkMetal);
+        AddBox(Center + FVector(X - 42.0f, -Depth * 0.5f - 18.0f, 66.0f), FVector(0.045f, 0.07f, 0.72f), Frame);
     }
+    AddBox(Center + FVector(0, -Depth * 0.5f - 13.0f, 215.0f), FVector(Width * 0.009f, 0.08f, 0.06f), Frame);
+    // Ground-level service boxes and drain pipes break up otherwise flat walls.
+    AddBox(Center + FVector(Width * 0.42f, -Depth * 0.5f - 18.0f, 48.0f), FVector(0.18f, 0.16f, 0.42f), DarkMetal);
+    AddBox(Center + FVector(-Width * 0.43f, -Depth * 0.5f - 14.0f, Height * 0.42f), FVector(0.055f, 0.055f, Height * 0.004f), DarkMetal);
 }
 
 void AFLRealisticCityBlock::BuildDistrict()

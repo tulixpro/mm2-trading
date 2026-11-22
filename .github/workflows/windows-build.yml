@@ -40,6 +40,13 @@ jobs:
           node-version: 20
       - name: Check JavaScript syntax
         run: Get-Content -Raw script.js | node --input-type=module --check
+      - name: Check launcher and Electron syntax
+        run: |
+          node --check launcher.js
+          node --check electron/main.cjs
+          node --check electron/main-classic.cjs
+          node --check electron/main-legacy.cjs
+          node --check electron/main-action.cjs
       - name: Install dependencies
         run: npm install
       - name: Build Windows installer and portable app

@@ -342,3 +342,11 @@ These are **project scaffolds only**, not finished playable Unreal games. The ex
 - Zufällige Unfall-Ereignisse können eine Einsatzstelle mit Polizei und Feuerwehr auslösen; gelegentlich kommt ein Rettungswagen hinzu. Blaulichter blinken, Absperrelemente markieren den Bereich.
 - Ein seltener, fiktiver Bankviertel-Polizeieinsatz wird als nicht-grafische Szene mit NPC-Silhouetten, Polizeifahrzeugen und Absperrungen dargestellt. Es werden keine realen Überfallabläufe simuliert.
 - Die Einsätze sind zeitlich begrenzte, geskriptete Welt-Ereignisse. Einsatzfahrzeuge fahren derzeit nicht dynamisch von einer Wache zum Unfallort; echte Einsatz-KI, Straßensperren mit Verkehrs-Umleitung, Rettungsanimationen, physikalisch korrekte Reifenmodelle und realistische Karosserieverformung sind noch nicht umgesetzt.
+
+
+## Krankenhaus, Polizeiwache und Einsatzabläufe
+- Zwei zusätzliche öffentliche Gebäude ergänzen den Stadtrand: eine Polizeiwache mit Streifenwagen-Stellplätzen und ein Krankenhaus mit markiertem Rettungsdienst-Vorplatz.
+- Auf dem Klinikgelände stehen ein Rettungswagen und ein Feuerwehrfahrzeug; vor der Polizeiwache stehen Streifenwagen.
+- Bei zeitlich begrenzten Unfall- und Polizeieinsatz-Ereignissen werden synthetische Sirenentöne und blinkende Einsatzlichter abgespielt. Die Audioausgabe benötigt eine vom Browser freigegebene WebAudio-Aktivierung.
+- Der fiktive Bankviertel-Vorfall enthält jetzt eine einfache NPC-Animationssequenz: Figuren bewegen sich in Richtung Streifenwagen, nehmen eine begleitete Festnahme-Pose ein und die Polizeiszene fährt anschließend aus dem Bild.
+- Das ist eine geskriptete Darstellung, keine echte Festnahme-KI. Gebäude sind begehbare/visuelle Blockouts ohne ausgearbeitete Innenräume; Einsatzfahrzeuge fahren noch nicht autonom von der Wache zum Einsatzort. Sirenen sind synthetisch und keine Originalaufnahmen.

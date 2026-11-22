@@ -315,3 +315,13 @@ These are **project scaffolds only**, not finished playable Unreal games. The ex
 - Die Federdarstellung komprimiert bei Fahrwerksstößen und bewegt sich bei Offroad-Fahrt stärker.
 - Hinweis: Parkhaus und Wald sind prozedurale 3D-Blockouts. Es gibt noch keine echte Rad-zu-Boden-Kollision, keine vollständige Einzelrad-Aufhängung, keine Gelände-Verformung und keine automatische Parkplatzsuche. Die Bewegung bleibt eine vereinfachte Arcade-Simulation.
 - Quellcode gespeichert; kein Laufzeittest im Browser durchgeführt.
+
+
+## Dynamische Stadt-Ereignisse und erster Bugfix-Pass
+- Der Verkehr bremst jetzt vereinfacht ab, wenn ein anderes Fahrzeug direkt vor ihm in derselben Spur fährt.
+- In unregelmäßigen Abständen erscheint eine temporäre, dekorative Unfallstelle am Straßenrand mit zwei beteiligten Fahrzeugen, Leitkegeln und blinkender Warnleuchte.
+- Im Wald kann zeitweise eine Forstarbeitsstelle mit vereinfachtem Holzerntefahrzeug, Holzstämmen und Baumstumpf auftauchen.
+- Bei Nähe zur Ereignisstelle wird ein kurzer synthetischer Ereigniston abgespielt; die Ereignisse sind zeitlich begrenzt und wechseln sich ab.
+- Der Federweg begrenzt jetzt die vereinfachte Geländebewegung der Fahrzeugkarosserie.
+
+**Technischer Status:** Die Ereignisse sind derzeit geskriptete Szenen und noch keine vollständig autonome Unfall-KI oder echte Forstmaschinen-Simulation. Verkehrskollisionen, Fahrzeugschäden, Einsatzkräfte mit Aufgaben, echte Motorsägen-/Maschinengeräusche, Baumfäll-Animationen und physikalische Einzelradaufhängung fehlen weiterhin. Die Änderungen wurden im Repository gespeichert, aber noch nicht in einem laufenden Browser-Spiel getestet.

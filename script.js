@@ -2660,7 +2660,8 @@ function loop(now=0){
   if(frameMs>0){perfFrames.push(frameMs);if(perfFrames.length>45)perfFrames.shift();}
   lastFrame=now;const dt=Math.min(clock.getDelta(),.05);
   flUpdateHomeDoor(dt);
-  flUpdateProceduralAudio();\n  flUpdateSuspensionVisuals();
+  flUpdateProceduralAudio();
+  flUpdateSuspensionVisuals();
   // Dynamic resolution only reacts to real rendering load, not an intentional 30-FPS cap.
   if((!maxFps||maxFps>=50)&&now-perfLastCheck>3000&&perfFrames.length>=20){
     perfLastCheck=now;const avgMs=perfFrames.reduce((a,b)=>a+b,0)/perfFrames.length;

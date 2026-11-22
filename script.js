@@ -1027,7 +1027,7 @@ function buildCutsceneUI(){
 }
 function buildIntroTutorialUI(){
  introTutorial=document.createElement('section');introTutorial.id='introTutorial';introTutorial.className='tutorial-overlay hidden';
- introTutorial.innerHTML='<div class="tutorial-bars top"></div><div class="tutorial-scene-tag">FRANKFURT LIFE · DAS ERSTE MAL IN FRANKFURT</div><div class="tutorial-content"><div class="tutorial-eyebrow" id="tutorialEyebrow">WILLKOMMEN</div><h1 id="tutorialTitle">DEINE STADT. DEIN ALLTAG.</h1><p id="tutorialText">Frankfurt wartet auf dich. Lerne kurz die wichtigsten Dinge kennen, bevor du losziehst.</p><div class="tutorial-progress" id="tutorialProgress"><i class="active"></i><i></i><i></i><i></i></div><div class="tutorial-actions"><button id="tutorialSkip">TUTORIAL ÜBERSPRINGEN</button><button id="tutorialNext">WEITER <span>→</span></button></div></div><div class="tutorial-bars bottom"></div><div class="tutorial-scene-count" id="tutorialSceneCount">INTRO · 01 / 04</div>';
+ introTutorial.innerHTML='<div class="tutorial-bars top"></div><div class="tutorial-scene-tag">FRANKFURT LIFE · DAS ERSTE MAL IN FRANKFURT</div><div class="tutorial-content"><div class="tutorial-eyebrow" id="tutorialEyebrow">WILLKOMMEN</div><h1 id="tutorialTitle">DEINE STADT. DEIN ALLTAG.</h1><p id="tutorialText">Frankfurt wartet auf dich. Lerne kurz die wichtigsten Dinge kennen, bevor du losziehst.</p><div class="tutorial-progress" id="tutorialProgress"><i class="active"></i><i></i><i></i><i></i><i></i></div><div class="tutorial-actions"><button id="tutorialSkip">TUTORIAL ÜBERSPRINGEN</button><button id="tutorialNext">WEITER <span>→</span></button></div></div><div class="tutorial-bars bottom"></div><div class="tutorial-scene-count" id="tutorialSceneCount">INTRO · 01 / 04</div>';
  viewport.appendChild(introTutorial);
  introTutorial.querySelector('#tutorialNext').addEventListener('click',nextIntroTutorial);
  introTutorial.querySelector('#tutorialSkip').addEventListener('click',finishIntroTutorial);
@@ -1068,14 +1068,14 @@ function startCutscene(jobName){
  if(!cutsceneOverlay||!camera||!jobCar)return;
  const chapter=Math.min(8,completedJobs+1);
  const story=[
-  ['ANKUNFT IN FRANKFURT','Eine neue Stadt, ein neuer Anfang. Du kennst hier noch niemanden – und die Polizei registriert bereits die ersten Zwischenfälle in deinem Viertel.'],
-  ['ERSTE KONTAKTE','Die Leute merken sich deinen Namen. Kleine Aufträge öffnen langsam neue Türen.'],
-  ['DIE STADT WIRD GRÖSSER','Neue Viertel, neue Kunden und größere Herausforderungen warten auf dich.'],
-  ['VERTRAUEN AUFBAUEN','Zuverlässigkeit zahlt sich aus. Dein Ruf fährt inzwischen mit.'],
-  ['NEUE MÖGLICHKEITEN','Aus einfachen Fahrten werden wichtige Aufträge quer durch Frankfurt.'],
-  ['DIE GROSSE CHANCE','Ein besonderer Auftrag könnte deine Karriere verändern. Bleib aufmerksam.'],
-  ['FRANKFURT BEWEGT SICH','Deine Entscheidungen prägen deinen Alltag in der Stadt.'],
-  ['DEIN NAME IN DER CITY','Du hast dir deinen Platz erarbeitet. Das nächste Kapitel beginnt jetzt.']
+  ['ANKUNFT IN FRANKFURT','Du kommst ohne Kontakte in die Stadt. Der Werkstattbesitzer Cem gibt dir die erste Lieferung – und warnt dich, dass die Polizei in diesem Viertel genau hinsieht.'],
+  ['ERSTE KONTAKTE','Die Kurierfahrerin Jana zeigt dir sichere Wege durch die Viertel. Eine missverständliche Lieferung sorgt für Ärger und bringt die Polizei auf deine Spur.'],
+  ['BLAULICHT AM MAIN','Nach einem heftigen Verkehrsunfall taucht ein Streifenwagen auf. Du musst ruhig fahren, den Verkehr beachten und den markierten Treffpunkt erreichen.'],
+  ['DIE WAHRHEIT KOMMT ANS LICHT','Jana hilft dir, den Lieferfehler aufzuklären. Du bringst die fehlenden Unterlagen zu Cem und kannst Vertrauen zurückgewinnen.'],
+  ['NEUE MÖGLICHKEITEN','Cem vermittelt größere Aufträge. Jana kennt inzwischen jeden Bezirk – gemeinsam entdeckt ihr neue Routen und Kunden.'],
+  ['DIE GROSSE CHANCE','Ein wichtiger Auftrag führt dich quer durch Frankfurt. Die Polizei bleibt aufmerksam, doch gute Planung und umsichtiges Fahren zahlen sich aus.'],
+  ['FRANKFURT BEWEGT SICH','Deine Kontakte aus den ersten Kapiteln kommen wieder zusammen. Entscheidungen aus früheren Aufträgen beeinflussen, wer dir jetzt vertraut.'],
+  ['DEIN NAME IN DER CITY','Aus dem Neuling ist ein fester Teil der Stadt geworden. Cem und Jana stehen an deiner Seite – und das nächste Kapitel beginnt.']
  ][chapter-1];
  cutscene={target:jobCar.position.clone(),jobName,car:jobCar,chapter,story,originYaw:jobCar.rotation.y};
  cutsceneElapsed=0;cutsceneOverlay.classList.remove('hidden');document.exitPointerLock?.();

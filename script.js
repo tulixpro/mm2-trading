@@ -2350,7 +2350,7 @@ function flBuildWheelchairAvatar(){
  box(.56,.55,.34,fabric,0,1.26,.02);
  const arms=[],wheels=[];
  for(const side of [-1,1]){
-  const wheelGroup=new THREE.Group();wheelGroup.position.set(side*.53,.57,-.02);wheelGroup.rotation.z=Math.PI/2;
+  const wheelGroup=new THREE.Group();wheelGroup.position.set(side*.53,.57,-.02);wheelGroup.rotation.y=Math.PI/2;
   const tire=new THREE.Mesh(new THREE.TorusGeometry(.43,.055,8,24),rubber);wheelGroup.add(tire);
   const hubMat=new THREE.MeshStandardMaterial({color:wheelColors[flCharacterAppearance.chairWheel]||wheelColors[0],metalness:.72,roughness:.3});const hub=new THREE.Mesh(new THREE.CylinderGeometry(.055,.055,.09,12),hubMat);hub.rotation.z=Math.PI/2;wheelGroup.add(hub);
   for(let n=0;n<8;n++){const spoke=new THREE.Mesh(new THREE.BoxGeometry(.018,.72,.018),metal);spoke.rotation.z=n*Math.PI/4;wheelGroup.add(spoke);}
@@ -2374,7 +2374,7 @@ function flUpdateWheelchairAvatar(dt,steer){
  flWheelchairPos.x=THREE.MathUtils.clamp(flWheelchairPos.x,-178,178);flWheelchairPos.z=THREE.MathUtils.clamp(flWheelchairPos.z,-298,360);
  const active=keys.KeyW||keys.KeyS||keys.KeyA||keys.KeyD||keys.ArrowUp||keys.ArrowDown||keys.ArrowLeft||keys.ArrowRight;
  flWheelchairPhase+=dt*(active?9:2);g.position.copy(flWheelchairPos);g.rotation.y=yaw+Math.PI;g.rotation.z=active?steer*.035:0;
- const spin=active&&!braking?dt*5:0;g.userData.wheels.forEach(w=>{w.rotation.x+=spin;});
+ const spin=active&&!braking?dt*5:0;g.userData.wheels.forEach(w=>{w.rotation.z+=spin;});
  g.userData.arms.forEach((arm,i)=>{arm.rotation.x=braking?-.42:active?-.16+Math.sin(flWheelchairPhase+i*Math.PI)*.28:0;arm.rotation.z=active?(i===0?-1:1)*(.05+Math.sin(flWheelchairPhase+i*Math.PI)*.08):0;});
  camera.position.set(flWheelchairPos.x+Math.sin(yaw)*3.7,2.65,flWheelchairPos.z+Math.cos(yaw)*3.7);camera.lookAt(flWheelchairPos.x,1.15,flWheelchairPos.z);
 }

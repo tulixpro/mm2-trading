@@ -51,6 +51,16 @@ Die Sounds sind synthetische Platzhalter und keine echten Motoraufnahmen. Für e
 
 Das ist eine einfache Zündungs-/Startsequenz für den Prototyp, noch keine vollständige Simulation von Schlüsselstellung, Starterrelais, Batterie, Anlasser, Kupplung, Getriebe oder verschiedenen Motorarten. Motor- und Anlassersounds sind synthetisch.
 
+## Ladenbesuche und eigene Snack-Marken
+
+- In die kleinen Geschäfte kannst du durch den Eingangsbereich hineingehen; die vorhandenen Regale und Kassen bilden den Ladeninnenraum.
+- Auf den Regalen liegen sichtbare, prozedural erzeugte Warenmodelle. Stelle dich dicht an ein Produkt und drücke **E**, um es gegen Spielgeld einzupacken.
+- Alternativ kannst du mit **E** in der Nähe des Ladens das Einkaufsfenster öffnen und Waren dort kaufen.
+- Die neuen fiktiven Eigenmarken heißen **KnusperKante** (Chips), **Sprudelstern** (Cola und Wasser) und **Fruchtfunk** (Limo). Es werden keine echten Markenlogos oder Produktverpackungen verwendet.
+- Gekaufte Waren erscheinen in der Inventar-App auf dem Handy. Dort kannst du Snacks und Getränke verwenden; die Sättigung steigt entsprechend.
+
+Die Waren sind einfache prozedurale 3D-Platzhalter. Ein echter animierter Kassierer, Regalsystem mit Lagerbestand, Türanimation und physikalisches Aufheben per Hand sind noch nicht umgesetzt.
+
 ## Noch nicht enthalten
 - fotorealistische Frankfurt-Karte oder echte 1:1-Stadt
 - ausgefeilte NPC-KI, Verkehr, Fahrphysik oder begehbare Innenräume

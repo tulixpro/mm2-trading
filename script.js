@@ -631,7 +631,7 @@ function makeCar(x,z,color,police=false,model='sedan',performanceOverride=null){
     const reservoir=new THREE.Mesh(new THREE.CylinderGeometry(.095,.095,.18,12),new THREE.MeshStandardMaterial({color:side===-1?0x2876a8:0xc3a72d,roughness:.35,metalness:.12}));
     reservoir.position.set(side*W*.39,.91,L*.34+.22);engineBay.add(reservoir);
   }
-  car.userData.hoodPivot=hoodPivot;car.userData.hoodOpen=false;car.userData.engineBay=engineBay;
+  car.userData.hoodPivot=hoodPivot;car.userData.hoodOpen=false;car.userData.engineBay=engineBay;engineBay.visible=false;
   const rear=new THREE.Mesh(new THREE.BoxGeometry(W*.94,.22,Math.max(.65,L-profile.hood-1.7)),paint);rear.position.set(0,.79,-L*.34);car.add(rear);
   const cabin=new THREE.Mesh(new THREE.BoxGeometry(W*.78,profile.cabin,L*.43),glass);cabin.position.set(0,1.08,-.12);cabin.material.opacity=.24;car.add(cabin);
   // Sichtbare NPC-Fahrer sitzen in jedem KI-Fahrzeug hinter dem Lenkrad.
@@ -2234,6 +2234,7 @@ function toggleCarHood(){
   if(!nearest){status.textContent='GEHE NÄHER AN EIN FAHRZEUG, UM DIE MOTORHAUBE ZU ÖFFNEN';return;}
   nearest.userData.hoodOpen=!nearest.userData.hoodOpen;
   nearest.userData.hoodPivot.rotation.x=nearest.userData.hoodOpen?-.92:0;
+  nearest.userData.engineBay.visible=nearest.userData.hoodOpen;
   status.textContent=nearest.userData.hoodOpen?'MOTORHAUBE OFFEN · MOTORRAUM SICHTBAR':'MOTORHAUBE GESCHLOSSEN';
 }
 function toggleVehicle(){

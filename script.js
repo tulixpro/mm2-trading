@@ -713,6 +713,61 @@ function makeCar(x,z,color,police=false,model='sedan',performanceOverride=null){
   const rearBumper=new THREE.Mesh(new THREE.BoxGeometry(W*1.02,.16,.18),black);rearBumper.position.set(0,.42,-L*.52);car.add(rearBumper);
   const hoodDent=new THREE.Mesh(new THREE.SphereGeometry(.55,12,8),new THREE.MeshStandardMaterial({color:0x20252b,roughness:.95}));hoodDent.scale.set(1,.08,.55);hoodDent.position.set(0,.94,L*.32);hoodDent.visible=false;car.add(hoodDent);
   const smoke=new THREE.Mesh(new THREE.SphereGeometry(.32,8,6),new THREE.MeshBasicMaterial({color:0x5d6268,transparent:true,opacity:.5}));smoke.position.set(0,1.8,-L*.28);smoke.visible=false;car.add(smoke);
+  if(!classicEdition){
+    // Modern-Paket: sichtbare Bremsscheiben, gelochte Rotoren und Radmuttern.
+    const rotorMat=new THREE.MeshStandardMaterial({color:0x8e969d,metalness:.92,roughness:.27});
+    const rotorDark=new THREE.MeshStandardMaterial({color:0x333b42,metalness:.78,roughness:.42});
+    const boltMat=new THREE.MeshStandardMaterial({color:0xd2d8dc,metalness:.95,roughness:.2});
+    for(const side of [-1,1])for(const wz of [-L*.32,L*.32]){
+      const center=new THREE.Vector3(side*(W*.51+.13),.42,wz);
+      const rotor=new THREE.Mesh(new THREE.CylinderGeometry(.205,.205,.035,32),rotorMat);
+      rotor.rotation.z=Math.PI/2;rotor.position.copy(center);car.add(rotor);
+      const rotorHub=new THREE.Mesh(new THREE.CylinderGeometry(.09,.09,.045,24),rotorDark);
+      rotorHub.rotation.z=Math.PI/2;rotorHub.position.copy(center);car.add(rotorHub);
+      const rotorRim=new THREE.Mesh(new THREE.TorusGeometry(.19,.009,6,32),chrome);
+      rotorRim.rotation.y=Math.PI/2;rotorRim.position.copy(center);car.add(rotorRim);
+      for(let bolt=0;bolt<5;bolt++){
+        const a=bolt*Math.PI*2/5;
+        const nut=new THREE.Mesh(new THREE.CylinderGeometry(.018,.018,.025,8),boltMat);
+        nut.rotation.z=Math.PI/2;nut.position.set(center.x+side*.035,center.y+Math.sin(a)*.12,center.z+Math.cos(a)*.12);car.add(nut);
+      }
+    }
+    // Türfugen, dezente Schweller-Akzente und separate Lüftungsöffnungen.
+    const seamMat=new THREE.LineBasicMaterial({color:0x202a32,transparent:true,opacity:.72});
+    for(const side of [-1,1]){
+      for(const doorZ of [-.82,.18]){
+        const seam=new THREE.Line(new THREE.BufferGeometry().setFromPoints([
+          new THREE.Vector3(side*(W*.505),.48,doorZ-.22),
+          new THREE.Vector3(side*(W*.505),.92,doorZ-.22),
+          new THREE.Vector3(side*(W*.505),.94,doorZ+.36),
+          new THREE.Vector3(side*(W*.505),.5,doorZ+.36)
+        ]),seamMat);car.add(seam);
+      }
+      const ventBacking=new THREE.Mesh(new THREE.BoxGeometry(.035,.22,.42),rimDark);
+      ventBacking.position.set(side*(W*.505),.76,.62);car.add(ventBacking);
+      for(let fin=0;fin<3;fin++){
+        const finMesh=new THREE.Mesh(new THREE.BoxGeometry(.045,.025,.34),chrome);
+        finMesh.position.set(side*(W*.53),.69+fin*.065,.62);car.add(finMesh);
+      }
+    }
+    // Mehrteiliger Frontsplitter und Heckdiffusor statt einfacher Stoßfängerblöcke.
+    const aeroMat=new THREE.MeshStandardMaterial({color:0x151b21,metalness:.32,roughness:.48});
+    const splitter=new THREE.Mesh(new THREE.BoxGeometry(W*1.04,.075,.28),aeroMat);
+    splitter.position.set(0,.32,L*.51);car.add(splitter);
+    const diffuser=new THREE.Mesh(new THREE.BoxGeometry(W*.9,.1,.32),aeroMat);
+    diffuser.position.set(0,.31,-L*.49);car.add(diffuser);
+    for(let fin=0;fin<5;fin++){
+      const finMesh=new THREE.Mesh(new THREE.BoxGeometry(.045,.14,.3),aeroMat);
+      finMesh.position.set((fin-2)*W*.16,.34,-L*.49);car.add(finMesh);
+    }
+    // Dezente Dachantenne und getrennte Nebelleuchten.
+    const antenna=new THREE.Mesh(new THREE.ConeGeometry(.035,.18,8),black);
+    antenna.position.set(0,1.08+profile.cabin/2+.12,-.58);car.add(antenna);
+    for(const side of [-1,1]){
+      const fogLamp=new THREE.Mesh(new THREE.CircleGeometry(.065,16),light);
+      fogLamp.position.set(side*W*.34,.49,L*.535);car.add(fogLamp);
+    }
+  }
   car.userData.damageParts={paint,bumper,crack,frontBumper,rearBumper,hoodDent,smoke,scratches,sideDents,headlights,originalColor:paint.color.getHex()};
   // Zusätzliche Rad- und Karosseriedetails für eine deutlich ausgearbeitete Silhouette.
   const rubber=new THREE.MeshStandardMaterial({color:0x090c10,roughness:.96});

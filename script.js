@@ -246,7 +246,7 @@ function flBuildAmbientEvents(){
  const warning=new THREE.Mesh(new THREE.BoxGeometry(2.3,1.35,.12),new THREE.MeshStandardMaterial({color:0xf0bd37,roughness:.75}));
  warning.position.set(-3.5,1.1,-3.6);forestry.add(warning);
  const warningText=new THREE.Mesh(new THREE.BoxGeometry(1.4,.16,.04),darkMat);warningText.position.set(-3.5,1.15,-3.51);forestry.add(warningText);
- accident.visible=false;forestry.visible=false;
+ accident.visible=false;forestry.visible=false;forestry.position.set(112,0,75);
  root.add(accident,forestry);root.position.set(0,0,0);scene.add(root);
  flAmbientEvents={root,accident,forestry,beaconLight,workBody,boom,kind:null};
 }

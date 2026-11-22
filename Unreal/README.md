@@ -23,8 +23,9 @@ Both native projects now contain a reusable `UFLVehicleDamageComponent`:
 - Tracks body, engine and tyre condition separately on a 0–100 scale.
 - Estimates impact speed from relative component velocity and applies bounded gameplay damage above a configurable threshold.
 - Wheel/tire-named hit bones reduce tyre condition; other impacts can reduce engine condition.
+- Blueprint-callable `ApplyWheelImpact(WheelIndex, ImpactSpeedKmh)` progressively bends an assigned wheel visual, then detaches it with physics after configurable high-speed and accumulated-damage thresholds.
 - Exposes Blueprint-callable repair and damage functions plus a condition-changed event.
-- Vehicle Blueprints must enable hit notifications and add this component. It is a lightweight condition system, **not** a soft-body deformation simulation; visible dents, broken glass, detachable parts, vehicle handling degradation and garage UI remain future work.
+- Vehicle Blueprints must assign their wheel visual components, route wheel collision events to `ApplyWheelImpact`, and enable hit notifications. This is a visual/gameplay prototype, **not** a soft-body deformation or production Chaos suspension simulation; handling degradation, accurate wheel hub breakage, deformation meshes, broken glass and garage UI remain future work.
 
 The component is an integration foundation only. The current static greybox car props do not yet use it, and no vehicle actor with drivable physics is present.
 

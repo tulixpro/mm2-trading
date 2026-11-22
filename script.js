@@ -304,11 +304,11 @@ function flBuildAmbientEvents(){
   cone.position.set(10.4+(i%3)*2.1,.36,-49+Math.floor(i/3)*3.2);accident.add(cone);
  }
  // Rot-weisse Absperrgitter rund um die Unfallstelle.
- const barrierMat=new THREE.MeshStandardMaterial({color:0xe7e5dc,roughness:.78}),stripeMat=new THREE.MeshStandardMaterial({color:0xc93630,roughness:.82}),footMat=new THREE.MeshStandardMaterial({color:0x252a2d,roughness:.9});
+ const barrierPanelMat=new THREE.MeshStandardMaterial({color:0xe7e5dc,roughness:.78}),stripeMat=new THREE.MeshStandardMaterial({color:0xc93630,roughness:.82}),footMat=new THREE.MeshStandardMaterial({color:0x252a2d,roughness:.9});
  const barriers=[];
  for(let i=0;i<4;i++){
-  const panel=new THREE.Group(),rail=new THREE.Mesh(new THREE.BoxGeometry(3.1,.13,.12),barrierMat);rail.position.y=1.05;panel.add(rail);
-  const lower=new THREE.Mesh(new THREE.BoxGeometry(3.1,.13,.12),barrierMat);lower.position.y=.38;panel.add(lower);
+  const panel=new THREE.Group(),rail=new THREE.Mesh(new THREE.BoxGeometry(3.1,.13,.12),barrierPanelMat);rail.position.y=1.05;panel.add(rail);
+  const lower=new THREE.Mesh(new THREE.BoxGeometry(3.1,.13,.12),barrierPanelMat);lower.position.y=.38;panel.add(lower);
   for(let k=0;k<5;k++){const stripe=new THREE.Mesh(new THREE.BoxGeometry(.34,.72,.14),stripeMat);stripe.position.set(-1.25+k*.62,.72,0);stripe.rotation.z=-.38;panel.add(stripe);}
   for(const x of [-1.25,1.25]){const leg=new THREE.Mesh(new THREE.BoxGeometry(.16,.12,.65),footMat);leg.position.set(x,.12,0);panel.add(leg);}
   panel.position.set(8.1+(i%2)*6.1,.0,-52+Math.floor(i/2)*7.2);panel.rotation.y=(i%2)*Math.PI/2;accident.add(panel);barriers.push(panel);

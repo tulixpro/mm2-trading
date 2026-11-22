@@ -80,6 +80,7 @@ const taxiVehicles=[];
 const streetLights=[];
 let flPolicePursuit=null,flPoliceCooldown=0;
 const shops=[];
+const shopPickupItems=[];
 const inventory={Kaffee:0,Snack:0,Stadtplan:0,Brot:0,Brezel:0,Croissant:0,Kuchen:0};
 let miniMapCanvas=null,miniMapCtx=null,tuningLevel=0,paintLevel=0,turboLevel=0,tuningMods={spoiler:false,lowered:false,tinted:false,rims:false},mouseSensitivity=1,cameraFov=68;
 let appetite=65;
@@ -266,7 +267,7 @@ function openPhoneApp(app){
  garage:'<div class="phone-page-head">Meine Garage</div><p>Eigene Fahrzeuge: '+ownedCars.length+'</p>'+ownedCars.map(id=>'<div class="phone-stat">'+(dealerCars.find(v=>v.id===id)?.name||id)+' <b>✓</b></div>').join('')+'<button data-action="dealer">Autohändler öffnen</button>',
  taxi:'<div class="phone-page-head">Taxi-Service</div><p>Bestelle ein Taxi zu deinem aktuellen Standort. Das Taxi fährt im Spiel zu dir.</p><button data-action="taxi">Taxi bestellen</button>',
  dealer:'<div class="phone-page-head">Frankfurt Motors</div><p>Fahrzeuge ansehen und kaufen – besuche auch den Showroom in der Stadt.</p><button data-action="dealer">Showroom öffnen</button>',
- inventory:'<div class="phone-page-head">Inventar & Essen</div><div class="phone-stat">Sättigung <b>'+appetite+'%</b></div>'+['Brot','Brezel','Croissant','Kuchen','Kaffee','Snack','Pizza','Pasta','Limo','Burger-Menü','Schnitzel','Salat','Cola'].map(name=>'<div class="phone-stat"><span>'+name+' · '+(inventory[name]||0)+'</span><button data-eat="'+name+'">Verzehren</button></div>').join(''),
+ inventory:'<div class="phone-page-head">Inventar & Essen</div><div class="phone-stat">Sättigung <b>'+appetite+'%</b></div>'+['Brot','Brezel','Croissant','Kuchen','Kaffee','Snack','Pizza','Pasta','Limo','Burger-Menü','Schnitzel','Salat','Cola','KnusperKante Chips','Sprudelstern Cola','Sprudelstern Wasser','Fruchtfunk Limo'].map(name=>'<div class="phone-stat"><span>'+name+' · '+(inventory[name]||0)+'</span><button data-eat="'+name+'">Verzehren</button></div>').join(''),
  housing:'<div class="phone-page-head">Meine Wohnung</div><div class="phone-stat">Status <b>'+(flHomeOwned?'Gemietet':'Noch keine Wohnung')+'</b></div><div class="phone-stat">Möbel <b>'+flHomeFurniture+'</b></div><p>Miete deine erste Wohnung im Westend und ergänze nach und nach Möbel.</p><button data-action="homebuy">'+(flHomeOwned?'Wohnung gemietet':'Wohnung mieten · 800 €')+'</button><button data-action="gohome">Nach Hause fahren</button><button data-action="furniture">Möbel kaufen · 180 €</button>',
  transit:'<div class="phone-page-head">Frankfurt ÖPNV</div><div class="phone-stat">Linie 1 <b>Innenstadt</b></div><div class="phone-stat">Flughafen-Express <b>Airport</b></div><div class="phone-stat">Linie 2 <b>Westend – Ostend</b></div><div class="phone-stat">Fahrten <b>'+flTransitTrips+'</b></div><p>Wähle eine Haltestelle und fahre zum nächsten Stadtteil.</p><button data-action="transitride">Fahrt starten</button>',
  news:'<div class="phone-page-head">Stadt-News</div><div class="phone-stat">Neue Jobs in der Innenstadt</div><div class="phone-stat">Frankfurt Motors eröffnet</div><p>Bleib auf dem Laufenden.</p>',
@@ -291,7 +292,7 @@ function openPhoneApp(app){
   const mini=document.querySelector('#miniMap');if(mini&&localStorage.getItem('flMapSize'))mini.style.width=({small:'130px',medium:'190px',large:'250px'}[localStorage.getItem('flMapSize')]);const coordsLabel=document.querySelector('#miniMapCoords');if(coordsLabel&&localStorage.getItem('flCoordsVisible')==='off')coordsLabel.style.display='none';if(localStorage.getItem('flMiniMap')==='off'&&mini)mini.style.display='none';
  }
  if(app==='map'){page.querySelector('[data-action="recenter"]')?.addEventListener('click',()=>openPhoneApp('map'));}
- page.querySelectorAll('[data-eat]').forEach(b=>b.addEventListener('click',()=>{const name=b.dataset.eat;if((inventory[name]||0)<1){b.textContent='Nicht vorhanden';return;}inventory[name]--;appetite=Math.min(100,appetite+({Brot:18,Brezel:15,Croissant:16,Kuchen:20,Kaffee:7,Snack:12,Pizza:28,Pasta:25,Limo:6,'Burger-Menü':24,Schnitzel:26,Salat:15,Cola:5}[name]||10));openPhoneApp('inventory');}));
+ page.querySelectorAll('[data-eat]').forEach(b=>b.addEventListener('click',()=>{const name=b.dataset.eat;if((inventory[name]||0)<1){b.textContent='Nicht vorhanden';return;}inventory[name]--;appetite=Math.min(100,appetite+({Brot:18,Brezel:15,Croissant:16,Kuchen:20,Kaffee:7,Snack:12,Pizza:28,Pasta:25,Limo:6,'Burger-Menü':24,Schnitzel:26,Salat:15,Cola:5,'KnusperKante Chips':12,'Sprudelstern Cola':5,'Sprudelstern Wasser':3,'Fruchtfunk Limo':6}[name]||10));openPhoneApp('inventory');}));
  page.querySelectorAll('[data-action]').forEach(b=>b.addEventListener('click',()=>{const action=b.dataset.action;if(action==='home')showPhoneHome();if(action==='bankSend'){const recipient=page.querySelector('#bankRecipient')?.value,amount=page.querySelector('#bankAmount')?.value;flBankTransfer(recipient,amount);}if(action==='taxi')flCallTaxi();if(action==='jobs'){phonePanel.classList.add('hidden');toggleJobs();}if(action==='dealer'){phonePanel.classList.add('hidden');openDealer();}if(action==='homebuy')flBuyHome();if(action==='gohome')flGoHome();if(action==='furniture')flBuyFurniture();if(action==='transitride')flTransitRide();if(action==='outfit')flChangeOutfit();if(action==='character')flSelectCharacter(b.dataset.character);if(action==='appearance')flCycleCharacterAppearance(b.dataset.part);if(action==='dailyclaim')flClaimDaily();if(action==='save'){flSaveGame(true);openPhoneApp('save');}}));
 }
 function togglePhone(){
@@ -549,8 +550,28 @@ function createShop(x,z,side,name,subtitle,color){
   lift.position.set(x+(side<0?6.8:-6.8),0,z+1.5);scene.add(lift);
   liftData={group:lift,deck,phase:'down',progress:0,car:null,originalPosition:null,originalRotation:0};
  }
- const products=name.startsWith('TANKSTELLE')?[{name:'Benzin 25%',price:90,kind:'fuel'},{name:'Benzin 50%',price:170,kind:'fuel'},{name:'Benzin 100%',price:300,kind:'fuel'},{name:'Wasser',price:2},{name:'Schokoriegel',price:3},{name:'Chips',price:3},{name:'Stadtplan',price:8}]:name.startsWith('BÄCKEREI')?[{name:'Brot',price:4},{name:'Brezel',price:3},{name:'Croissant',price:4},{name:'Kuchen',price:5},{name:'Kaffee',price:4}]:name.startsWith('PIZZERIA')?[{name:'Pizza',price:9},{name:'Pasta',price:8},{name:'Limo',price:3}]:name.startsWith('RESTAURANT')?[{name:'Burger-Menü',price:12},{name:'Schnitzel',price:16},{name:'Salat',price:9},{name:'Cola',price:3},{name:'Kaffee',price:4}]:name==='TUNINGWERK'?[{name:'Motor-Upgrade · Stufe 1–3',price:850,kind:'tuning',id:'engine'},{name:'Turbo-Kit',price:1450,kind:'tuning',id:'turbo'},{name:'Sonderlackierung',price:280,kind:'tuning',id:'paint'},{name:'Sportfelgen',price:420,kind:'tuning',id:'wheels'},{name:'Heckspoiler',price:620,kind:'tuning',id:'spoiler'},{name:'Sportfahrwerk · tieferlegen',price:780,kind:'tuning',id:'lowered'},{name:'Scheibentönung',price:340,kind:'tuning',id:'tint'},{name:'Unfallschäden reparieren',price:Math.max(120,damageLevel*260),kind:'tuning',id:'repair'}]:name==='WESTEND MARKT'?[{name:'Brot',price:4},{name:'Snack',price:3},{name:'Kaffee',price:4},{name:'Cola',price:3},{name:'Wasser',price:2},{name:'Stadtplan',price:8},{name:'Regenschirm',price:12},{name:'Batterien',price:6}]:name==='CITY SPORT'?[{name:'Laufschuhe',price:65},{name:'Sporttasche',price:35},{name:'Fußball',price:22},{name:'Fahrradhelm',price:28},{name:'Wasser',price:2}]:name==='OSTEND CAFÉ'?[{name:'Kaffee',price:4},{name:'Croissant',price:4},{name:'Kuchen',price:5},{name:'Limo',price:3}]:name==='SÜDQUARTIER KIOSK'?[{name:'Snack',price:3},{name:'Cola',price:3},{name:'Wasser',price:2},{name:'Stadtplan',price:8},{name:'Regenschirm',price:12}]:[{name:'Kaffee',price:4},{name:'Snack',price:3},{name:'Stadtplan',price:8}];
- shops.push({name,subtitle,x,z,side,products,lift:liftData});
+ const products=name.startsWith('TANKSTELLE')?[{name:'Benzin 25%',price:90,kind:'fuel'},{name:'Benzin 50%',price:170,kind:'fuel'},{name:'Benzin 100%',price:300,kind:'fuel'},{name:'Sprudelstern Wasser',price:2},{name:'KnusperKante Chips',price:3},{name:'Sprudelstern Cola',price:3},{name:'Stadtplan',price:8}]:name.startsWith('BÄCKEREI')?[{name:'Brot',price:4},{name:'Brezel',price:3},{name:'Croissant',price:4},{name:'Kuchen',price:5},{name:'Kaffee',price:4}]:name.startsWith('PIZZERIA')?[{name:'Pizza',price:9},{name:'Pasta',price:8},{name:'Limo',price:3}]:name.startsWith('RESTAURANT')?[{name:'Burger-Menü',price:12},{name:'Schnitzel',price:16},{name:'Salat',price:9},{name:'Cola',price:3},{name:'Kaffee',price:4}]:name==='TUNINGWERK'?[{name:'Motor-Upgrade · Stufe 1–3',price:850,kind:'tuning',id:'engine'},{name:'Turbo-Kit',price:1450,kind:'tuning',id:'turbo'},{name:'Sonderlackierung',price:280,kind:'tuning',id:'paint'},{name:'Sportfelgen',price:420,kind:'tuning',id:'wheels'},{name:'Heckspoiler',price:620,kind:'tuning',id:'spoiler'},{name:'Sportfahrwerk · tieferlegen',price:780,kind:'tuning',id:'lowered'},{name:'Scheibentönung',price:340,kind:'tuning',id:'tint'},{name:'Unfallschäden reparieren',price:Math.max(120,damageLevel*260),kind:'tuning',id:'repair'}]:name==='WESTEND MARKT'?[{name:'Brot',price:4},{name:'KnusperKante Chips',price:3},{name:'Kaffee',price:4},{name:'Sprudelstern Cola',price:3},{name:'Sprudelstern Wasser',price:2},{name:'Fruchtfunk Limo',price:3},{name:'Stadtplan',price:8},{name:'Regenschirm',price:12}]:name==='CITY SPORT'?[{name:'Laufschuhe',price:65},{name:'Sporttasche',price:35},{name:'Fußball',price:22},{name:'Fahrradhelm',price:28},{name:'Wasser',price:2}]:name==='OSTEND CAFÉ'?[{name:'Kaffee',price:4},{name:'Croissant',price:4},{name:'Kuchen',price:5},{name:'Limo',price:3}]:name==='SÜDQUARTIER KIOSK'?[{name:'KnusperKante Chips',price:3},{name:'Sprudelstern Cola',price:3},{name:'Sprudelstern Wasser',price:2},{name:'Fruchtfunk Limo',price:3},{name:'Stadtplan',price:8},{name:'Regenschirm',price:12}]:[{name:'Kaffee',price:4},{name:'Snack',price:3},{name:'Stadtplan',price:8}];
+ 
+ // Sichtbare, aufhebbare Eigenmarken-Produkte auf den Regalen.
+ const shelfGoods=products.filter(item=>item.kind!=='fuel'&&item.kind!=='tuning').slice(0,8);
+ shelfGoods.forEach((item,index)=>{
+  const localZ=-2.7+(index%4)*1.8,localX=-side*2.8+((index%2===0)?-.2:.2);
+  const isDrink=/cola|limo|wasser|sprudel/i.test(item.name);
+  const packageMat=new THREE.MeshStandardMaterial({color:isDrink?(index%2?0x42a7bd:0x303c73):([0xe1b34d,0xc84d37,0x55956c,0x597db4][index%4]),roughness:.48,metalness:.04});
+  const pack=new THREE.Group();
+  if(isDrink){
+   const bottle=new THREE.Mesh(new THREE.CylinderGeometry(.105,.13,.48,12),packageMat);bottle.position.y=.24;pack.add(bottle);
+   const neck=new THREE.Mesh(new THREE.CylinderGeometry(.045,.06,.12,10),packageMat);neck.position.y=.53;pack.add(neck);
+   const cap=new THREE.Mesh(new THREE.CylinderGeometry(.05,.05,.055,10),new THREE.MeshStandardMaterial({color:0xe8e8e1,roughness:.4}));cap.position.y=.615;pack.add(cap);
+  }else{
+   const pouch=new THREE.Mesh(new THREE.BoxGeometry(.32,.43,.16),packageMat);pouch.position.y=.22;pack.add(pouch);
+   const top=new THREE.Mesh(new THREE.BoxGeometry(.3,.055,.17),new THREE.MeshStandardMaterial({color:0xe8dfc8,roughness:.8}));top.position.y=.46;pack.add(top);
+  }
+  pack.position.set(x+localX,1.2,z+localZ);g.add(pack);
+  shopPickupItems.push({mesh:pack,item,shopName:name,taken:false});
+ });
+ 
+shops.push({name,subtitle,x,z,side,products,lift:liftData});
 }
 
 function buildFuelPumps(){
@@ -1289,6 +1310,24 @@ function buildShopInteraction(){
  viewport.appendChild(shopPanel);
  shopPanel.querySelector('#closeShop').addEventListener('click',()=>{shopPanel.classList.add('hidden');currentShop=null;});shopPanel.querySelector('#shopFilmScene').addEventListener('click',startShopFilmScene);shopSceneOverlay=shopPanel.querySelector('#shopSceneOverlay');shopPanel.querySelector('#shopSceneSkip').addEventListener('click',finishShopFilmScene);
 }
+
+function tryPickupShopItem(){
+ if(!camera||driving||!started)return false;
+ let nearest=null,best=2.35;
+ for(const entry of shopPickupItems){
+  if(entry.taken||!entry.mesh.visible)continue;
+  const d=camera.position.distanceTo(entry.mesh.position);
+  if(d<best){best=d;nearest=entry;}
+ }
+ if(!nearest)return false;
+ const {item,mesh,shopName}=nearest;
+ if(careerMoney<item.price){status.textContent='ZU WENIG GELD · '+item.price+' € FÜR '+item.name;return true;}
+ careerMoney-=item.price;inventory[item.name]=(inventory[item.name]||0)+1;nearest.taken=true;mesh.visible=false;
+ if(careerHud)careerHud.innerHTML='KONTO: '+careerMoney.toLocaleString('de-DE')+' €<br>AUFTRÄGE: '+completedJobs+'<br>★ RUF: '+Math.min(5,1+Math.floor(completedJobs/2))+'/5';
+ status.textContent=item.name+' EINGEPACKT · −'+item.price+' € · '+shopName;
+ flSaveGame();return true;
+}
+
 function nearestShop(){
  if(!camera||driving)return null;
  let best=null,bestDistance=Infinity;
@@ -1316,7 +1355,7 @@ function toggleShop(){
    const message=shopPanel.querySelector('#shopMessage');
    if(careerMoney<item.price){message.textContent='Dafür fehlt dir noch Geld. Erledige einen Auftrag mit J.';return;}
    careerMoney-=item.price;
-   if(['Brot','Brezel','Croissant','Kuchen','Kaffee','Snack','Pizza','Pasta','Limo','Burger-Menü','Schnitzel','Salat','Cola'].includes(item.name)){inventory[item.name]=(inventory[item.name]||0)+1;message.textContent=item.name+' gekauft · im Inventar: '+inventory[item.name];}
+   if(['Brot','Brezel','Croissant','Kuchen','Kaffee','Snack','Pizza','Pasta','Limo','Burger-Menü','Schnitzel','Salat','Cola','KnusperKante Chips','Sprudelstern Cola','Sprudelstern Wasser','Fruchtfunk Limo'].includes(item.name)){inventory[item.name]=(inventory[item.name]||0)+1;message.textContent=item.name+' gekauft · im Inventar: '+inventory[item.name];}
    else if(item.kind==='fuel'){flFuel=Math.min(100,flFuel+(item.name.includes('25')?25:item.name.includes('50')?50:100));message.textContent='Getankt · Tankfüllung '+Math.round(flFuel)+'%';flUpdateStatus();}
    else if(item.kind==='tuning'){
     if(!jobCar){message.textContent='Wähle zuerst ein Auto über die Garage oder einen Auftrag.';careerMoney+=item.price;return;}
@@ -2636,7 +2675,7 @@ function begin(){
 startButton?.addEventListener('click',begin);
 // In der eigenständigen Windows-Spielansicht direkt in die 3D-Stadt starten.
 if(document.body.classList.contains('game-app')) begin();
-document.addEventListener('keydown',e=>{keys[e.code]=true;keyboardKeys[e.code]=true;if(e.code==='Escape'&&!e.repeat){const overlays=[jobPanel,shopPanel,phonePanel,dealerPanel];const visible=overlays.find(p=>p&&!p.classList.contains('hidden'));if(visible){visible.classList.add('hidden');return;}togglePauseMenu();return;}if(e.code==='F1'){e.preventDefault();if(!e.repeat)togglePhone();return;}if(e.code==='KeyQ'&&!e.repeat){e.preventDefault();toggleQuickAccessWheel();return;}if(e.code==='KeyE'&&!e.repeat){const atLift=driving&&jobCar&&shops.some(shop=>shop.lift&&Math.hypot(jobCar.position.x-shop.lift.group.position.x,jobCar.position.z-shop.lift.group.position.z)<8.5);if(atLift)toggleWorkshopLift();else if(!flToggleHome()&&!tryRefuelAtPump())toggleShopOrDealer();}if(e.code==='KeyF'&&!e.repeat){if(!tryStartBoat()&&!tryStartFlight())toggleVehicle();}if(e.code==='KeyH'&&!e.repeat)toggleCarHood();if(e.code==='KeyM'&&!e.repeat){e.preventDefault();flToggleEngine();}if(e.code==='KeyG'&&!e.repeat)tryTakeoverVehicle();if(e.code==='KeyJ'&&!e.repeat)toggleJobs();if(e.code==='KeyR'&&!e.repeat)toggleWorkshopLift();if(e.code==='KeyL'&&!e.repeat)toggleFlashlight();if(e.code==='F5'&&!e.repeat){e.preventDefault();flSaveGame(true);}if(e.code==='KeyC'&&!e.repeat)cycleCamera();if(e.code==='Escape'&&jobPanel&&!jobPanel.classList.contains('hidden'))jobPanel.classList.add('hidden');if(e.code==='Escape'&&shopPanel&&!shopPanel.classList.contains('hidden'))shopPanel.classList.add('hidden');if(e.code==='Escape'&&phonePanel&&!phonePanel.classList.contains('hidden'))phonePanel.classList.add('hidden');if(e.code==='Escape')document.querySelector('#quickAccessWheel')?.classList.add('hidden');if(e.code==='Escape'&&!e.repeat&&(!jobPanel||jobPanel.classList.contains('hidden'))&&(!shopPanel||shopPanel.classList.contains('hidden'))&&(!phonePanel||phonePanel.classList.contains('hidden'))&&(!dealerPanel||dealerPanel.classList.contains('hidden')))togglePauseMenu();if(e.code==='Escape'&&dealerPanel&&!dealerPanel.classList.contains('hidden'))dealerPanel.classList.add('hidden');if(['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code))e.preventDefault();});
+document.addEventListener('keydown',e=>{keys[e.code]=true;keyboardKeys[e.code]=true;if(e.code==='Escape'&&!e.repeat){const overlays=[jobPanel,shopPanel,phonePanel,dealerPanel];const visible=overlays.find(p=>p&&!p.classList.contains('hidden'));if(visible){visible.classList.add('hidden');return;}togglePauseMenu();return;}if(e.code==='F1'){e.preventDefault();if(!e.repeat)togglePhone();return;}if(e.code==='KeyQ'&&!e.repeat){e.preventDefault();toggleQuickAccessWheel();return;}if(e.code==='KeyE'&&!e.repeat){const atLift=driving&&jobCar&&shops.some(shop=>shop.lift&&Math.hypot(jobCar.position.x-shop.lift.group.position.x,jobCar.position.z-shop.lift.group.position.z)<8.5);if(atLift)toggleWorkshopLift();else if(!flToggleHome()&&!tryRefuelAtPump()&&!tryPickupShopItem())toggleShopOrDealer();}if(e.code==='KeyF'&&!e.repeat){if(!tryStartBoat()&&!tryStartFlight())toggleVehicle();}if(e.code==='KeyH'&&!e.repeat)toggleCarHood();if(e.code==='KeyM'&&!e.repeat){e.preventDefault();flToggleEngine();}if(e.code==='KeyG'&&!e.repeat)tryTakeoverVehicle();if(e.code==='KeyJ'&&!e.repeat)toggleJobs();if(e.code==='KeyR'&&!e.repeat)toggleWorkshopLift();if(e.code==='KeyL'&&!e.repeat)toggleFlashlight();if(e.code==='F5'&&!e.repeat){e.preventDefault();flSaveGame(true);}if(e.code==='KeyC'&&!e.repeat)cycleCamera();if(e.code==='Escape'&&jobPanel&&!jobPanel.classList.contains('hidden'))jobPanel.classList.add('hidden');if(e.code==='Escape'&&shopPanel&&!shopPanel.classList.contains('hidden'))shopPanel.classList.add('hidden');if(e.code==='Escape'&&phonePanel&&!phonePanel.classList.contains('hidden'))phonePanel.classList.add('hidden');if(e.code==='Escape')document.querySelector('#quickAccessWheel')?.classList.add('hidden');if(e.code==='Escape'&&!e.repeat&&(!jobPanel||jobPanel.classList.contains('hidden'))&&(!shopPanel||shopPanel.classList.contains('hidden'))&&(!phonePanel||phonePanel.classList.contains('hidden'))&&(!dealerPanel||dealerPanel.classList.contains('hidden')))togglePauseMenu();if(e.code==='Escape'&&dealerPanel&&!dealerPanel.classList.contains('hidden'))dealerPanel.classList.add('hidden');if(['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code))e.preventDefault();});
 document.addEventListener('keyup',e=>{keys[e.code]=false;keyboardKeys[e.code]=false;});
 window.addEventListener('resize',resize);
 

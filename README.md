@@ -278,7 +278,7 @@ Hinweis zum Teststatus: Der Windows-Build kann automatisiert gebaut werden; das 
 
 ## Fahrzeug-Detailpass – Unterboden, Fahrwerk und Motorcharakter
 
-- Die prozeduralen 3D-Fahrzeuge erhalten zusätzliche Unterboden-Bauteile: Motor-/Getriebebereich, Tunnel, Differential, Hitzeschutzbleche, Auspuffrohre und Schalldämpfer.
+- Zwei weitere Fahrzeugformen sind im Händler verfügbar: ein Executive-Kombi mit verlängerter Dach-/Hecklinie und ein Pickup mit separater offener Ladefläche.\n- Die prozeduralen 3D-Fahrzeuge erhalten zusätzliche Unterboden-Bauteile: Motor-/Getriebebereich, Tunnel, Differential, Hitzeschutzbleche, Auspuffrohre und Schalldämpfer.
 - Sichtbare Fahrwerksdetails ergänzen Federbeine, Schraubenfedern, Querlenker und Verbindungen an allen vier Radpositionen. Die Feder-/Dämpferdarstellung bewegt sich beim Fahren leicht mit der Geschwindigkeit.
 - Das TUNINGWERK bietet zusätzlich ein Gewindefahrwerk in drei Stufen. Die Stufe wird lokal gespeichert und wirkt sich im Arcade-Fahrmodell leicht auf den Grip aus.
 - Motor-Upgrades und Turbo bleiben verfügbar. Die synthetische Audio-Schicht erhält je Fahrzeugklasse unterschiedliche Leerlaufbereiche, Drehzahlverläufe, Klangwellenformen und Filtercharakteristik.

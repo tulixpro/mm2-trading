@@ -116,7 +116,7 @@ function flClaimDaily(){flCheckDailyDate();if(flDailyClaimed){status.textContent
 
 function flBuildStatus(){flWeatherLabel=document.createElement('div');flWeatherLabel.style.cssText='position:absolute;left:16px;top:16px;z-index:8;padding:7px 10px;border:1px solid #ffffff35;border-radius:8px;background:#101b2ddd;color:#eaf6ff;font:700 11px system-ui;pointer-events:none';viewport.appendChild(flWeatherLabel);flFuelLabel=document.createElement('div');flFuelLabel.style.cssText='position:absolute;left:16px;top:52px;z-index:8;padding:7px 10px;border:1px solid #ffffff35;border-radius:8px;background:#101b2ddd;color:#eaf6ff;font:700 11px system-ui;pointer-events:none';viewport.appendChild(flFuelLabel);flUpdateStatus();}
 function flUpdateStatus(){if(flWeatherLabel)flWeatherLabel.textContent='🕒 '+String(Math.floor(flGameHour)).padStart(2,'0')+':'+String(Math.floor(flGameHour%1*60)).padStart(2,'0')+' · '+flWeather;if(flFuelLabel)flFuelLabel.textContent='⛽ TANK: '+Math.round(flFuel)+'%';}
-function flApplyWeather(){if(!scene||!sunLight||!hemiLight)return;const wet=flWeather==='Regen';const night=flGameHour<6||flGameHour>20;for(const lamp of streetLights){const active=night||flWeather==='Nebel';lamp.glow.intensity=active?(classicEdition?.72:1.05):0;lamp.bulb.material.emissiveIntensity=active?(classicEdition?.7:1.05):.12;lamp.halo.material.opacity=active?.18:0;}for(const mat of flWetRoadMaterials){mat.opacity=wet?.34:0;mat.needsUpdate=true;}if(flRainPoints)flRainPoints.visible=wet;const daylight=Math.max(.18,Math.sin((flGameHour-6)/14*Math.PI)),factor=flWeather==='Regen'?.62:flWeather==='Nebel'?.72:flWeather==='Bewölkt'?.82:1;sunLight.intensity=(night?.22:.55+daylight*1.25)*factor;sunLight.color.setHex(night?0x9bb8e8:classicEdition?(flWeather==='Regen'?0xc5a77d:0xffc078):(flWeather==='Regen'?0xaabbd0:0xffe0b4));hemiLight.intensity=(night?.65:1.1+daylight*.85)*factor;const color=night?0x17283d:classicEdition?(flWeather==='Nebel'?0xa99b80:flWeather==='Regen'?0x8c806b:flWeather==='Bewölkt'?0xa69778:0xb99a70):(flWeather==='Nebel'?0xaab6bc:flWeather==='Regen'?0x71899a:flWeather==='Bewölkt'?0x91a2ad:0x91b1c8);scene.background.setHex(color);if(scene.fog)scene.fog.color.setHex(color);}
+function flApplyWeather(){if(!scene||!sunLight||!hemiLight)return;const wet=flWeather==='Regen';const night=flGameHour<6||flGameHour>20;for(const lamp of streetLights){const active=night||flWeather==='Nebel';const wet=flWeather==='Regen';lamp.glow.intensity=active?(classicEdition?.72:1.05):0;lamp.bulb.material.emissiveIntensity=active?(classicEdition?.7:1.05):.12;lamp.halo.material.opacity=active?.18:0;if(lamp.pool)lamp.pool.material.opacity=active?(classicEdition?.055:.075):0;if(lamp.reflection)lamp.reflection.material.opacity=active&&wet?(classicEdition?.12:.2):0;}for(const mat of flWetRoadMaterials){mat.opacity=wet?.34:0;mat.needsUpdate=true;}if(flRainPoints)flRainPoints.visible=wet;const daylight=Math.max(.18,Math.sin((flGameHour-6)/14*Math.PI)),factor=flWeather==='Regen'?.62:flWeather==='Nebel'?.72:flWeather==='Bewölkt'?.82:1;sunLight.intensity=(night?.22:.55+daylight*1.25)*factor;sunLight.color.setHex(night?0x9bb8e8:classicEdition?(flWeather==='Regen'?0xc5a77d:0xffc078):(flWeather==='Regen'?0xaabbd0:0xffe0b4));hemiLight.intensity=(night?.65:1.1+daylight*.85)*factor;const color=night?0x17283d:classicEdition?(flWeather==='Nebel'?0xa99b80:flWeather==='Regen'?0x8c806b:flWeather==='Bewölkt'?0xa69778:0xb99a70):(flWeather==='Nebel'?0xaab6bc:flWeather==='Regen'?0x71899a:flWeather==='Bewölkt'?0x91a2ad:0x91b1c8);scene.background.setHex(color);if(scene.fog)scene.fog.color.setHex(color);}
 function flAddWetRoad(width,length,x,z){
   const mat=new THREE.MeshPhongMaterial({color:0x526574,transparent:true,opacity:0,shininess:105,specular:0x8fa8bb,depthWrite:false});
   const mesh=new THREE.Mesh(new THREE.PlaneGeometry(width,length),mat);mesh.rotation.x=-Math.PI/2;mesh.position.set(x,.018,z);scene.add(mesh);flWetRoadMaterials.push(mat);
@@ -553,7 +553,12 @@ function streetLamp(x,z){
  const lx=x+(x<0?.72:-.72);bulb.position.set(lx,4.98,z);scene.add(bulb);
  const glow=new THREE.PointLight(classicEdition?0xffbd72:0xffd49a,0,13,2);glow.position.set(lx,4.72,z);scene.add(glow);
  const halo=new THREE.Mesh(new THREE.SphereGeometry(.3,10,8),new THREE.MeshBasicMaterial({color:classicEdition?0xffb45e:0xffd39a,transparent:true,opacity:.0,depthWrite:false}));halo.position.set(lx,4.82,z);scene.add(halo);
- streetLights.push({bulb,glow,halo,x:lx,z});
+ // Dezenter Lichtpool und nasser Asphalt-Glanz direkt unter der Leuchte.
+ const pool=new THREE.Mesh(new THREE.CircleGeometry(2.15,24),new THREE.MeshBasicMaterial({color:classicEdition?0xffb96b:0xffd9a6,transparent:true,opacity:0,depthWrite:false}));
+ pool.rotation.x=-Math.PI/2;pool.position.set(lx,.026,z+1.35);scene.add(pool);
+ const reflection=new THREE.Mesh(new THREE.PlaneGeometry(.72,5.8),new THREE.MeshBasicMaterial({color:classicEdition?0xffbd79:0xffdfb2,transparent:true,opacity:0,depthWrite:false,blending:THREE.AdditiveBlending,depthWrite:false}));
+ reflection.rotation.x=-Math.PI/2;reflection.position.set(lx,.03,z+4.2);scene.add(reflection);
+ streetLights.push({bulb,glow,halo,pool,reflection,x:lx,z});
 }
 function tree(x,z){
   const group=new THREE.Group();
@@ -2461,6 +2466,9 @@ function begin(){
     renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,classicEdition?.58:lowEndDevice?.68:1));
     renderer.outputColorSpace=THREE.SRGBColorSpace;
     renderer.toneMapping=THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure=classicEdition?.92:1.08;
+    renderer.useLegacyLights=false;
+    renderer.setClearColor(0x91b1c8,1);
     renderer.shadowMap.type=THREE.PCFSoftShadowMap;
     renderer.shadowMap.enabled=false;
     sunLight=null;hemiLight=null;

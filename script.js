@@ -128,6 +128,20 @@ function flToggleEngine(){
  window.setTimeout(()=>{if(flEngineOn&&driving)status.textContent='MOTOR LÄUFT · W/S GAS/BREMSE · A/D LENKEN';},700);
 }
 
+function flUpdateSuspensionVisuals(){
+ const time=clock.elapsedTime;
+ const cars=[jobCar,...trafficCars].filter(Boolean);
+ for(const car of cars){
+  const visuals=car.userData.suspensionVisuals;if(!visuals)continue;
+  const active=driving&&car===jobCar;
+  const speed=active?Math.min(1,Math.abs(carSpeed)/Math.max(.1,car.userData.maxForwardSpeed||.5)):0;
+  visuals.forEach((part,index)=>{
+   const pulse=active?Math.sin(time*17+index*Math.PI*.5)*.012*speed:0;
+   part.springGroup.scale.y=1-speed*.045+pulse;
+   part.strut.scale.y=1-speed*.035+pulse*.6;
+  });
+ }
+}
 function flPlayFootstep(){
  if(!flAudioContext||flAudioContext.state!=='running')return;
  const length=Math.floor(flAudioContext.sampleRate*.075),buffer=flAudioContext.createBuffer(1,length,flAudioContext.sampleRate),data=buffer.getChannelData(0);
@@ -2646,7 +2660,7 @@ function loop(now=0){
   if(frameMs>0){perfFrames.push(frameMs);if(perfFrames.length>45)perfFrames.shift();}
   lastFrame=now;const dt=Math.min(clock.getDelta(),.05);
   flUpdateHomeDoor(dt);
-  flUpdateProceduralAudio();
+  flUpdateProceduralAudio();\n  flUpdateSuspensionVisuals();
   // Dynamic resolution only reacts to real rendering load, not an intentional 30-FPS cap.
   if((!maxFps||maxFps>=50)&&now-perfLastCheck>3000&&perfFrames.length>=20){
     perfLastCheck=now;const avgMs=perfFrames.reduce((a,b)=>a+b,0)/perfFrames.length;

@@ -1059,9 +1059,60 @@ function finishIntroTutorial(){
  localStorage.setItem('flIntroTutorialDone','yes');introTutorial.dataset.scene='0';introTutorial.classList.add('hidden');
  status.textContent='WILLKOMMEN IN FRANKFURT · VIEL SPASS!';
 }
-function startCutscene(jobName){if(!cutsceneOverlay||!camera||!jobCar)return;cutscene={target:jobCar.position.clone(),jobName};cutsceneElapsed=0;cutsceneOverlay.classList.remove('hidden');document.exitPointerLock?.();cutsceneOverlay.querySelector('#cinemaTitle').textContent='EIN NEUER AUFTRAG';cutsceneOverlay.querySelector('#cinemaCaption').textContent='Frankfurt schläft nie. Heute bist du unterwegs: '+jobName+'.';cutsceneOverlay.querySelector('#cinemaCount').textContent='SZENE 1 / 3 · STADTÜBERBLICK';}
+function startCutscene(jobName){
+ if(!cutsceneOverlay||!camera||!jobCar)return;
+ const chapter=Math.min(8,completedJobs+1);
+ const story=[
+  ['ANKUNFT IN FRANKFURT','Eine neue Stadt, ein neuer Anfang. Du kennst hier noch niemanden – aber jede Fahrt kann etwas verändern.'],
+  ['ERSTE KONTAKTE','Die Leute merken sich deinen Namen. Kleine Aufträge öffnen langsam neue Türen.'],
+  ['DIE STADT WIRD GRÖSSER','Neue Viertel, neue Kunden und größere Herausforderungen warten auf dich.'],
+  ['VERTRAUEN AUFBAUEN','Zuverlässigkeit zahlt sich aus. Dein Ruf fährt inzwischen mit.'],
+  ['NEUE MÖGLICHKEITEN','Aus einfachen Fahrten werden wichtige Aufträge quer durch Frankfurt.'],
+  ['DIE GROSSE CHANCE','Ein besonderer Auftrag könnte deine Karriere verändern. Bleib aufmerksam.'],
+  ['FRANKFURT BEWEGT SICH','Deine Entscheidungen prägen deinen Alltag in der Stadt.'],
+  ['DEIN NAME IN DER CITY','Du hast dir deinen Platz erarbeitet. Das nächste Kapitel beginnt jetzt.']
+ ][chapter-1];
+ cutscene={target:jobCar.position.clone(),jobName,car:jobCar,chapter,story,originYaw:jobCar.rotation.y};
+ cutsceneElapsed=0;cutsceneOverlay.classList.remove('hidden');document.exitPointerLock?.();
+ cutsceneOverlay.querySelector('.cinema-kicker').textContent='FRANKFURT LIFE · KAPITEL '+String(chapter).padStart(2,'0');
+ cutsceneOverlay.querySelector('#cinemaTitle').textContent=story[0];
+ cutsceneOverlay.querySelector('#cinemaCaption').textContent=story[1]+' Dein Auftrag: '+jobName+'.';
+ cutsceneOverlay.querySelector('#cinemaCount').textContent='FILMSEQUENZ · 01 / 05';
+}
 function finishCutscene(){if(!cutscene)return;cutscene=null;cutsceneOverlay?.classList.add('hidden');if(jobCar){camera.position.set(jobCar.position.x+4,3.1,jobCar.position.z+7);yaw=jobCar.rotation.y-Math.PI;}status.textContent='MISSION BEREIT · STEIGE MIT F INS AUTO';}
-function updateCutscene(dt){if(!cutscene||!camera)return;cutsceneElapsed+=dt;const t=cutsceneElapsed,car=cutscene.target;if(t<1.5){const k=t/1.5;camera.position.set(car.x+22*(1-k)+5*k,13*(1-k)+4*k,car.z+22*(1-k)+10*k);camera.lookAt(car.x,1,car.z);cutsceneOverlay.querySelector('#cinemaCount').textContent='SZENE 1 / 3 · STADTÜBERBLICK';}else if(t<3){const k=(t-1.5)/1.5;camera.position.set(car.x+5,4,car.z+10-5*k);camera.lookAt(car.x,1,car.z);cutsceneOverlay.querySelector('#cinemaCount').textContent='SZENE 2 / 3 · DEIN FAHRZEUG';cutsceneOverlay.querySelector('#cinemaCaption').textContent='Dein Fahrzeug steht bereit. Mach dich auf den Weg.';}else if(t<4.3){camera.position.set(car.x+2,2.4,car.z+5);camera.lookAt(car.x,1,car.z);cutsceneOverlay.querySelector('#cinemaCount').textContent='SZENE 3 / 3 · AUF DIE STRASSE';}else finishCutscene();}
+function updateCutscene(dt){
+ if(!cutscene||!camera)return;
+ cutsceneElapsed+=dt;
+ const t=cutsceneElapsed,car=cutscene.target,angle=cutscene.originYaw;
+ const title=cutsceneOverlay.querySelector('#cinemaTitle'),caption=cutsceneOverlay.querySelector('#cinemaCaption'),count=cutsceneOverlay.querySelector('#cinemaCount');
+ if(t<2.8){
+  const k=THREE.MathUtils.smoothstep(t/2.8,0,1);
+  camera.position.set(car.x+25*(1-k)+8*k,16*(1-k)+6*k,car.z+24*(1-k)+12*k);
+  camera.lookAt(car.x,1,car.z);count.textContent='FILMSEQUENZ · 01 / 05 · FRANKFURT AUS DER LUFT';
+  caption.textContent=cutscene.story[1];
+ }else if(t<5.4){
+  const k=(t-2.8)/2.6,a=angle+Math.PI*.72*k;
+  camera.position.set(car.x+Math.sin(a)*7,2.6+Math.sin(k*Math.PI)*.65,car.z+Math.cos(a)*7);
+  camera.lookAt(car.x,.9,car.z);count.textContent='FILMSEQUENZ · 02 / 05 · KAMERARUNDFAHRT';
+  caption.textContent='Ein neuer Auftrag wartet. '+cutscene.jobName+'.';
+ }else if(t<7.8){
+  const k=(t-5.4)/2.4;
+  camera.position.set(car.x+Math.sin(angle+Math.PI*.5)*3.1,1.15+k*.2,car.z+Math.cos(angle+Math.PI*.5)*3.1);
+  camera.lookAt(car.x,1,car.z);count.textContent='FILMSEQUENZ · 03 / 05 · DETAILS';
+  caption.textContent='Dein Fahrzeug ist bereit. Prüfe dein Ziel und mach dich auf den Weg.';
+ }else if(t<10.8){
+  const k=(t-7.8)/3;
+  camera.position.set(car.x-Math.sin(angle)*8*(1+k*.35),3.2,car.z-Math.cos(angle)*8*(1+k*.35));
+  camera.lookAt(car.x,1,car.z);count.textContent='FILMSEQUENZ · 04 / 05 · AUFBRUCH';
+  caption.textContent='Jede Fahrt bringt dich deinem nächsten Kapitel näher.';
+ }else if(t<13.2){
+  const k=(t-10.8)/2.4;
+  camera.position.set(car.x+4*(1-k)+2*k,3.1,car.z+7*(1-k)+5*k);
+  camera.lookAt(car.x,1,car.z);count.textContent='FILMSEQUENZ · 05 / 05 · DEIN EINSATZ';
+  title.textContent=cutscene.story[0];
+  caption.textContent='Kapitel '+cutscene.chapter+' · '+cutscene.jobName+' — Steig ein und starte deinen Auftrag.';
+ }else finishCutscene();
+}
 function buildInGameJobs(){
  jobPanel=document.createElement('div');jobPanel.id='inGameJobs';jobPanel.className='ingame-jobs hidden';
  jobPanel.innerHTML='<div class="ingame-jobs-head"><b>FRANKFURT LIFE / JOBZENTRALE</b><button id="closeJobs" aria-label="Schließen">×</button></div><h3>Wähle deinen Beruf</h3><p class="ingame-jobs-hint">Dein Auftrag und das passende Dienstfahrzeug starten direkt in der 3D-Stadt.</p><div id="ingameJobChoices"></div><div id="ingameJobDetail">Wähle einen Job aus.</div><button id="startJob" class="ingame-start" disabled>AUFTRAG ANNEHMEN</button><small>J oder ESC · Menü schließen</small>';

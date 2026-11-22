@@ -838,7 +838,7 @@ function openPhoneApp(app){
  transit:'<div class="phone-page-head">Frankfurt ÖPNV</div><div class="phone-stat">Linie 1 <b>Innenstadt</b></div><div class="phone-stat">Flughafen-Express <b>Airport</b></div><div class="phone-stat">Linie 2 <b>Westend – Ostend</b></div><div class="phone-stat">Fahrten <b>'+flTransitTrips+'</b></div><p>Wähle eine Haltestelle und fahre zum nächsten Stadtteil.</p><button data-action="transitride">Fahrt starten</button>',
  news:'<div class="phone-page-head">Stadt-News</div><div class="phone-stat">Neue Jobs in der Innenstadt</div><div class="phone-stat">Frankfurt Motors eröffnet</div><p>Bleib auf dem Laufenden.</p>',
  camera:'<div class="phone-page-head">Kamera</div><p>Fotomodus – richte die Kamera in der Stadt aus und mach einen Screenshot mit Windows.</p>',
- services:'<div class="phone-page-head">Stadtservice</div><div class="phone-stat">Mängel melden <b>Online</b></div><div class="phone-stat">Fundbüro <b>Offen</b></div>',
+ services:'<div class="phone-page-head">Stadtservice</div><div class="phone-stat">Pannenhilfe <b>24/7</b></div><p>Ein Abschleppwagen bringt dein aktives Fahrzeug zum Tuningwerk.</p><button data-action="tow">Abschleppdienst rufen</button><div class="phone-stat">Mängel melden <b>Online</b></div><div class="phone-stat">Fundbüro <b>Offen</b></div>',
  settings:'<div class="phone-page-head">Einstellungen</div><div class="phone-setting"><label for="phoneQuality">Grafikqualität</label><select id="phoneQuality"><option value="minimum">Minimal (sehr schwache PCs)</option><option value="low">Niedrig</option><option value="medium">Mittel</option><option value="high">Hoch</option><option value="maximum">Maximal</option></select></div><div class="phone-setting"><label for="phoneFps">Bildrate</label><select id="phoneFps"><option value="30">30 FPS</option><option value="60">60 FPS</option><option value="unlimited">Unbegrenzt</option></select></div><div class="phone-setting"><label for="phoneMouse">Maus-Empfindlichkeit</label><select id="phoneMouse"><option value="0.65">Langsam</option><option value="1">Normal</option><option value="1.5">Schnell</option></select></div><div class="phone-setting"><label for="phoneFov">Sichtfeld</label><select id="phoneFov"><option value="60">60°</option><option value="68">68°</option><option value="78">78°</option><option value="88">88°</option></select></div><div class="phone-setting"><label for="phoneCamera">Kameraperspektive</label><select id="phoneCamera"><option value="follow">Verfolger</option><option value="close">Nah</option><option value="hood">Motorhaube</option><option value="ego">Ego-Perspektive</option></select></div><div class="phone-setting"><label for="phoneMapVisible">GPS-Minimap</label><select id="phoneMapVisible"><option value="on">Anzeigen</option><option value="off">Ausblenden</option></select></div><div class="phone-setting"><label for="phoneBrightness">Bildschirmhelligkeit</label><select id="phoneBrightness"><option value="0.8">Dunkler</option><option value="1" selected>Normal</option><option value="1.15">Hell</option><option value="1.3">Sehr hell</option></select></div><div class="phone-setting"><label for="phoneInvertY">Kamera Y-Achse</label><select id="phoneInvertY"><option value="off">Normal</option><option value="on">Invertiert</option></select></div><div class="phone-setting"><label for="phoneMapSize">Minimap-Größe</label><select id="phoneMapSize"><option value="small">Klein</option><option value="medium">Mittel</option><option value="large">Groß</option></select></div><div class="phone-setting"><label for="phoneCoordsVisible">Koordinaten anzeigen</label><select id="phoneCoordsVisible"><option value="on">Anzeigen</option><option value="off">Ausblenden</option></select></div><p>Die Änderungen werden direkt übernommen und gespeichert.</p>',
  customize:'<div class="phone-page-head">Charakter & Outfit</div><div class="phone-stat">Aktuelle Auswahl <b>'+({standard:'Alltag',wheelchair:'Rollstuhlfahrer/in',sport:'Sportlich',business:'Business',casual:'Freizeit',street:'Streetwear'}[flCharacterType]||'Alltag')+'</b></div><p>Wähle deinen Charakterstil und passe Farben an. Deine Auswahl wird gespeichert.</p><div class="phone-stat"><span>Hautfarbe</span><button data-action="appearance" data-part="skin">Ändern ('+['Porzellan','Hell','Warm','Goldbeige','Olive','Honig','Karamell','Braun','Dunkelbraun','Sehr dunkel'][flCharacterAppearance.skin]+')</button></div><div class="phone-stat"><span>Haarfarbe</span><button data-action="appearance" data-part="hair">Ändern ('+['Schwarz','Espresso','Dunkelbraun','Kastanie','Hellbraun','Blond','Platin','Rot','Kupfer','Silbergrau'][flCharacterAppearance.hair]+')</button></div><div class="phone-stat"><span>Oberteil</span><button data-action="appearance" data-part="top">Ändern ('+['Navy','Rot','Waldgrün','Schwarz','Weiß','Türkis','Violett','Orange','Rosa','Gelb','Bordeaux','Mint','Lavendel','Creme','Petrol','Grau'][flCharacterAppearance.top]+')</button></div><div class="phone-stat"><span>Hose</span><button data-action="appearance" data-part="bottom">Ändern ('+['Jeansblau','Schwarz','Anthrazit','Grau','Beige','Oliv','Weiß','Dunkelblau','Braun','Bordeaux'][flCharacterAppearance.bottom]+')</button></div><div class="phone-stat"><span>Rollstuhl-Rahmen</span><button data-action="appearance" data-part="chairFrame">Ändern ('+['Graphit','Silber','Blau','Rot','Gold'][flCharacterAppearance.chairFrame]+')</button></div><div class="phone-stat"><span>Rollstuhl-Sitz</span><button data-action="appearance" data-part="chairSeat">Ändern ('+['Schwarz','Blau','Rot','Grau','Türkis'][flCharacterAppearance.chairSeat]+')</button></div><div class="phone-stat"><span>Rollstuhl-Räder</span><button data-action="appearance" data-part="chairWheel">Ändern ('+['Standard','Sport','Silber','Blau'][flCharacterAppearance.chairWheel]+')</button></div><div class="phone-stat"><span>Alltag</span><button data-action="character" data-character="standard">'+(flCharacterType==='standard'?'Ausgewählt ✓':'Auswählen')+'</button></div><div class="phone-stat"><span>Rollstuhlfahrer/in ♿</span><button data-action="character" data-character="wheelchair">'+(flCharacterType==='wheelchair'?'Ausgewählt ✓':'Auswählen')+'</button></div><div class="phone-stat"><span>Sportlich</span><button data-action="character" data-character="sport">'+(flCharacterType==='sport'?'Ausgewählt ✓':'Auswählen')+'</button></div><div class="phone-stat"><span>Business</span><button data-action="character" data-character="business">'+(flCharacterType==='business'?'Ausgewählt ✓':'Auswählen')+'</button></div><div class="phone-stat"><span>Freizeit</span><button data-action="character" data-character="casual">'+(flCharacterType==='casual'?'Ausgewählt ✓':'Auswählen')+'</button></div><div class="phone-stat"><span>Streetwear</span><button data-action="character" data-character="street">'+(flCharacterType==='street'?'Ausgewählt ✓':'Auswählen')+'</button></div><div class="phone-stat">Outfit-Farbvariante <b>'+(flOutfit+1)+'/6</b></div><button data-action="outfit">Outfit-Farbe wechseln</button>',
  daily:'<div class="phone-page-head">Tagesziele</div><p>Schaffe die zwei Aufgaben des Tages und erhalte 250 €.</p><div class="phone-stat">Auftrag abschließen <b>'+(flDailyJobs>0?'✓':'0/1')+'</b></div><div class="phone-stat">ÖPNV-Fahrt machen <b>'+(flDailyRides>0?'✓':'0/1')+'</b></div><div class="phone-stat">Tagesbonus <b>'+(flDailyClaimed?'Abgeholt':'250 €')+'</b></div><button data-action="dailyclaim">Bonus abholen</button>',
@@ -859,7 +859,7 @@ function openPhoneApp(app){
  }
  if(app==='map'){page.querySelector('[data-action="recenter"]')?.addEventListener('click',()=>openPhoneApp('map'));}
  page.querySelectorAll('[data-eat]').forEach(b=>b.addEventListener('click',()=>{const name=b.dataset.eat;if((inventory[name]||0)<1){b.textContent='Nicht vorhanden';return;}inventory[name]--;appetite=Math.min(100,appetite+({Brot:18,Brezel:15,Croissant:16,Kuchen:20,Kaffee:7,Snack:12,Pizza:28,Pasta:25,Limo:6,'Burger-Menü':24,Schnitzel:26,Salat:15,Cola:5,'KnusperKante Chips':12,'Sprudelstern Cola':5,'Sprudelstern Wasser':3,'Fruchtfunk Limo':6}[name]||10));openPhoneApp('inventory');}));
- page.querySelectorAll('[data-action]').forEach(b=>b.addEventListener('click',()=>{const action=b.dataset.action;if(action==='home')showPhoneHome();if(action==='bankSend'){const recipient=page.querySelector('#bankRecipient')?.value,amount=page.querySelector('#bankAmount')?.value;flBankTransfer(recipient,amount);}if(action==='taxi')flCallTaxi();if(action==='jobs'){phonePanel.classList.add('hidden');toggleJobs();}if(action==='dealer'){phonePanel.classList.add('hidden');openDealer();}if(action==='homebuy')flBuyHome();if(action==='gohome')flGoHome();if(action==='furniture')flBuyFurniture();if(action==='transitride')flTransitRide();if(action==='outfit')flChangeOutfit();if(action==='character')flSelectCharacter(b.dataset.character);if(action==='appearance')flCycleCharacterAppearance(b.dataset.part);if(action==='dailyclaim')flClaimDaily();if(action==='save'){flSaveGame(true);openPhoneApp('save');}}));
+ page.querySelectorAll('[data-action]').forEach(b=>b.addEventListener('click',()=>{const action=b.dataset.action;if(action==='home')showPhoneHome();if(action==='bankSend'){const recipient=page.querySelector('#bankRecipient')?.value,amount=page.querySelector('#bankAmount')?.value;flBankTransfer(recipient,amount);}if(action==='taxi')flCallTaxi();if(action==='tow'){flCallTowService();phonePanel.classList.add('hidden');}if(action==='jobs'){phonePanel.classList.add('hidden');toggleJobs();}if(action==='dealer'){phonePanel.classList.add('hidden');openDealer();}if(action==='homebuy')flBuyHome();if(action==='gohome')flGoHome();if(action==='furniture')flBuyFurniture();if(action==='transitride')flTransitRide();if(action==='outfit')flChangeOutfit();if(action==='character')flSelectCharacter(b.dataset.character);if(action==='appearance')flCycleCharacterAppearance(b.dataset.part);if(action==='dailyclaim')flClaimDaily();if(action==='save'){flSaveGame(true);openPhoneApp('save');}}));
 }
 function togglePhone(){
  if(!started||!phonePanel)return;
@@ -1829,6 +1829,7 @@ let driving=false,carSpeed=0,carSlip=0,carYawRate=0,careerMoney=0,completedJobs=
 let flEngineOn=false,flEngineStartingUntil=0;
 let damageLevel=0,damageHud=null,damageFlash=0,cameraLookOffset=0,damageCooldown=0,flSavedDamage=0;
 let speedometerHud=null,speedometerLastGear=1;
+let flTowService=null;
 const emergencyVehicles=[];
 const breakableProps=[];const flSkidMarks=[];let lookDrag=false,lastPointerX=0,lastPointerY=0;
 function buildCutsceneUI(){
@@ -2091,6 +2092,134 @@ function toggleShop(){
  shopPanel.querySelector('#shopMessage').textContent='Du bist bei '+shop.name+'.';
  shopPanel.classList.remove('hidden');document.exitPointerLock?.();
 }
+
+function flBuildTowTruck(position,heading){
+ const truck=new THREE.Group();
+ const paint=new THREE.MeshPhysicalMaterial({color:0xf0c51d,metalness:.42,roughness:.32,clearcoat:.75});
+ const dark=new THREE.MeshStandardMaterial({color:0x202a31,metalness:.55,roughness:.48});
+ const steel=new THREE.MeshStandardMaterial({color:0x87939b,metalness:.82,roughness:.28});
+ const glass=new THREE.MeshPhysicalMaterial({color:0x1b3445,roughness:.12,metalness:.08,clearcoat:1});
+ const red=new THREE.MeshStandardMaterial({color:0xc52d2d,metalness:.28,roughness:.42});
+ const lamp=new THREE.MeshStandardMaterial({color:0xffd98a,emissive:0xff9d24,emissiveIntensity:1.4});
+ const addBox=(parent,size,mat,pos)=>{const m=new THREE.Mesh(new THREE.BoxGeometry(...size),mat);m.position.set(...pos);m.castShadow=true;m.receiveShadow=true;parent.add(m);return m;};
+ addBox(truck,[2.15,.48,5.8],dark,[0,.66,.1]);
+ addBox(truck,[2.05,.22,5.2],paint,[0,.9,.05]);
+ const cab=addBox(truck,[2.04,1.42,2.25],paint,[0,1.58,1.72]);
+ addBox(truck,[2.08,.36,1.05],paint,[0,1.18,2.62]);
+ addBox(truck,[1.86,.92,.055],glass,[0,1.72,2.86]);
+ for(const side of [-1,1]){
+  addBox(truck,[.045,.78,.92],glass,[side*1.03,1.68,1.72]);
+  addBox(truck,[.08,.18,.5],dark,[side*1.08,1.08,2.0]);
+  addBox(truck,[.08,.1,.36],lamp,[side*1.08,1.16,2.73]);
+  addBox(truck,[.08,.16,.5],red,[side*1.08,.98,-2.82]);
+  addBox(truck,[.12,.12,1.2],paint,[side*1.04,1.02,-.9]);
+ }
+ addBox(truck,[2.12,.18,.18],steel,[0,.54,3.0]);
+ const wheelMeshes=[];
+ for(const x of [-1.08,1.08])for(const z of [-1.85,2.0]){
+  const wheel=new THREE.Mesh(new THREE.CylinderGeometry(.48,.48,.28,18),dark);
+  wheel.rotation.z=Math.PI/2;wheel.position.set(x,.48,z);wheel.castShadow=true;truck.add(wheel);wheelMeshes.push(wheel);
+  const hub=new THREE.Mesh(new THREE.CylinderGeometry(.2,.2,.3,14),steel);hub.rotation.z=Math.PI/2;hub.position.copy(wheel.position);truck.add(hub);
+  for(let n=0;n<8;n++){const bolt=new THREE.Mesh(new THREE.SphereGeometry(.035,6,6),dark);const a=n*Math.PI/4;bolt.position.set(x+Math.sign(x)*.16,.48+Math.sin(a)*.12,z+Math.cos(a)*.12);truck.add(bolt);}
+ }
+ // Warnmarkierte Pritsche und hydraulischer Radheber am Heck.
+ const boom=new THREE.Group();boom.position.set(0,.72,-2.55);truck.add(boom);
+ addBox(boom,[.32,.22,2.05],steel,[0,0,-.92]);
+ for(const side of [-1,1]){
+  addBox(boom,[.11,.16,2.0],paint,[side*.48,.04,-.85]);
+  addBox(boom,[.12,.18,.95],steel,[side*.48,-.08,-1.55]);
+  addBox(boom,[.16,.1,.65],dark,[side*.48,-.19,-1.95]);
+  const fork=addBox(boom,[.12,.09,.9],steel,[side*.48,-.2,-2.2]);fork.rotation.x=-.12;
+ }
+ const crossbar=addBox(boom,[2.05,.15,.18],steel,[0,-.12,-2.25]);
+ for(const side of [-1,1]){
+  addBox(boom,[.16,.13,.32],red,[side*.82,-.1,-2.25]);
+  const reflector=addBox(boom,[.11,.09,.26],lamp,[side*.82,-.01,-2.25]);
+ }
+ const winch=addBox(truck,[.68,.55,.42],dark,[0,1.1,-2.55]);
+ const drum=new THREE.Mesh(new THREE.CylinderGeometry(.22,.22,.48,14),steel);drum.rotation.z=Math.PI/2;drum.position.set(0,1.12,-2.78);truck.add(drum);
+ const beaconBase=addBox(truck,[.7,.08,.28],dark,[0,2.34,1.85]);
+ const beacon=new THREE.Mesh(new THREE.CylinderGeometry(.12,.12,.2,12),lamp);beacon.position.set(0,2.48,1.85);truck.add(beacon);
+ // Beschriftung auf den Türen.
+ const labelCanvas=document.createElement('canvas');labelCanvas.width=512;labelCanvas.height=128;
+ const ctx=labelCanvas.getContext('2d');ctx.fillStyle='#172536';ctx.fillRect(0,0,512,128);ctx.fillStyle='#ffffff';ctx.font='bold 54px Arial';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('PANNENHILFE',256,64);
+ const labelTexture=new THREE.CanvasTexture(labelCanvas);labelTexture.colorSpace=THREE.SRGBColorSpace;
+ for(const side of [-1,1]){const decal=new THREE.Mesh(new THREE.PlaneGeometry(1.12,.3),new THREE.MeshBasicMaterial({map:labelTexture,side:THREE.DoubleSide}));decal.position.set(side*1.035,1.43,1.7);decal.rotation.y=side>0?Math.PI/2:-Math.PI/2;truck.add(decal);}
+ truck.position.copy(position);truck.rotation.y=heading;scene.add(truck);
+ const cableGeometry=new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(),new THREE.Vector3()]);
+ const cable=new THREE.Line(cableGeometry,new THREE.LineBasicMaterial({color:0x30363a}));scene.add(cable);
+ return {truck,boom,cable,wheels:wheelMeshes,beacon,position:position.clone(),heading};
+}
+function flCallTowService(){
+ if(!started||!jobCar||!scene){status.textContent='WÄHLE ZUERST EIN FAHRZEUG';return;}
+ if(flTowService){status.textContent='ABSCHLEPPDIENST IST BEREITS UNTERWEGS';return;}
+ if(driving){driving=false;flEngineOn=false;carSpeed=0;speedometerHud?.classList.add('hidden');}
+ if(jobCar.parent!==scene){status.textContent='DEIN AUTO IST BEREITS IN DER WERKSTATT';return;}
+ const heading=jobCar.rotation.y,forward=new THREE.Vector3(Math.sin(heading),0,Math.cos(heading));
+ const start=jobCar.position.clone().addScaledVector(forward,24);
+ const truck=flBuildTowTruck(start,heading);
+ const liftShop=shops.find(shop=>shop.lift);
+ if(!liftShop){scene.remove(truck.truck);scene.remove(truck.cable);status.textContent='WERKSTATT NICHT VERFÜGBAR';return;}
+ const lift=liftShop.lift;
+ const liftX=lift.group.position.x,liftZ=lift.group.position.z;
+ flTowService={...truck,car:jobCar,phase:'approach',timer:0,heading,target:jobCar.position.clone().addScaledVector(forward,6.8),garage:new THREE.Vector3(liftX,0,liftZ),lift,carAttached:false};
+ status.textContent='ABSCHLEPPDIENST GERUFEN · GELBER WAGEN IST UNTERWEGS';
+}
+function flUpdateTowService(dt){
+ const tow=flTowService;if(!tow)return;
+ tow.timer+=dt;
+ const moveTow=(target,speed)=>{
+  const delta=target.clone().sub(tow.truck.position);delta.y=0;
+  const distance=delta.length();if(distance<.16)return true;
+  const direction=delta.normalize();
+  tow.truck.position.addScaledVector(direction,Math.min(distance,speed*dt));
+  const desired=Math.atan2(direction.x,direction.z);
+  let angle=((desired-tow.truck.rotation.y+Math.PI*3)%(Math.PI*2))-Math.PI;
+  tow.truck.rotation.y+=THREE.MathUtils.clamp(angle,-dt*1.5,dt*1.5);
+  return distance<.45;
+ };
+ if(tow.phase==='approach'){
+  if(moveTow(tow.target,3.8)){tow.phase='lowering';tow.timer=0;status.textContent='ABSCHLEPPER ANGEKOMMEN · RADHEBER WIRD AUSGEFAHREN';}
+ }else if(tow.phase==='lowering'){
+  tow.boom.rotation.x=THREE.MathUtils.lerp(tow.boom.rotation.x,-.18,Math.min(1,dt*1.5));
+  if(tow.timer>1.8){
+   scene.updateMatrixWorld(true);tow.truck.updateMatrixWorld(true);tow.truck.attach(tow.car);
+   tow.car.position.set(0,.34,-5.15);tow.car.rotation.set(-.12,0,0);tow.car.updateMatrixWorld(true);
+   tow.carAttached=true;tow.phase='lifting';tow.timer=0;
+   status.textContent='RADHEBER EINGEKUPPELT · VORDERACHSE WIRD ANGEHOBEN';
+  }
+ }else if(tow.phase==='lifting'){
+  tow.boom.rotation.x=THREE.MathUtils.lerp(tow.boom.rotation.x,0,Math.min(1,dt*1.15));
+  const front=tow.car.localToWorld(new THREE.Vector3(0,.55,2.15));
+  const hook=tow.truck.localToWorld(new THREE.Vector3(0,.62,-4.55));
+  tow.cable.geometry.setFromPoints([hook,front]);
+  if(tow.timer>1.6){tow.phase='transport';tow.timer=0;status.textContent='FAHRZEUG GESICHERT · TRANSPORT ZUM TUNINGWERK';}
+ }else if(tow.phase==='transport'){
+  const direction=new THREE.Vector3(Math.sin(tow.truck.rotation.y),0,Math.cos(tow.truck.rotation.y));
+  const target=tow.garage.clone().addScaledVector(direction,5.2);
+  if(moveTow(target,5.4)){tow.phase='unloading';tow.timer=0;status.textContent='WERKSTATT ERREICHT · FAHRZEUG WIRD ABGESETZT';}
+  const front=tow.car.localToWorld(new THREE.Vector3(0,.55,2.15));
+  const hook=tow.truck.localToWorld(new THREE.Vector3(0,.62,-4.55));
+  tow.cable.geometry.setFromPoints([hook,front]);
+ }else if(tow.phase==='unloading'){
+  tow.boom.rotation.x=THREE.MathUtils.lerp(tow.boom.rotation.x,-.12,Math.min(1,dt*1.2));
+  if(tow.timer>1.5){
+   scene.attach(tow.car);
+   tow.car.position.set(tow.garage.x,.42,tow.garage.z);tow.car.rotation.set(0,0,0);
+   tow.lift.car=tow.car;tow.lift.originalPosition=new THREE.Vector3(tow.garage.x,0,tow.garage.z);tow.lift.originalRotation=0;
+   tow.lift.progress=0;tow.lift.phase='raising';
+   scene.remove(tow.cable);scene.remove(tow.truck);
+   flTowService=null;
+   camera.position.set(tow.garage.x+7,2.1,tow.garage.z+9);yaw=0;pitch=-.04;
+   status.textContent='AUTO ABGESCHLEPPT · AUF DER WERKSTATT-HEBEBÜHNE · E ZUM ABSENKEN';
+  }
+ }
+ if(flTowService){
+  tow.beacon.material.emissiveIntensity=.7+Math.sin(clock.elapsedTime*8)*.7;
+  tow.wheels.forEach(w=>{w.rotation.x+=dt*2.8;});
+ }
+}
+
 function toggleWorkshopLift(){
  if(!started||!jobCar){status.textContent='STELLE ZUERST EIN FAHRZEUG AUF DIE HEBEBÜHNE';return;}
  const liftShop=shops.find(shop=>shop.lift);
@@ -2698,6 +2827,7 @@ function updateWorld(dt){
   const forestNearby=Math.hypot((driving&&jobCar?jobCar.position.x:camera.position.x)-112,(driving&&jobCar?jobCar.position.z:camera.position.z)-75)<92;
   for(const bird of flBirds){const phase=t*bird.speed+bird.phase;bird.mesh.position.set(bird.x+Math.sin(phase)*3,bird.y+Math.sin(phase*1.7)*.55,bird.z+Math.cos(phase*.7)*3);bird.mesh.rotation.y=Math.sin(phase*.7)*.4;bird.mesh.children[1].rotation.z=Math.sin(phase*8)*.55;bird.mesh.children[2].rotation.z=-Math.sin(phase*8)*.55;}
   if(forestNearby&&flAudioContext?.state==='running'){flBirdChirpTimer-=dt;if(flBirdChirpTimer<=0){flPlayBirdChirp();flBirdChirpTimer=6+Math.random()*9;}}
+  flUpdateTowService(dt);
   for(const shop of shops){const lift=shop.lift;if(!lift)continue;if(lift.phase==='raising'||lift.phase==='lowering'){
    const direction=lift.phase==='raising'?1:-1;lift.progress=THREE.MathUtils.clamp(lift.progress+direction*dt*.32,0,1);
    lift.deck.position.y=.24+lift.progress*1.85;
@@ -3579,10 +3709,10 @@ function toggleVehicle(){
 }
 function buildMobileControls(){
  if(!('ontouchstart' in window)&&!navigator.maxTouchPoints)return;
- const panel=document.createElement('div');panel.id='mobileControls';panel.innerHTML='<div class="mobile-pad"><button data-key="KeyW">▲</button><div><button data-key="KeyA">◀</button><button data-key="KeyS">▼</button><button data-key="KeyD">▶</button></div></div><div class="mobile-actions"><button data-key="ShiftLeft">SPRINT</button><button data-action="interact">E</button><button data-action="vehicle">F</button><button data-action="engine">M</button><button data-action="jobs">J</button><button data-action="phone">☎</button></div><div class="mobile-look">ZUM UMSCHAUEN HIER WISCHEN</div>';
+ const panel=document.createElement('div');panel.id='mobileControls';panel.innerHTML='<div class="mobile-pad"><button data-key="KeyW">▲</button><div><button data-key="KeyA">◀</button><button data-key="KeyS">▼</button><button data-key="KeyD">▶</button></div></div><div class="mobile-actions"><button data-key="ShiftLeft">SPRINT</button><button data-action="interact">E</button><button data-action="vehicle">F</button><button data-action="engine">M</button><button data-action="jobs">J</button><button data-action="phone">☎</button><button data-action="tow">TOW</button></div><div class="mobile-look">ZUM UMSCHAUEN HIER WISCHEN</div>';
  viewport.appendChild(panel);
  panel.querySelectorAll('[data-key]').forEach(btn=>{const code=btn.dataset.key;const on=e=>{e.preventDefault();keys[code]=true;keyboardKeys[code]=true;};const off=e=>{e.preventDefault();keys[code]=false;keyboardKeys[code]=false;};btn.addEventListener('pointerdown',on);['pointerup','pointercancel','pointerleave'].forEach(ev=>btn.addEventListener(ev,off));});
- panel.querySelectorAll('[data-action]').forEach(btn=>btn.addEventListener('pointerdown',e=>{e.preventDefault();const a=btn.dataset.action;if(a==='interact')toggleShopOrDealer();if(a==='vehicle'){if(!tryStartBoat()&&!tryStartFlight())toggleVehicle();}if(a==='engine')flToggleEngine();if(a==='jobs')toggleJobs();if(a==='phone')togglePhone();}));
+ panel.querySelectorAll('[data-action]').forEach(btn=>btn.addEventListener('pointerdown',e=>{e.preventDefault();const a=btn.dataset.action;if(a==='interact')toggleShopOrDealer();if(a==='vehicle'){if(!tryStartBoat()&&!tryStartFlight())toggleVehicle();}if(a==='engine')flToggleEngine();if(a==='jobs')toggleJobs();if(a==='phone')togglePhone();if(a==='tow')flCallTowService();}));
 }
 function togglePauseMenu(force){
  if(!pausePanel){pausePanel=document.createElement('section');pausePanel.id='pauseMenu';pausePanel.className='pause-menu hidden';pausePanel.innerHTML='<div class="pause-card"><div class="pause-kicker">FRANKFURT LIFE</div><h2>PAUSE</h2><p>Deine Stadt. Dein Tempo.</p><button data-pause="resume">WEITERSPIELEN</button><button data-pause="save">SPIELSTAND SPEICHERN</button><button data-pause="settings">EINSTELLUNGEN</button><button data-pause="close">ZURÜCK ZUR STADT</button></div>';viewport.appendChild(pausePanel);pausePanel.addEventListener('click',e=>{const action=e.target.closest('[data-pause]')?.dataset.pause;if(!action)return;if(action==='save'){flSaveGame(true);return;}if(action==='settings'){gamePaused=false;pausePanel.classList.add('hidden');if(phonePanel?.classList.contains('hidden'))phonePanel.classList.remove('hidden');showPhoneHome();openPhoneApp('settings');document.exitPointerLock?.();return;}gamePaused=false;pausePanel.classList.add('hidden');});}
@@ -3668,7 +3798,7 @@ function begin(){
 startButton?.addEventListener('click',begin);
 // In der eigenständigen Windows-Spielansicht direkt in die 3D-Stadt starten.
 if(document.body.classList.contains('game-app')) begin();
-document.addEventListener('keydown',e=>{keys[e.code]=true;keyboardKeys[e.code]=true;if(e.code==='Escape'&&!e.repeat){const overlays=[jobPanel,shopPanel,phonePanel,dealerPanel];const visible=overlays.find(p=>p&&!p.classList.contains('hidden'));if(visible){visible.classList.add('hidden');return;}togglePauseMenu();return;}if(e.code==='F1'){e.preventDefault();if(!e.repeat)togglePhone();return;}if(e.code==='KeyQ'&&!e.repeat){e.preventDefault();toggleQuickAccessWheel();return;}if(e.code==='KeyE'&&!e.repeat){const atLift=driving&&jobCar&&shops.some(shop=>shop.lift&&Math.hypot(jobCar.position.x-shop.lift.group.position.x,jobCar.position.z-shop.lift.group.position.z)<8.5);if(atLift)toggleWorkshopLift();else if(!flToggleHome()&&!tryRefuelAtPump()&&!tryPickupShopItem())toggleShopOrDealer();}if(e.code==='KeyF'&&!e.repeat){if(!tryStartBoat()&&!tryStartFlight())toggleVehicle();}if(e.code==='KeyH'&&!e.repeat)toggleCarHood();if(e.code==='KeyM'&&!e.repeat){e.preventDefault();flToggleEngine();}if(e.code==='KeyG'&&!e.repeat)tryTakeoverVehicle();if(e.code==='KeyJ'&&!e.repeat)toggleJobs();if(e.code==='KeyR'&&!e.repeat)toggleWorkshopLift();if(e.code==='KeyL'&&!e.repeat)toggleFlashlight();if(e.code==='F5'&&!e.repeat){e.preventDefault();flSaveGame(true);}if(e.code==='KeyC'&&!e.repeat)cycleCamera();if(e.code==='Escape'&&jobPanel&&!jobPanel.classList.contains('hidden'))jobPanel.classList.add('hidden');if(e.code==='Escape'&&shopPanel&&!shopPanel.classList.contains('hidden'))shopPanel.classList.add('hidden');if(e.code==='Escape'&&phonePanel&&!phonePanel.classList.contains('hidden'))phonePanel.classList.add('hidden');if(e.code==='Escape')document.querySelector('#quickAccessWheel')?.classList.add('hidden');if(e.code==='Escape'&&!e.repeat&&(!jobPanel||jobPanel.classList.contains('hidden'))&&(!shopPanel||shopPanel.classList.contains('hidden'))&&(!phonePanel||phonePanel.classList.contains('hidden'))&&(!dealerPanel||dealerPanel.classList.contains('hidden')))togglePauseMenu();if(e.code==='Escape'&&dealerPanel&&!dealerPanel.classList.contains('hidden'))dealerPanel.classList.add('hidden');if(['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code))e.preventDefault();});
+document.addEventListener('keydown',e=>{keys[e.code]=true;keyboardKeys[e.code]=true;if(e.code==='Escape'&&!e.repeat){const overlays=[jobPanel,shopPanel,phonePanel,dealerPanel];const visible=overlays.find(p=>p&&!p.classList.contains('hidden'));if(visible){visible.classList.add('hidden');return;}togglePauseMenu();return;}if(e.code==='F1'){e.preventDefault();if(!e.repeat)togglePhone();return;}if(e.code==='KeyQ'&&!e.repeat){e.preventDefault();toggleQuickAccessWheel();return;}if(e.code==='KeyE'&&!e.repeat){const atLift=driving&&jobCar&&shops.some(shop=>shop.lift&&Math.hypot(jobCar.position.x-shop.lift.group.position.x,jobCar.position.z-shop.lift.group.position.z)<8.5);if(atLift)toggleWorkshopLift();else if(!flToggleHome()&&!tryRefuelAtPump()&&!tryPickupShopItem())toggleShopOrDealer();}if(e.code==='KeyF'&&!e.repeat){if(!tryStartBoat()&&!tryStartFlight())toggleVehicle();}if(e.code==='KeyH'&&!e.repeat)toggleCarHood();if(e.code==='KeyM'&&!e.repeat){e.preventDefault();flToggleEngine();}if(e.code==='KeyG'&&!e.repeat)tryTakeoverVehicle();if(e.code==='KeyJ'&&!e.repeat)toggleJobs();if(e.code==='KeyR'&&!e.repeat)toggleWorkshopLift();if(e.code==='KeyT'&&!e.repeat)flCallTowService();if(e.code==='KeyL'&&!e.repeat)toggleFlashlight();if(e.code==='F5'&&!e.repeat){e.preventDefault();flSaveGame(true);}if(e.code==='KeyC'&&!e.repeat)cycleCamera();if(e.code==='Escape'&&jobPanel&&!jobPanel.classList.contains('hidden'))jobPanel.classList.add('hidden');if(e.code==='Escape'&&shopPanel&&!shopPanel.classList.contains('hidden'))shopPanel.classList.add('hidden');if(e.code==='Escape'&&phonePanel&&!phonePanel.classList.contains('hidden'))phonePanel.classList.add('hidden');if(e.code==='Escape')document.querySelector('#quickAccessWheel')?.classList.add('hidden');if(e.code==='Escape'&&!e.repeat&&(!jobPanel||jobPanel.classList.contains('hidden'))&&(!shopPanel||shopPanel.classList.contains('hidden'))&&(!phonePanel||phonePanel.classList.contains('hidden'))&&(!dealerPanel||dealerPanel.classList.contains('hidden')))togglePauseMenu();if(e.code==='Escape'&&dealerPanel&&!dealerPanel.classList.contains('hidden'))dealerPanel.classList.add('hidden');if(['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code))e.preventDefault();});
 document.addEventListener('keyup',e=>{keys[e.code]=false;keyboardKeys[e.code]=false;});
 window.addEventListener('resize',resize);
 

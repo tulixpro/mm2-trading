@@ -32,8 +32,8 @@ void UFLVehicleDamageComponent::HandleComponentHit(UPrimitiveComponent* HitCompo
         return;
     }
 
-    const FVector OwnVelocity = HitComponent ? HitComponent->GetPhysicsLinearVelocity() : FVector::ZeroVector;
-    const FVector OtherVelocity = OtherComp ? OtherComp->GetPhysicsLinearVelocity() : FVector::ZeroVector;
+    const FVector OwnVelocity = HitComponent ? HitComponent->GetComponentVelocity() : FVector::ZeroVector;
+    const FVector OtherVelocity = OtherComp ? OtherComp->GetComponentVelocity() : FVector::ZeroVector;
     const float ImpactSpeedKmh = (OwnVelocity - OtherVelocity).Size() * 0.036f;
     ApplyImpactDamage(ImpactSpeedKmh, Hit.BoneName);
 }

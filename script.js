@@ -1357,7 +1357,7 @@ function makeCar(x,z,color,police=false,model='sedan',performanceOverride=null){
   const dentRear=new THREE.Mesh(new THREE.BoxGeometry(W*.72,.22,.12),damageMat);dentRear.position.set(0,.59,-L*.51);damageGroup.add(dentRear);
   const dentLeft=new THREE.Mesh(new THREE.BoxGeometry(.12,.2,L*.48),damageMat);dentLeft.position.set(-W*.52,.59,0);damageGroup.add(dentLeft);
   const dentRight=new THREE.Mesh(new THREE.BoxGeometry(.12,.2,L*.48),damageMat);dentRight.position.set(W*.52,.59,0);damageGroup.add(dentRight);
-  car.add(damageGroup);car.userData.damageGroup=damageGroup;car.userData.damageLevel=0;
+  car.add(damageGroup);car.userData.damageGroup=damageGroup;car.userData.damageParts=damageGroup.children;car.userData.damageLevel=0;
   car.position.set(x,0,z);scene.add(car);return car;
 }
 const fleet=[
@@ -2231,6 +2231,22 @@ function updateWorld(dt){
     if(traffic.direction>0&&car.position.z>52)car.position.z=-122;
     if(traffic.direction<0&&car.position.z<-122)car.position.z=52;
   }
+  // Auch das vom Spieler gefahrene Auto kann NPC-Fahrzeuge anstoßen; beide bekommen Arcade-Schäden.
+  if(driving&&jobCar&&Math.abs(carSpeed)>.012){
+    for(const other of trafficCars){
+      const dx=other.position.x-jobCar.position.x,dz=other.position.z-jobCar.position.z;
+      if(Math.abs(dx)<2.05&&Math.abs(dz)<3.7&&damageCooldown<=0){
+        const hit=Math.min(1,Math.abs(carSpeed)*1.5+.25),side=dx===0?1:Math.sign(dx);
+        damageLevel=Math.min(1,damageLevel+.16+hit*.2);damageFlash=1;damageCooldown=1.15;
+        other.userData.damageLevel=Math.min(1,(other.userData.damageLevel||0)+.18+hit*.2);
+        if(other.userData.damageGroup){other.userData.damageGroup.visible=true;other.userData.damageParts.forEach((part,index)=>{if(index!==(Math.abs(dx)>Math.abs(dz)?(dx>0?2:3):(dz>0?1:0)))part.visible=false;});}
+        if(other.userData.traffic){other.userData.traffic.stun=1.1;other.userData.traffic.collisionCooldown=1.5;}
+        carSpeed*=.48;carSlip+=side*.08;flPlayTrafficImpact();
+        status.textContent='KOLLISION · DEIN FAHRZEUG UND DAS NPC-AUTO WURDEN BESCHÄDIGT';
+        break;
+      }
+    }
+  }
   // Vereinfachte Fahrzeug-zu-Fahrzeug-Kollisionen: Stoß, Ausweichimpuls und sichtbare Schäden.
   for(let i=0;i<trafficCars.length;i++)for(let j=i+1;j<trafficCars.length;j++){
     const a=trafficCars[i],b=trafficCars[j],ta=a.userData.traffic,tb=b.userData.traffic;
@@ -2244,9 +2260,11 @@ function updateWorld(dt){
       a.position.x-=side*.42;b.position.x+=side*.42;
       a.position.z-=ta.direction*.32;b.position.z+=tb.direction*.32;
       a.rotation.z=side*.045;b.rotation.z=-side*.045;
-      for(const v of [a,b]){
+      const hitA=Math.abs(dx)>Math.abs(dz)?(dx>0?3:2):(dz>0?0:1);
+      const hitB=Math.abs(dx)>Math.abs(dz)?(dx>0?2:3):(dz>0?1:0);
+      for(const [v,hitSide] of [[a,hitA],[b,hitB]]){
         v.userData.damageLevel=Math.min(1,(v.userData.damageLevel||0)+.28+impact*.18);
-        if(v.userData.damageGroup)v.userData.damageGroup.visible=true;
+        if(v.userData.damageGroup){v.userData.damageGroup.visible=true;v.userData.damageParts.forEach((part,index)=>{if(index!==hitSide)part.visible=false;});}
       }
       flPlayTrafficImpact();
       if(Math.random()<.35)status.textContent='VERKEHRSUNFALL · NPC-FAHRZEUGE KOLLIDIERTEN';

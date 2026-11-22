@@ -104,6 +104,29 @@ function flInitProceduralAudio(){
   flRoadFilter=flAudioContext.createBiquadFilter();flRoadFilter.type='lowpass';flRoadFilter.frequency.value=700;
   flRoadGain=flAudioContext.createGain();flRoadGain.gain.value=0;flRoadNoise.connect(flRoadFilter);flRoadFilter.connect(flRoadGain);flRoadGain.connect(flAudioContext.destination);flRoadNoise.start();flAudioReady=true;}catch(_){flAudioReady=false;}
 }
+
+function flPlayIgnitionSound(){
+ if(!flAudioContext||flAudioContext.state!=='running')return;
+ const now=flAudioContext.currentTime;
+ const osc=flAudioContext.createOscillator(),gain=flAudioContext.createGain(),filter=flAudioContext.createBiquadFilter();
+ osc.type='sawtooth';osc.frequency.setValueAtTime(72,now);osc.frequency.exponentialRampToValueAtTime(118,now+.16);osc.frequency.exponentialRampToValueAtTime(48,now+.62);
+ filter.type='lowpass';filter.frequency.setValueAtTime(420,now);filter.frequency.exponentialRampToValueAtTime(950,now+.18);filter.frequency.exponentialRampToValueAtTime(280,now+.62);
+ gain.gain.setValueAtTime(.0001,now);gain.gain.exponentialRampToValueAtTime(.12,now+.035);gain.gain.setValueAtTime(.075,now+.2);gain.gain.exponentialRampToValueAtTime(.0001,now+.68);
+ osc.connect(filter);filter.connect(gain);gain.connect(flAudioContext.destination);osc.start(now);osc.stop(now+.7);
+}
+function flToggleEngine(){
+ if(!driving||!jobCar){status.textContent='SETZ DICH ZUERST IN EIN FAHRZEUG';return;}
+ if(flEngineOn){
+  flEngineOn=false;carSpeed=0;status.textContent='MOTOR AUS · ZÜNDUNG AUSGESCHALTET';return;
+ }
+ if(flFuel<=0){status.textContent='TANK LEER · MOTOR KANN NICHT STARTEN';return;}
+ if(!flAudioContext)flInitProceduralAudio();
+ if(flAudioContext?.state==='suspended')flAudioContext.resume();
+ flEngineStartingUntil=performance.now()+680;flPlayIgnitionSound();
+ flEngineOn=true;status.textContent='MOTOR STARTET …';
+ window.setTimeout(()=>{if(flEngineOn&&driving)status.textContent='MOTOR LÄUFT · W/S GAS/BREMSE · A/D LENKEN';},700);
+}
+
 function flPlayFootstep(){
  if(!flAudioContext||flAudioContext.state!=='running')return;
  const length=Math.floor(flAudioContext.sampleRate*.075),buffer=flAudioContext.createBuffer(1,length,flAudioContext.sampleRate),data=buffer.getChannelData(0);
@@ -116,7 +139,7 @@ function flPlayFootstep(){
 function flUpdateProceduralAudio(){
  if(!flAudioReady||!flAudioContext||flAudioContext.state!=='running')return;
  const moving=keys.KeyW||keys.KeyA||keys.KeyS||keys.KeyD||keys.ArrowUp||keys.ArrowDown||keys.ArrowLeft||keys.ArrowRight,now=flAudioContext.currentTime;
- const engineActive=driving&&jobCar&&flFuel>0;
+ const engineActive=driving&&jobCar&&flEngineOn&&flFuel>0;
  const speed=engineActive?Math.min(1,Math.abs(carSpeed)/Math.max(.1,jobCar.userData.maxForwardSpeed||.5)):0;
  const throttle=engineActive&&(keys.KeyW||keys.ArrowUp)?1:0,frequency=engineActive?48+speed*105+throttle*38:38;
  flEngineOsc.frequency.setTargetAtTime(frequency,now,.09);flEngineSub.frequency.setTargetAtTime(frequency*.5,now,.1);
@@ -1065,6 +1088,7 @@ const jobs=[
 ];
 let jobPanel,careerHud,jobActive=false,jobCar=null,jobDestination=null;
 let driving=false,carSpeed=0,carSlip=0,carYawRate=0,careerMoney=0,completedJobs=0;
+let flEngineOn=false,flEngineStartingUntil=0;
 let damageLevel=0,damageHud=null,damageFlash=0,cameraLookOffset=0,damageCooldown=0,flSavedDamage=0;
 let speedometerHud=null,speedometerLastGear=1;
 const emergencyVehicles=[];
@@ -2304,14 +2328,15 @@ function move(dt=1/60){
     const tireGrip=weatherGrip*damageGrip;
     const vehiclePower=(jobCar.userData.enginePower||1)*(1+turboLevel*.12);
     const maxForward=((jobCar.userData.maxForwardSpeed||.47)+tuningLevel*.012+turboLevel*.018)*(damageLevel>=4?.62:damageLevel===3?.78:1),maxReverse=.16;
-    if(accelerating&&flFuel>0){
+    if(flEngineOn&&accelerating&&flFuel>0){
       if(carSpeed<0)carSpeed=Math.min(0,carSpeed+.022*frameScale);
       else carSpeed=Math.min(maxForward,carSpeed+(.0038*vehiclePower+Math.max(0,1-carSpeed/maxForward)*.0035*vehiclePower)*frameScale);
-    }else if(braking){
+    }else if(flEngineOn&&braking){
       // Betriebsbremse: stärker als Motorbremse, mit sanftem Übergang zum Stillstand.
       if(carSpeed>0)carSpeed=Math.max(0,carSpeed-(.014+.012*tireGrip)*frameScale);
       else carSpeed=Math.max(-maxReverse,carSpeed-.004*frameScale);
     }else{
+      // Bei ausgeschaltetem Motor rollt das Fahrzeug nur aus.
       // Motor- und Rollwiderstand bauen Geschwindigkeit allmählich ab.
       carSpeed*=Math.pow(.994,frameScale);
       if(Math.abs(carSpeed)<.0012)carSpeed=0;
@@ -2512,12 +2537,12 @@ function toggleVehicle(){
   buildSpeedometerHud();
   if(!driving){
     if(camera.position.distanceTo(jobCar.position)>9){status.textContent='GEHE NÄHER AN DEIN DIENSTFAHRZEUG';return;}
-    driving=true;carSpeed=0;carSlip=0;carYawRate=0;cameraLookOffset=0;yaw=jobCar.rotation.y-Math.PI;
+    driving=true;flEngineOn=false;carSpeed=0;carSlip=0;carYawRate=0;cameraLookOffset=0;yaw=jobCar.rotation.y-Math.PI;
     if(flCharacterType==='wheelchair')flStoreWheelchairInCar(true);
     speedometerHud.classList.remove('hidden');
     if(flCharacterType!=='wheelchair')status.textContent='IM FAHRZEUG · WASD / STICK FAHREN · F / X AUSSTEIGEN';
   }else{
-    driving=false;carSpeed=0;carSlip=0;carYawRate=0;cameraLookOffset=0;
+    driving=false;flEngineOn=false;carSpeed=0;carSlip=0;carYawRate=0;cameraLookOffset=0;
     speedometerHud.classList.add('hidden');
     camera.position.set(jobCar.position.x+3,2.1,jobCar.position.z+3);
     if(flCharacterType==='wheelchair')flStoreWheelchairInCar(false);else status.textContent='AUSGESTIEGEN · F / X ZUM EINSTEIGEN';
@@ -2525,10 +2550,10 @@ function toggleVehicle(){
 }
 function buildMobileControls(){
  if(!('ontouchstart' in window)&&!navigator.maxTouchPoints)return;
- const panel=document.createElement('div');panel.id='mobileControls';panel.innerHTML='<div class="mobile-pad"><button data-key="KeyW">▲</button><div><button data-key="KeyA">◀</button><button data-key="KeyS">▼</button><button data-key="KeyD">▶</button></div></div><div class="mobile-actions"><button data-key="ShiftLeft">SPRINT</button><button data-action="interact">E</button><button data-action="vehicle">F</button><button data-action="jobs">J</button><button data-action="phone">☎</button></div><div class="mobile-look">ZUM UMSCHAUEN HIER WISCHEN</div>';
+ const panel=document.createElement('div');panel.id='mobileControls';panel.innerHTML='<div class="mobile-pad"><button data-key="KeyW">▲</button><div><button data-key="KeyA">◀</button><button data-key="KeyS">▼</button><button data-key="KeyD">▶</button></div></div><div class="mobile-actions"><button data-key="ShiftLeft">SPRINT</button><button data-action="interact">E</button><button data-action="vehicle">F</button><button data-action="engine">M</button><button data-action="jobs">J</button><button data-action="phone">☎</button></div><div class="mobile-look">ZUM UMSCHAUEN HIER WISCHEN</div>';
  viewport.appendChild(panel);
  panel.querySelectorAll('[data-key]').forEach(btn=>{const code=btn.dataset.key;const on=e=>{e.preventDefault();keys[code]=true;keyboardKeys[code]=true;};const off=e=>{e.preventDefault();keys[code]=false;keyboardKeys[code]=false;};btn.addEventListener('pointerdown',on);['pointerup','pointercancel','pointerleave'].forEach(ev=>btn.addEventListener(ev,off));});
- panel.querySelectorAll('[data-action]').forEach(btn=>btn.addEventListener('pointerdown',e=>{e.preventDefault();const a=btn.dataset.action;if(a==='interact')toggleShopOrDealer();if(a==='vehicle'){if(!tryStartBoat()&&!tryStartFlight())toggleVehicle();}if(a==='jobs')toggleJobs();if(a==='phone')togglePhone();}));
+ panel.querySelectorAll('[data-action]').forEach(btn=>btn.addEventListener('pointerdown',e=>{e.preventDefault();const a=btn.dataset.action;if(a==='interact')toggleShopOrDealer();if(a==='vehicle'){if(!tryStartBoat()&&!tryStartFlight())toggleVehicle();}if(a==='engine')flToggleEngine();if(a==='jobs')toggleJobs();if(a==='phone')togglePhone();}));
 }
 function togglePauseMenu(force){
  if(!pausePanel){pausePanel=document.createElement('section');pausePanel.id='pauseMenu';pausePanel.className='pause-menu hidden';pausePanel.innerHTML='<div class="pause-card"><div class="pause-kicker">FRANKFURT LIFE</div><h2>PAUSE</h2><p>Deine Stadt. Dein Tempo.</p><button data-pause="resume">WEITERSPIELEN</button><button data-pause="save">SPIELSTAND SPEICHERN</button><button data-pause="settings">EINSTELLUNGEN</button><button data-pause="close">ZURÜCK ZUR STADT</button></div>';viewport.appendChild(pausePanel);pausePanel.addEventListener('click',e=>{const action=e.target.closest('[data-pause]')?.dataset.pause;if(!action)return;if(action==='save'){flSaveGame(true);return;}if(action==='settings'){gamePaused=false;pausePanel.classList.add('hidden');if(phonePanel?.classList.contains('hidden'))phonePanel.classList.remove('hidden');showPhoneHome();openPhoneApp('settings');document.exitPointerLock?.();return;}gamePaused=false;pausePanel.classList.add('hidden');});}
@@ -2610,7 +2635,7 @@ function begin(){
 startButton?.addEventListener('click',begin);
 // In der eigenständigen Windows-Spielansicht direkt in die 3D-Stadt starten.
 if(document.body.classList.contains('game-app')) begin();
-document.addEventListener('keydown',e=>{keys[e.code]=true;keyboardKeys[e.code]=true;if(e.code==='Escape'&&!e.repeat){const overlays=[jobPanel,shopPanel,phonePanel,dealerPanel];const visible=overlays.find(p=>p&&!p.classList.contains('hidden'));if(visible){visible.classList.add('hidden');return;}togglePauseMenu();return;}if(e.code==='F1'){e.preventDefault();if(!e.repeat)togglePhone();return;}if(e.code==='KeyQ'&&!e.repeat){e.preventDefault();toggleQuickAccessWheel();return;}if(e.code==='KeyE'&&!e.repeat){const atLift=driving&&jobCar&&shops.some(shop=>shop.lift&&Math.hypot(jobCar.position.x-shop.lift.group.position.x,jobCar.position.z-shop.lift.group.position.z)<8.5);if(atLift)toggleWorkshopLift();else if(!flToggleHome()&&!tryRefuelAtPump())toggleShopOrDealer();}if(e.code==='KeyF'&&!e.repeat){if(!tryStartBoat()&&!tryStartFlight())toggleVehicle();}if(e.code==='KeyH'&&!e.repeat)toggleCarHood();if(e.code==='KeyG'&&!e.repeat)tryTakeoverVehicle();if(e.code==='KeyJ'&&!e.repeat)toggleJobs();if(e.code==='KeyR'&&!e.repeat)toggleWorkshopLift();if(e.code==='KeyL'&&!e.repeat)toggleFlashlight();if(e.code==='F5'&&!e.repeat){e.preventDefault();flSaveGame(true);}if(e.code==='KeyC'&&!e.repeat)cycleCamera();if(e.code==='Escape'&&jobPanel&&!jobPanel.classList.contains('hidden'))jobPanel.classList.add('hidden');if(e.code==='Escape'&&shopPanel&&!shopPanel.classList.contains('hidden'))shopPanel.classList.add('hidden');if(e.code==='Escape'&&phonePanel&&!phonePanel.classList.contains('hidden'))phonePanel.classList.add('hidden');if(e.code==='Escape')document.querySelector('#quickAccessWheel')?.classList.add('hidden');if(e.code==='Escape'&&!e.repeat&&(!jobPanel||jobPanel.classList.contains('hidden'))&&(!shopPanel||shopPanel.classList.contains('hidden'))&&(!phonePanel||phonePanel.classList.contains('hidden'))&&(!dealerPanel||dealerPanel.classList.contains('hidden')))togglePauseMenu();if(e.code==='Escape'&&dealerPanel&&!dealerPanel.classList.contains('hidden'))dealerPanel.classList.add('hidden');if(['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code))e.preventDefault();});
+document.addEventListener('keydown',e=>{keys[e.code]=true;keyboardKeys[e.code]=true;if(e.code==='Escape'&&!e.repeat){const overlays=[jobPanel,shopPanel,phonePanel,dealerPanel];const visible=overlays.find(p=>p&&!p.classList.contains('hidden'));if(visible){visible.classList.add('hidden');return;}togglePauseMenu();return;}if(e.code==='F1'){e.preventDefault();if(!e.repeat)togglePhone();return;}if(e.code==='KeyQ'&&!e.repeat){e.preventDefault();toggleQuickAccessWheel();return;}if(e.code==='KeyE'&&!e.repeat){const atLift=driving&&jobCar&&shops.some(shop=>shop.lift&&Math.hypot(jobCar.position.x-shop.lift.group.position.x,jobCar.position.z-shop.lift.group.position.z)<8.5);if(atLift)toggleWorkshopLift();else if(!flToggleHome()&&!tryRefuelAtPump())toggleShopOrDealer();}if(e.code==='KeyF'&&!e.repeat){if(!tryStartBoat()&&!tryStartFlight())toggleVehicle();}if(e.code==='KeyH'&&!e.repeat)toggleCarHood();if(e.code==='KeyM'&&!e.repeat){e.preventDefault();flToggleEngine();}if(e.code==='KeyG'&&!e.repeat)tryTakeoverVehicle();if(e.code==='KeyJ'&&!e.repeat)toggleJobs();if(e.code==='KeyR'&&!e.repeat)toggleWorkshopLift();if(e.code==='KeyL'&&!e.repeat)toggleFlashlight();if(e.code==='F5'&&!e.repeat){e.preventDefault();flSaveGame(true);}if(e.code==='KeyC'&&!e.repeat)cycleCamera();if(e.code==='Escape'&&jobPanel&&!jobPanel.classList.contains('hidden'))jobPanel.classList.add('hidden');if(e.code==='Escape'&&shopPanel&&!shopPanel.classList.contains('hidden'))shopPanel.classList.add('hidden');if(e.code==='Escape'&&phonePanel&&!phonePanel.classList.contains('hidden'))phonePanel.classList.add('hidden');if(e.code==='Escape')document.querySelector('#quickAccessWheel')?.classList.add('hidden');if(e.code==='Escape'&&!e.repeat&&(!jobPanel||jobPanel.classList.contains('hidden'))&&(!shopPanel||shopPanel.classList.contains('hidden'))&&(!phonePanel||phonePanel.classList.contains('hidden'))&&(!dealerPanel||dealerPanel.classList.contains('hidden')))togglePauseMenu();if(e.code==='Escape'&&dealerPanel&&!dealerPanel.classList.contains('hidden'))dealerPanel.classList.add('hidden');if(['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code))e.preventDefault();});
 document.addEventListener('keyup',e=>{keys[e.code]=false;keyboardKeys[e.code]=false;});
 window.addEventListener('resize',resize);
 

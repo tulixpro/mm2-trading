@@ -106,7 +106,7 @@ let dealerPanel=null,dealership={x:-28,z:82,name:'Frankfurt Motors'};
 /* 0.2.9 gameplay systems */
 let flFuel=100,flGameHour=12,flWeather='Klar',flWeatherTimer=0,flSaveTimer=0,flHomeOwned=false,flHomeFurniture=0,flOutfit=0,flTransitTrips=0,flDailyJobs=0,flDailyRides=0,flDailyClaimed=false,flDailyDate='';
 let flWeatherLabel=null,flFuelLabel=null,flLightingStep=-1,flStatusTimer=0;
-let flRainPoints=null,flRainPositions=null,flWetRoadMaterials=[];
+let flRainPoints=null,flRainPositions=null,flWetRoadMaterials=[],flRunoffMeshes=[],flPuddleMeshes=[];
 function flSaveGame(showMessage=false){try{localStorage.setItem('frankfurtLifeSave',JSON.stringify({version:1,money:careerMoney,jobs:completedJobs,position:camera?{x:camera.position.x,z:camera.position.z}:null,ownedCars,inventory,appetite,tuningLevel,paintLevel,fuel:flFuel,hour:flGameHour,weather:flWeather,homeOwned:flHomeOwned,homeFurniture:flHomeFurniture,outfit:flOutfit,transitTrips:flTransitTrips,dailyJobs:flDailyJobs,dailyRides:flDailyRides,dailyClaimed:flDailyClaimed,dailyDate:flDailyDate,vehicleDamage:damageLevel,bankHistory:flBankHistory,turboLevel,tuningMods}));if(showMessage&&status)status.textContent='SPIELSTAND GESPEICHERT';}catch(_){if(showMessage&&status)status.textContent='SPEICHERN NICHT VERFÜGBAR';}}
 function flLoadGame(){try{const d=JSON.parse(localStorage.getItem('frankfurtLifeSave')||'null');if(!d||d.version!==1)return;careerMoney=Math.max(0,Number(d.money)||0);completedJobs=Math.max(0,Number(d.jobs)||0);if(Array.isArray(d.bankHistory))flBankHistory=d.bankHistory.slice(0,12);if(Array.isArray(d.ownedCars))ownedCars.splice(0,ownedCars.length,...d.ownedCars.filter(id=>dealerCars.some(c=>c.id===id)));if(d.inventory&&typeof d.inventory==='object')Object.assign(inventory,d.inventory);appetite=Number.isFinite(Number(d.appetite))?Math.max(0,Math.min(100,Number(d.appetite))):65;tuningLevel=Math.max(0,Math.min(3,Number(d.tuningLevel)||0));paintLevel=Math.max(0,Number(d.paintLevel)||0);turboLevel=Math.max(0,Math.min(2,Number(d.turboLevel)||0));if(d.tuningMods&&typeof d.tuningMods==='object')tuningMods={...tuningMods,...d.tuningMods};flFuel=Number.isFinite(Number(d.fuel))?Math.max(0,Math.min(100,Number(d.fuel))):100;flGameHour=Number.isFinite(d.hour)?d.hour:12;flWeather=['Klar','Bewölkt','Regen','Nebel'].includes(d.weather)?d.weather:'Klar';flHomeOwned=!!d.homeOwned;flHomeFurniture=Math.max(0,Number(d.homeFurniture)||0);flOutfit=Math.max(0,Number(d.outfit)||0);flTransitTrips=Math.max(0,Number(d.transitTrips)||0);flDailyJobs=Math.max(0,Number(d.dailyJobs)||0);flDailyRides=Math.max(0,Number(d.dailyRides)||0);flDailyClaimed=!!d.dailyClaimed;flDailyDate=typeof d.dailyDate==='string'?d.dailyDate:'';flSavedDamage=Math.max(0,Math.min(4,Number(d.vehicleDamage)||0));flCheckDailyDate();if(d.position&&camera)camera.position.set(Number.isFinite(Number(d.position.x))?Number(d.position.x):0,2.1,Number.isFinite(Number(d.position.z))?Number(d.position.z):14);if(careerHud)flRefreshCareerHud();}catch(_){}}
 
@@ -129,10 +129,25 @@ function flCreateWeatherEffects(){
   flRainPoints=new THREE.LineSegments(geometry,material);flRainPoints.visible=flWeather==='Regen';scene.add(flRainPoints);
 }
 function flUpdateRain(dt){
-  if(!flRainPoints||!camera||flWeather!=='Regen')return;
-  const p=flRainPoints.geometry.attributes.position.array;
-  for(let i=0;i<p.length;i+=6){p[i+1]-=dt*22;p[i+4]-=dt*22;if(p[i+1]<0){p[i]=camera.position.x+(Math.random()-.5)*46;p[i+1]=18+Math.random()*8;p[i+2]=camera.position.z+(Math.random()-.5)*58;p[i+3]=p[i]+.12;p[i+4]=p[i+1]-.62;p[i+5]=p[i+2]+.05;}}
-  flRainPoints.position.set(0,0,0);flRainPoints.geometry.attributes.position.needsUpdate=true;
+  if(!camera)return;
+  const wet=flWeather==='Regen';
+  if(flRainPoints&&wet){
+    const p=flRainPoints.geometry.attributes.position.array;
+    for(let i=0;i<p.length;i+=6){p[i+1]-=dt*22;p[i+4]-=dt*22;if(p[i+1]<0){p[i]=camera.position.x+(Math.random()-.5)*46;p[i+1]=18+Math.random()*8;p[i+2]=camera.position.z+(Math.random()-.5)*58;p[i+3]=p[i]+.12;p[i+4]=p[i+1]-.62;p[i+5]=p[i+2]+.05;}}
+    flRainPoints.geometry.attributes.position.needsUpdate=true;
+  }
+  const t=clock.elapsedTime;
+  for(let i=0;i<flRunoffMeshes.length;i++){
+    const item=flRunoffMeshes[i],phase=(t*item.speed+item.offset)%1;
+    item.mesh.position.z=item.startZ+phase*item.length;
+    item.mesh.material.opacity=wet?(0.16+Math.sin(t*3+i)*.07):0;
+  }
+  for(let i=0;i<flPuddleMeshes.length;i++){
+    const item=flPuddleMeshes[i];
+    item.mesh.material.opacity=wet?(item.opacity*(.88+Math.sin(t*1.7+i)*.12)):0;
+    item.ripple.material.opacity=wet?(0.12+Math.sin(t*2.2+i)*.09):0;
+    const scale=1+Math.sin(t*1.5+i)*.08;item.ripple.scale.set(scale,scale,1);
+  }
 }
 function flBuyHome(){if(flHomeOwned){status.textContent='DU HAST BEREITS EINE WOHNUNG';return;}if(careerMoney<800){status.textContent='DU BENÖTIGST 800 € FÜR DIE ERSTE MIETE';return;}careerMoney-=800;flHomeOwned=true;flSaveGame();if(careerHud)careerHud.innerHTML='KONTO: '+careerMoney.toLocaleString('de-DE')+' €<br>AUFTRÄGE: '+completedJobs;status.textContent='WOHNUNG GEMIETET · 800 € KAUTION';openPhoneApp('housing');}
 function flGoHome(){if(!flHomeOwned){flBuyHome();return;}if(driving){status.textContent='STEIGE ZUERST AUS';return;}camera.position.set(-26.5,2.1,-96);status.textContent='ZU HAUSE · WESTEND-WOHNUNG';phonePanel?.classList.add('hidden');}
@@ -1442,6 +1457,29 @@ function makeCity(){
   for(let z=-300;z<225;z+=12){const line=new THREE.Mesh(new THREE.PlaneGeometry(.18,5),new THREE.MeshBasicMaterial({color:0xe5dfc5}));line.rotation.x=-Math.PI/2;line.position.set(0,.015,z);scene.add(line);}
   const sidewalkMat=new THREE.MeshLambertMaterial({color:0x92999b});
   for(const x of [-9.2,9.2]){const s=new THREE.Mesh(new THREE.BoxGeometry(3.5,.25,520),sidewalkMat);s.position.set(x,.08,-45);scene.add(s);}
+  // Main-road drainage: curb channels, storm grates, moving runoff highlights and shallow puddles.
+  const gutterMat=new THREE.MeshStandardMaterial({color:0x34434a,roughness:.3,metalness:.35});
+  const grateMat=new THREE.MeshStandardMaterial({color:0x66747a,roughness:.48,metalness:.72});
+  const runoffMat=new THREE.MeshBasicMaterial({color:0x9fc7d7,transparent:true,opacity:0,depthWrite:false});
+  for(const side of [-1,1]){
+    const channel=new THREE.Mesh(new THREE.BoxGeometry(.22,.025,520),gutterMat);channel.position.set(side*8.78,.018,-45);scene.add(channel);
+    for(let z=-285;z<=195;z+=40){
+      const grate=new THREE.Mesh(new THREE.BoxGeometry(.34,.035,1.05),grateMat);grate.position.set(side*8.78,.035,z);scene.add(grate);
+      for(let rib=-3;rib<=3;rib++){const bar=new THREE.Mesh(new THREE.BoxGeometry(.025,.012,.88),gutterMat);bar.position.set(side*8.78+rib*.043,.057,z);scene.add(bar);}
+    }
+    for(let i=0;i<9;i++){
+      const stream=new THREE.Mesh(new THREE.PlaneGeometry(.075,.95),runoffMat.clone());stream.rotation.x=-Math.PI/2;stream.position.set(side*8.78,.038,-275+i*56);scene.add(stream);
+      flRunoffMeshes.push({mesh:stream,startZ:-295+i*56,length:34,speed:.18+i*.012,offset:i*.13});
+    }
+  }
+  const puddleMat=new THREE.MeshPhongMaterial({color:0x718c9c,transparent:true,opacity:0,shininess:125,specular:0xc4e3f2,depthWrite:false});
+  const rippleMat=new THREE.MeshBasicMaterial({color:0xb8d8e5,transparent:true,opacity:0,side:THREE.DoubleSide,depthWrite:false});
+  for(let i=0;i<18;i++){
+    const x=((i*37)%120)/10-6,z=-270+((i*83)%490);
+    const puddle=new THREE.Mesh(new THREE.CircleGeometry(.55+(i%4)*.22,20),puddleMat.clone());puddle.rotation.x=-Math.PI/2;puddle.scale.set(1.5,.65,1);puddle.position.set(x,.025,z);scene.add(puddle);
+    const ripple=new THREE.Mesh(new THREE.RingGeometry(.28,.34,24),rippleMat.clone());ripple.rotation.x=-Math.PI/2;ripple.position.set(x,.032,z);scene.add(ripple);
+    flPuddleMeshes.push({mesh:puddle,ripple,opacity:.18+(i%4)*.025});
+  }
   if(!liteMode){buildStreetInfrastructure();buildTransitStops();buildRoadSigns();}
   buildAirportAndBuses();buildCoastAndBoats();flCreateWeatherEffects();
   const leftShops=new Map([[-87,['SUPERMARKT','MARKT · FRISCHE WAREN',0x3c966c]],[ -51,['BÄCKEREI','BROT · KAFFEE · KUCHEN',0xc58b43]],[ -15,['MODEHAUS','MODE FÜR JEDEN TAG',0x8a638e]],[21,['ELEKTRO','TECHNIK & ZUBEHÖR',0x397ca5]]]);

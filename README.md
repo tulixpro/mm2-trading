@@ -304,3 +304,14 @@ These are **project scaffolds only**, not finished playable Unreal games. The ex
 - Die Motorprofile wurden mit mehr tiefem Frequenzanteil und kräftigerem Lastklang abgestimmt. Jede Fahrzeugklasse behält ihr eigenes synthetisches Klangprofil.
 - Es werden keine Originalaufnahmen von Fahrzeugherstellern verwendet. Dafür wären passende Lizenzen oder vom Nutzer bereitgestellte, rechtmäßig nutzbare Audiodateien erforderlich.
 - Änderungen sind im Quellcode gespeichert; ein Browser-/Gerätetest wurde noch nicht durchgeführt.
+
+
+## Stadt-Erweiterung – Parkhaus, Wald und Offroad
+
+- Neues mehrstöckiges Parkhaus am nördlichen Stadtrand mit offenen Parkdecks, Stützen, markierten Stellplätzen und Rampen.
+- Neues Waldgebiet mit dicht gesetzten Laub- und Nadelbäumen sowie einem unbefestigten, kurvigen Waldweg.
+- SUV und Pickup erhalten eine sichtbar größere Bodenfreiheit als Limousinen und Sportwagen; Transporter liegen ebenfalls etwas höher.
+- Das Fahrzeug reagiert im Waldgebiet mit zusätzlichen kleinen Karosserie- und Federbewegungen auf den unebenen Untergrund.
+- Die Federdarstellung komprimiert bei Fahrwerksstößen und bewegt sich bei Offroad-Fahrt stärker.
+- Hinweis: Parkhaus und Wald sind prozedurale 3D-Blockouts. Es gibt noch keine echte Rad-zu-Boden-Kollision, keine vollständige Einzelrad-Aufhängung, keine Gelände-Verformung und keine automatische Parkplatzsuche. Die Bewegung bleibt eine vereinfachte Arcade-Simulation.
+- Quellcode gespeichert; kein Laufzeittest im Browser durchgeführt.

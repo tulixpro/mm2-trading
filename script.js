@@ -223,9 +223,43 @@ function flMakeEmergencyUnit(color,kind){
  }
  group.userData.lights=lights;return group;
 }
+function flBuildCivicBuildings(){
+ const stone=new THREE.MeshStandardMaterial({color:0xc5c9c8,roughness:.82}),dark=new THREE.MeshStandardMaterial({color:0x253440,roughness:.55}),glass=new THREE.MeshStandardMaterial({color:0x75a9bd,roughness:.18,metalness:.18,transparent:true,opacity:.68}),blue=new THREE.MeshStandardMaterial({color:0x1c5d8e,roughness:.48}),red=new THREE.MeshStandardMaterial({color:0xc73531,roughness:.55});
+ const makeSign=(label,bg,fg)=>{
+  const canvas=document.createElement('canvas');canvas.width=768;canvas.height=180;const c=canvas.getContext('2d');c.fillStyle=bg;c.fillRect(0,0,768,180);c.fillStyle=fg;c.font='bold 66px Arial';c.textAlign='center';c.textBaseline='middle';c.fillText(label,384,92);
+  return new THREE.Mesh(new THREE.BoxGeometry(.18,1.5,7.8),new THREE.MeshStandardMaterial({map:new THREE.CanvasTexture(canvas),roughness:.55}));
+ };
+ const build=(x,z,label,color,isHospital)=>{
+  const g=new THREE.Group(),body=new THREE.Mesh(new THREE.BoxGeometry(26,10,19),stone);body.position.y=5;g.add(body);
+  const wing=new THREE.Mesh(new THREE.BoxGeometry(18,15,12),isHospital?glass:dark);wing.position.set(0,7.5,-13.5);g.add(wing);
+  for(let floor=0;floor<3;floor++)for(let col=0;col<6;col++){const win=new THREE.Mesh(new THREE.BoxGeometry(2.5,1.5,.08),glass);win.position.set(-10.2+col*4.05,2.4+floor*2.65,9.58);g.add(win);}
+  const entrance=new THREE.Mesh(new THREE.BoxGeometry(5,3.4,.22),glass);entrance.position.set(0,1.8,9.72);g.add(entrance);
+  const sign=makeSign(label,isHospital?'#f3f5f3':'#173c5c',isHospital?'#c52f35':'#ffffff');sign.position.set(0,9.5,9.8);g.add(sign);
+  const canopy=new THREE.Mesh(new THREE.BoxGeometry(9,.35,4.5),dark);canopy.position.set(0,3.8,12);g.add(canopy);
+  for(const side of [-1,1]){const post=new THREE.Mesh(new THREE.CylinderGeometry(.12,.12,3.7,8),dark);post.position.set(side*3.8,1.85,13.5);g.add(post);}
+  if(isHospital){const cross=new THREE.Mesh(new THREE.BoxGeometry(.55,2.2,.2),red);cross.position.set(10,8,9.7);g.add(cross);const bar=new THREE.Mesh(new THREE.BoxGeometry(2.2,.55,.2),red);bar.position.set(10,8,9.7);g.add(bar);}
+  const forecourt=new THREE.Mesh(new THREE.PlaneGeometry(32,25),new THREE.MeshStandardMaterial({color:0x626b70,roughness:.95}));forecourt.rotation.x=-Math.PI/2;forecourt.position.set(0,.025,24);g.add(forecourt);
+  for(let i=0;i<4;i++){const line=new THREE.Mesh(new THREE.BoxGeometry(.12,.025,7),new THREE.MeshBasicMaterial({color:0xe8e5d9}));line.position.set(-10+i*6.7,.045,21);g.add(line);}
+  g.position.set(x,0,z);scene.add(g);return g;
+ };
+ const police=build(-82,178,'POLIZEI',0x245b85,false);
+ const hospital=build(82,178,'KLINIKUM',0xc73531,true);
+ const patrolA=flMakeEmergencyUnit(0xf1f2f3,'police');patrolA.position.set(-91,0,207);patrolA.rotation.y=Math.PI;
+ const patrolB=flMakeEmergencyUnit(0xf1f2f3,'police');patrolB.position.set(-74,0,207);patrolB.rotation.y=Math.PI;
+ const ambulance=flMakeEmergencyUnit(0xf0f0ed,'ambulance');ambulance.position.set(73,0,207);ambulance.rotation.y=Math.PI;
+ const fire=flMakeEmergencyUnit(0xd52d25,'fire');fire.scale.set(1.13,1.12,1.25);fire.position.set(91,0,207);fire.rotation.y=Math.PI;
+ scene.add(patrolA,patrolB,ambulance,fire);
+ const marker=(x,z,color)=>{
+  const pole=new THREE.Mesh(new THREE.CylinderGeometry(.08,.08,4.8,8),dark);pole.position.set(x,2.4,z);scene.add(pole);
+  const lamp=new THREE.Mesh(new THREE.SphereGeometry(.32,10,8),new THREE.MeshStandardMaterial({color,emissive:color,emissiveIntensity:.6}));lamp.position.set(x,4.9,z);scene.add(lamp);
+ };
+ marker(-98,178,0x2877d9);marker(98,178,0xd63732);
+ return {police,hospital,stationUnits:[patrolA,patrolB,ambulance,fire]};
+}
 function flBuildAmbientEvents(){
  const root=new THREE.Group();
  const accident=new THREE.Group(),forestry=new THREE.Group(),response=new THREE.Group(),robbery=new THREE.Group();
+ const civic=flBuildCivicBuildings();
  const bodyMat=new THREE.MeshStandardMaterial({color:0x56616a,roughness:.72,metalness:.18});
  const darkMat=new THREE.MeshStandardMaterial({color:0x17212a,roughness:.85});
  const redMat=new THREE.MeshStandardMaterial({color:0xb52c2c,roughness:.55});
@@ -285,7 +319,20 @@ function flBuildAmbientEvents(){
  const bankSign=new THREE.Mesh(new THREE.BoxGeometry(3.1,.55,.16),new THREE.MeshStandardMaterial({color:0x1b4b69,roughness:.5}));bankSign.position.set(0,4.05,.38);robbery.add(bankSign);
  const robberyPolice1=flMakeEmergencyUnit(0xf0f1f3,'police'),robberyPolice2=flMakeEmergencyUnit(0x202a35,'police');
  robberyPolice1.position.set(-5.8,0,4.5);robberyPolice1.rotation.y=Math.PI/2;robberyPolice2.position.set(5.8,0,4.5);robberyPolice2.rotation.y=-Math.PI/2;
- robbery.add(robberyPolice1,robberyPolice2);
+ const arrestCar=flMakeEmergencyUnit(0xf0f1f3,'police');arrestCar.position.set(0,0,-4.2);arrestCar.rotation.y=Math.PI;
+ robbery.add(robberyPolice1,robberyPolice2,arrestCar);
+ const arrestActors=[];
+ for(let i=0;i<2;i++){
+  const actor=new THREE.Group(),shirt=new THREE.MeshStandardMaterial({color:i?0x465b71:0x5d4c42,roughness:.9}),skin=new THREE.MeshStandardMaterial({color:0xb88b70,roughness:.95}),pants=new THREE.MeshStandardMaterial({color:0x29323a,roughness:.95});
+  const torso=new THREE.Mesh(new THREE.CapsuleGeometry(.24,.62,3,7),shirt);torso.position.y=1.05;actor.add(torso);
+  const head=new THREE.Mesh(new THREE.SphereGeometry(.19,10,8),skin);head.position.y=1.57;actor.add(head);
+  const arms=[],legs=[];
+  for(const side of [-1,1]){
+   const arm=new THREE.Mesh(new THREE.CapsuleGeometry(.09,.46,3,6),shirt);arm.position.set(side*.34,1.12,0);arm.rotation.z=side*.18;actor.add(arm);arms.push(arm);
+   const leg=new THREE.Mesh(new THREE.CapsuleGeometry(.11,.48,3,6),pants);leg.position.set(side*.14,.38,0);actor.add(leg);legs.push(leg);
+  }
+  actor.position.set(i?1.4:-1.4,0,2.2+i*.8);robbery.add(actor);arrestActors.push({actor,arms,legs,baseX:actor.position.x,baseZ:actor.position.z,phase:i*.7});
+ }
  const eventNpcMat=new THREE.MeshStandardMaterial({color:0x26313a,roughness:.9});
  for(let i=0;i<2;i++){
   const person=new THREE.Group();
@@ -298,7 +345,17 @@ function flBuildAmbientEvents(){
  response.visible=false;robbery.visible=false;robbery.position.set(14,0,-178);
  accident.visible=false;forestry.visible=false;forestry.position.set(112,0,75);
  root.add(accident,forestry,response,robbery);root.position.set(0,0,0);scene.add(root);
- flAmbientEvents={root,accident,forestry,response,robbery,beaconLight,workBody,boom,emergencyUnits:[police,fire,ambulance,robberyPolice1,robberyPolice2],kind:null};
+ flAmbientEvents={root,accident,forestry,response,robbery,beaconLight,workBody,boom,emergencyUnits:[police,fire,ambulance,robberyPolice1,robberyPolice2],arrestActors,arrestCar,arrestProgress:0,sirenTimer:2,civic,kind:null};
+}
+function flPlayEmergencySiren(){
+ if(!flAudioContext||flAudioContext.state!=='running')return;
+ const now=flAudioContext.currentTime;
+ try{
+  const osc=flAudioContext.createOscillator(),gain=flAudioContext.createGain(),filter=flAudioContext.createBiquadFilter();
+  osc.type='sawtooth';osc.frequency.setValueAtTime(640,now);osc.frequency.linearRampToValueAtTime(920,now+.48);osc.frequency.linearRampToValueAtTime(640,now+.96);
+  filter.type='lowpass';filter.frequency.value=1450;gain.gain.setValueAtTime(.0001,now);gain.gain.linearRampToValueAtTime(.035,now+.06);gain.gain.setValueAtTime(.035,now+.88);gain.gain.exponentialRampToValueAtTime(.0001,now+1.02);
+  osc.connect(filter);filter.connect(gain);gain.connect(flAudioContext.destination);osc.start(now);osc.stop(now+1.04);
+ }catch(_){}
 }
 function flPlayBirdChirp(){
  if(!flAudioContext||flAudioContext.state!=='running')return;
@@ -359,6 +416,24 @@ function flUpdateAmbientEvents(dt,t){
  if(!flAmbientEvents)return;
  const e=flAmbientEvents;
  if(e.kind){
+  if(e.kind==='accident'||e.kind==='robbery'){
+   e.sirenTimer-=dt;if(e.sirenTimer<=0){flPlayEmergencySiren();e.sirenTimer=1.15;}
+  }
+  if(e.kind==='robbery'){
+   e.arrestProgress=Math.min(1,e.arrestProgress+dt/15);
+   for(const [i,a] of e.arrestActors.entries()){
+    const p=e.arrestProgress;
+    a.actor.position.x=a.baseX*(1-p*.8);
+    a.actor.position.z=a.baseZ-p*5.1;
+    const walking=p<.72,phase=t*7+a.phase;
+    a.legs[0].rotation.x=walking?Math.sin(phase)*.48:0;a.legs[1].rotation.x=walking?-Math.sin(phase)*.48:0;
+    a.arms[0].rotation.x=walking?-Math.sin(phase)*.22:-.45;a.arms[1].rotation.x=walking?Math.sin(phase)*.22:-.45;
+    a.actor.rotation.y=p<.72?0:Math.PI;
+   }
+   e.arrestCar.position.z=-4.2+Math.max(0,e.arrestProgress-.78)*15;
+   e.arrestCar.position.x=Math.sin(Math.max(0,e.arrestProgress-.78)*4)*.4;
+   e.arrestCar.rotation.y=Math.PI;
+  }
   if(e.kind==='accident'){
    e.beaconLight.material.emissiveIntensity=.45+Math.abs(Math.sin(t*5))*1.8;
    e.response.visible=true;
@@ -366,12 +441,12 @@ function flUpdateAmbientEvents(dt,t){
   else if(e.kind==='robbery'){e.robbery.visible=true;e.response.visible=false;}
   for(const unit of e.emergencyUnits){if(unit.userData.lights)unit.userData.lights.forEach((light,index)=>{light.material.emissiveIntensity=(Math.floor(t*7+index)%2===0)?2.1:.12;});}
   e.duration-=dt;
-  if(e.duration<=0){e.accident.visible=false;e.forestry.visible=false;e.response.visible=false;e.robbery.visible=false;e.kind=null;flAmbientEventCooldown=85+Math.random()*95;flAmbientEventTimer=45+Math.random()*65;}
+  if(e.duration<=0){e.accident.visible=false;e.forestry.visible=false;e.response.visible=false;e.robbery.visible=false;e.arrestCar.position.set(0,0,-4.2);e.kind=null;flAmbientEventCooldown=85+Math.random()*95;flAmbientEventTimer=45+Math.random()*65;}
  }else{
   flAmbientEventCooldown=Math.max(0,flAmbientEventCooldown-dt);
   flAmbientEventTimer-=dt;
   if(flAmbientEventTimer<=0&&flAmbientEventCooldown<=0){
-   const roll=Math.random();e.kind=roll<.48?'accident':roll<.83?'forest':'robbery';e.duration=52+Math.random()*42;
+   const roll=Math.random();e.kind=roll<.48?'accident':roll<.83?'forest':'robbery';e.duration=52+Math.random()*42;e.arrestProgress=0;e.sirenTimer=1.2;e.arrestActors.forEach(a=>{a.actor.position.set(a.baseX,0,a.baseZ);a.actor.rotation.y=0;});e.arrestCar.position.set(0,0,-4.2);
    e.accident.visible=e.kind==='accident';e.forestry.visible=e.kind==='forest';e.response.visible=e.kind==='accident';e.robbery.visible=e.kind==='robbery';if(e.kind==='accident'){e.emergencyUnits[1].visible=true;e.emergencyUnits[2].visible=Math.random()<.68;}
    const px=driving&&jobCar?jobCar.position.x:camera.position.x,pz=driving&&jobCar?jobCar.position.z:camera.position.z;
    const target=e.kind==='forest'?new THREE.Vector3(112,0,75):e.kind==='robbery'?new THREE.Vector3(0,0,-178):new THREE.Vector3(13,0,-43);

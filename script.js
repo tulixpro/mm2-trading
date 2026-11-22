@@ -3,6 +3,18 @@ const classicEdition=editionParam==='sanandreas'||editionParam==='classic';
 if(classicEdition){document.body.classList.add('classic-edition');document.title='Frankfurt Life San Andreas – Retro-3D';}else{document.body.classList.add('modern-edition');document.title='Frankfurt Life 3D – Moderne Edition';}
 const THREE = await import('./node_modules/three/build/three.module.js').catch(()=>import('https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js'));
 
+// Defensive Speicher-Schicht: verhindert einen kompletten Spielabbruch, wenn
+// der Browser lokalen Speicher blockiert (z. B. privater Modus/strenge Richtlinien).
+const flStorage=(()=>{
+  try{
+    const store=window.localStorage,probe='__frankfurt_life_storage_probe__';
+    store.setItem(probe,'1');store.removeItem(probe);
+    return store;
+  }catch(_){
+    return {getItem:()=>null,setItem:()=>{},removeItem:()=>{}};
+  }
+})();
+
 let deferredInstallPrompt=null;
 const installAppButton=document.querySelector('#installApp');
 window.addEventListener('beforeinstallprompt',event=>{event.preventDefault();deferredInstallPrompt=event;if(installAppButton)installAppButton.hidden=false;});
@@ -55,12 +67,12 @@ function applyQuality(){
  if(viewport)viewport.dataset.graphics=mode;
  resize();
 }
-qualitySelect?.addEventListener('change',()=>{autoResolutionScale=1;localStorage.setItem('flQuality',qualitySelect.value);applyQuality();});
-fpsSelect?.addEventListener('change',()=>{maxFps=fpsSelect.value==='unlimited'?0:Number(fpsSelect.value);localStorage.setItem('flFps',fpsSelect.value);});
-mouseSelect?.addEventListener('change',()=>{mouseSensitivity=Number(mouseSelect.value)||1;localStorage.setItem('flMouse',mouseSelect.value);});
-fovSelect?.addEventListener('change',()=>{cameraFov=Number(fovSelect.value)||68;localStorage.setItem('flFov',fovSelect.value);if(camera){camera.fov=cameraFov;camera.updateProjectionMatrix();}});
+qualitySelect?.addEventListener('change',()=>{autoResolutionScale=1;flStorage.setItem('flQuality',qualitySelect.value);applyQuality();});
+fpsSelect?.addEventListener('change',()=>{maxFps=fpsSelect.value==='unlimited'?0:Number(fpsSelect.value);flStorage.setItem('flFps',fpsSelect.value);});
+mouseSelect?.addEventListener('change',()=>{mouseSensitivity=Number(mouseSelect.value)||1;flStorage.setItem('flMouse',mouseSelect.value);});
+fovSelect?.addEventListener('change',()=>{cameraFov=Number(fovSelect.value)||68;flStorage.setItem('flFov',fovSelect.value);if(camera){camera.fov=cameraFov;camera.updateProjectionMatrix();}});
 const cameraSelect=document.querySelector('#cameraSelect');
-cameraSelect?.addEventListener('change',()=>{cameraMode=cameraSelect.value||'follow';localStorage.setItem('flCamera',cameraMode);status.textContent='KAMERA: '+({follow:'VERFOLGER',close:'NAH',hood:'MOTORHAUBE',ego:'EGO-PERSPEKTIVE'}[cameraMode]||'VERFOLGER');});
+cameraSelect?.addEventListener('change',()=>{cameraMode=cameraSelect.value||'follow';flStorage.setItem('flCamera',cameraMode);status.textContent='KAMERA: '+({follow:'VERFOLGER',close:'NAH',hood:'MOTORHAUBE',ego:'EGO-PERSPEKTIVE'}[cameraMode]||'VERFOLGER');});
 let renderer,scene,camera,raf,started=false,yaw=0,pitch=0,locked=false;
 const keys={};
 const keyboardKeys={};
@@ -87,7 +99,7 @@ let flAmbientEvents=null,flAmbientEventTimer=38,flAmbientEventCooldown=0,flFores
 const inventory={Kaffee:0,Snack:0,Stadtplan:0,Brot:0,Brezel:0,Croissant:0,Kuchen:0};
 let miniMapCanvas=null,miniMapCtx=null,tuningLevel=0,paintLevel=0,turboLevel=0,suspensionLevel=0,tuningMods={spoiler:false,lowered:false,tinted:false,rims:false},mouseSensitivity=1,cameraFov=68;
 let appetite=65;
-let invertCameraY=localStorage.getItem('flInvertY')==='on';
+let invertCameraY=flStorage.getItem('flInvertY')==='on';
 let cameraMode='follow',cutscene=null,cutsceneOverlay=null,cutsceneElapsed=0,introTutorial=null;
 let shopPanel=null,currentShop=null;
 const clock=new THREE.Clock();
@@ -563,8 +575,8 @@ let dealerPanel=null,dealership={x:-28,z:82,name:'Frankfurt Motors'};
 let flFuel=100,flGameHour=12,flWeather='Klar',flWeatherTimer=0,flSaveTimer=0,flHomeOwned=false,flHomeFurniture=0,flOutfit=0,flCharacterType='standard',flCharacterAppearance={skin:0,hair:0,top:0,bottom:0,chairFrame:0,chairSeat:0,chairWheel:0},flTransitTrips=0,flDailyJobs=0,flDailyRides=0,flDailyClaimed=false,flDailyDate='';
 let flWeatherLabel=null,flFuelLabel=null,flLightingStep=-1,flStatusTimer=0,flWheelchairAvatar=null,flWheelchairPos=null,flWheelchairPhase=0;
 let flRainPoints=null,flRainPositions=null,flWetRoadMaterials=[],flRunoffMeshes=[],flPuddleMeshes=[];
-function flSaveGame(showMessage=false){try{localStorage.setItem('frankfurtLifeSave',JSON.stringify({version:1,money:careerMoney,jobs:completedJobs,position:camera?{x:camera.position.x,z:camera.position.z}:null,ownedCars,inventory,appetite,tuningLevel,paintLevel,suspensionLevel,fuel:flFuel,hour:flGameHour,weather:flWeather,homeOwned:flHomeOwned,homeFurniture:flHomeFurniture,outfit:flOutfit,characterType:flCharacterType,characterAppearance:flCharacterAppearance,transitTrips:flTransitTrips,dailyJobs:flDailyJobs,dailyRides:flDailyRides,dailyClaimed:flDailyClaimed,dailyDate:flDailyDate,vehicleDamage:damageLevel,bankHistory:flBankHistory,turboLevel,tuningMods}));if(showMessage&&status)status.textContent='SPIELSTAND GESPEICHERT';}catch(_){if(showMessage&&status)status.textContent='SPEICHERN NICHT VERFÜGBAR';}}
-function flLoadGame(){try{const d=JSON.parse(localStorage.getItem('frankfurtLifeSave')||'null');if(!d||d.version!==1)return;careerMoney=Math.max(0,Number(d.money)||0);completedJobs=Math.max(0,Number(d.jobs)||0);if(Array.isArray(d.bankHistory))flBankHistory=d.bankHistory.slice(0,12);if(Array.isArray(d.ownedCars))ownedCars.splice(0,ownedCars.length,...d.ownedCars.filter(id=>dealerCars.some(c=>c.id===id)));if(d.inventory&&typeof d.inventory==='object')Object.assign(inventory,d.inventory);appetite=Number.isFinite(Number(d.appetite))?Math.max(0,Math.min(100,Number(d.appetite))):65;tuningLevel=Math.max(0,Math.min(3,Number(d.tuningLevel)||0));paintLevel=Math.max(0,Number(d.paintLevel)||0);turboLevel=Math.max(0,Math.min(2,Number(d.turboLevel)||0));suspensionLevel=Math.max(0,Math.min(3,Number(d.suspensionLevel)||0));if(d.tuningMods&&typeof d.tuningMods==='object')tuningMods={...tuningMods,...d.tuningMods};flFuel=Number.isFinite(Number(d.fuel))?Math.max(0,Math.min(100,Number(d.fuel))):100;flGameHour=Number.isFinite(d.hour)?d.hour:12;flWeather=['Klar','Bewölkt','Regen','Nebel'].includes(d.weather)?d.weather:'Klar';flHomeOwned=!!d.homeOwned;flHomeFurniture=Math.max(0,Number(d.homeFurniture)||0);flOutfit=Math.max(0,Number(d.outfit)||0);flCharacterType=['standard','wheelchair','sport','business','casual','street'].includes(d.characterType)?d.characterType:'standard';if(d.characterAppearance&&typeof d.characterAppearance==='object')flCharacterAppearance={skin:[0,1,2,3,4].includes(d.characterAppearance.skin)?d.characterAppearance.skin:0,hair:[0,1,2,3,4].includes(d.characterAppearance.hair)?d.characterAppearance.hair:0,top:Number.isInteger(d.characterAppearance.top)&&d.characterAppearance.top>=0&&d.characterAppearance.top<10?d.characterAppearance.top:0,bottom:[0,1,2,3,4].includes(d.characterAppearance.bottom)?d.characterAppearance.bottom:0,chairFrame:[0,1,2,3,4].includes(d.characterAppearance.chairFrame)?d.characterAppearance.chairFrame:0,chairSeat:[0,1,2,3,4].includes(d.characterAppearance.chairSeat)?d.characterAppearance.chairSeat:0,chairWheel:[0,1,2,3].includes(d.characterAppearance.chairWheel)?d.characterAppearance.chairWheel:0};flTransitTrips=Math.max(0,Number(d.transitTrips)||0);flDailyJobs=Math.max(0,Number(d.dailyJobs)||0);flDailyRides=Math.max(0,Number(d.dailyRides)||0);flDailyClaimed=!!d.dailyClaimed;flDailyDate=typeof d.dailyDate==='string'?d.dailyDate:'';flSavedDamage=Math.max(0,Math.min(4,Number(d.vehicleDamage)||0));flCheckDailyDate();if(d.position&&camera)camera.position.set(Number.isFinite(Number(d.position.x))?Number(d.position.x):0,2.1,Number.isFinite(Number(d.position.z))?Number(d.position.z):14);if(careerHud)flRefreshCareerHud();}catch(_){}}
+function flSaveGame(showMessage=false){try{flStorage.setItem('frankfurtLifeSave',JSON.stringify({version:1,money:careerMoney,jobs:completedJobs,position:camera?{x:camera.position.x,z:camera.position.z}:null,ownedCars,inventory,appetite,tuningLevel,paintLevel,suspensionLevel,fuel:flFuel,hour:flGameHour,weather:flWeather,homeOwned:flHomeOwned,homeFurniture:flHomeFurniture,outfit:flOutfit,characterType:flCharacterType,characterAppearance:flCharacterAppearance,transitTrips:flTransitTrips,dailyJobs:flDailyJobs,dailyRides:flDailyRides,dailyClaimed:flDailyClaimed,dailyDate:flDailyDate,vehicleDamage:damageLevel,bankHistory:flBankHistory,turboLevel,tuningMods}));if(showMessage&&status)status.textContent='SPIELSTAND GESPEICHERT';}catch(_){if(showMessage&&status)status.textContent='SPEICHERN NICHT VERFÜGBAR';}}
+function flLoadGame(){try{const d=JSON.parse(flStorage.getItem('frankfurtLifeSave')||'null');if(!d||d.version!==1)return;careerMoney=Math.max(0,Number(d.money)||0);completedJobs=Math.max(0,Number(d.jobs)||0);if(Array.isArray(d.bankHistory))flBankHistory=d.bankHistory.slice(0,12);if(Array.isArray(d.ownedCars))ownedCars.splice(0,ownedCars.length,...d.ownedCars.filter(id=>dealerCars.some(c=>c.id===id)));if(d.inventory&&typeof d.inventory==='object')Object.assign(inventory,d.inventory);appetite=Number.isFinite(Number(d.appetite))?Math.max(0,Math.min(100,Number(d.appetite))):65;tuningLevel=Math.max(0,Math.min(3,Number(d.tuningLevel)||0));paintLevel=Math.max(0,Number(d.paintLevel)||0);turboLevel=Math.max(0,Math.min(2,Number(d.turboLevel)||0));suspensionLevel=Math.max(0,Math.min(3,Number(d.suspensionLevel)||0));if(d.tuningMods&&typeof d.tuningMods==='object')tuningMods={...tuningMods,...d.tuningMods};flFuel=Number.isFinite(Number(d.fuel))?Math.max(0,Math.min(100,Number(d.fuel))):100;flGameHour=Number.isFinite(d.hour)?d.hour:12;flWeather=['Klar','Bewölkt','Regen','Nebel'].includes(d.weather)?d.weather:'Klar';flHomeOwned=!!d.homeOwned;flHomeFurniture=Math.max(0,Number(d.homeFurniture)||0);flOutfit=Math.max(0,Number(d.outfit)||0);flCharacterType=['standard','wheelchair','sport','business','casual','street'].includes(d.characterType)?d.characterType:'standard';if(d.characterAppearance&&typeof d.characterAppearance==='object')flCharacterAppearance={skin:[0,1,2,3,4].includes(d.characterAppearance.skin)?d.characterAppearance.skin:0,hair:[0,1,2,3,4].includes(d.characterAppearance.hair)?d.characterAppearance.hair:0,top:Number.isInteger(d.characterAppearance.top)&&d.characterAppearance.top>=0&&d.characterAppearance.top<10?d.characterAppearance.top:0,bottom:[0,1,2,3,4].includes(d.characterAppearance.bottom)?d.characterAppearance.bottom:0,chairFrame:[0,1,2,3,4].includes(d.characterAppearance.chairFrame)?d.characterAppearance.chairFrame:0,chairSeat:[0,1,2,3,4].includes(d.characterAppearance.chairSeat)?d.characterAppearance.chairSeat:0,chairWheel:[0,1,2,3].includes(d.characterAppearance.chairWheel)?d.characterAppearance.chairWheel:0};flTransitTrips=Math.max(0,Number(d.transitTrips)||0);flDailyJobs=Math.max(0,Number(d.dailyJobs)||0);flDailyRides=Math.max(0,Number(d.dailyRides)||0);flDailyClaimed=!!d.dailyClaimed;flDailyDate=typeof d.dailyDate==='string'?d.dailyDate:'';flSavedDamage=Math.max(0,Math.min(4,Number(d.vehicleDamage)||0));flCheckDailyDate();if(d.position&&camera)camera.position.set(Number.isFinite(Number(d.position.x))?Number(d.position.x):0,2.1,Number.isFinite(Number(d.position.z))?Number(d.position.z):14);if(careerHud)flRefreshCareerHud();}catch(_){}}
 
 function flCheckDailyDate(){const today=new Date().toLocaleDateString('en-CA');if(flDailyDate!==today){flDailyDate=today;flDailyJobs=0;flDailyRides=0;flDailyClaimed=false;}}
 function flClaimDaily(){flCheckDailyDate();if(flDailyClaimed){status.textContent='TAGESBONUS BEREITS ABGEHOLT';return;}if(flDailyJobs<1||flDailyRides<1){status.textContent='ERLEDIGE BEIDE TAGESZIELE ZUERST';openPhoneApp('daily');return;}flDailyClaimed=true;careerMoney+=250;if(careerHud)flRefreshCareerHud();flSaveGame();status.textContent='TAGESBONUS · +250 €';openPhoneApp('daily');}
@@ -677,12 +689,12 @@ function openPhoneApp(app){
  if(app==='settings'){
   const pairs=[['phoneQuality',qualitySelect],['phoneFps',fpsSelect],['phoneMouse',mouseSelect],['phoneFov',fovSelect],['phoneCamera',cameraSelect]];
   for(const [id,source] of pairs){const el=page.querySelector('#'+id);if(el&&source)el.value=source.value;el?.addEventListener('change',()=>{if(source){source.value=el.value;source.dispatchEvent(new Event('change'));}});}
-  const vis=page.querySelector('#phoneMapVisible');if(vis){vis.value=localStorage.getItem('flMiniMap')==='off'?'off':'on';vis.addEventListener('change',()=>{localStorage.setItem('flMiniMap',vis.value);const m=document.querySelector('#miniMap');if(m)m.style.display=vis.value==='off'?'none':'';});}
-  const brightness=page.querySelector('#phoneBrightness');if(brightness){brightness.value=localStorage.getItem('flBrightness')||'1';const apply=()=>{localStorage.setItem('flBrightness',brightness.value);viewport.style.filter='brightness('+brightness.value+')';};apply();brightness.addEventListener('change',apply);}
-  const invert=page.querySelector('#phoneInvertY');if(invert){invert.value=invertCameraY?'on':'off';invert.addEventListener('change',()=>{invertCameraY=invert.value==='on';localStorage.setItem('flInvertY',invert.value);});}
-  const mapSize=page.querySelector('#phoneMapSize');if(mapSize){mapSize.value=localStorage.getItem('flMapSize')||'medium';const apply=()=>{const m=document.querySelector('#miniMap');if(m)m.style.width=({small:'130px',medium:'190px',large:'250px'}[mapSize.value]);localStorage.setItem('flMapSize',mapSize.value);};apply();mapSize.addEventListener('change',apply);}
-  const coordsVisible=page.querySelector('#phoneCoordsVisible');if(coordsVisible){coordsVisible.value=localStorage.getItem('flCoordsVisible')==='off'?'off':'on';const apply=()=>{const c=document.querySelector('#miniMapCoords');if(c)c.style.display=coordsVisible.value==='off'?'none':'';localStorage.setItem('flCoordsVisible',coordsVisible.value);};apply();coordsVisible.addEventListener('change',apply);}
-  const mini=document.querySelector('#miniMap');if(mini&&localStorage.getItem('flMapSize'))mini.style.width=({small:'130px',medium:'190px',large:'250px'}[localStorage.getItem('flMapSize')]);const coordsLabel=document.querySelector('#miniMapCoords');if(coordsLabel&&localStorage.getItem('flCoordsVisible')==='off')coordsLabel.style.display='none';if(localStorage.getItem('flMiniMap')==='off'&&mini)mini.style.display='none';
+  const vis=page.querySelector('#phoneMapVisible');if(vis){vis.value=flStorage.getItem('flMiniMap')==='off'?'off':'on';vis.addEventListener('change',()=>{flStorage.setItem('flMiniMap',vis.value);const m=document.querySelector('#miniMap');if(m)m.style.display=vis.value==='off'?'none':'';});}
+  const brightness=page.querySelector('#phoneBrightness');if(brightness){brightness.value=flStorage.getItem('flBrightness')||'1';const apply=()=>{flStorage.setItem('flBrightness',brightness.value);viewport.style.filter='brightness('+brightness.value+')';};apply();brightness.addEventListener('change',apply);}
+  const invert=page.querySelector('#phoneInvertY');if(invert){invert.value=invertCameraY?'on':'off';invert.addEventListener('change',()=>{invertCameraY=invert.value==='on';flStorage.setItem('flInvertY',invert.value);});}
+  const mapSize=page.querySelector('#phoneMapSize');if(mapSize){mapSize.value=flStorage.getItem('flMapSize')||'medium';const apply=()=>{const m=document.querySelector('#miniMap');if(m)m.style.width=({small:'130px',medium:'190px',large:'250px'}[mapSize.value]);flStorage.setItem('flMapSize',mapSize.value);};apply();mapSize.addEventListener('change',apply);}
+  const coordsVisible=page.querySelector('#phoneCoordsVisible');if(coordsVisible){coordsVisible.value=flStorage.getItem('flCoordsVisible')==='off'?'off':'on';const apply=()=>{const c=document.querySelector('#miniMapCoords');if(c)c.style.display=coordsVisible.value==='off'?'none':'';flStorage.setItem('flCoordsVisible',coordsVisible.value);};apply();coordsVisible.addEventListener('change',apply);}
+  const mini=document.querySelector('#miniMap');if(mini&&flStorage.getItem('flMapSize'))mini.style.width=({small:'130px',medium:'190px',large:'250px'}[flStorage.getItem('flMapSize')]);const coordsLabel=document.querySelector('#miniMapCoords');if(coordsLabel&&flStorage.getItem('flCoordsVisible')==='off')coordsLabel.style.display='none';if(flStorage.getItem('flMiniMap')==='off'&&mini)mini.style.display='none';
  }
  if(app==='map'){page.querySelector('[data-action="recenter"]')?.addEventListener('click',()=>openPhoneApp('map'));}
  page.querySelectorAll('[data-eat]').forEach(b=>b.addEventListener('click',()=>{const name=b.dataset.eat;if((inventory[name]||0)<1){b.textContent='Nicht vorhanden';return;}inventory[name]--;appetite=Math.min(100,appetite+({Brot:18,Brezel:15,Croissant:16,Kuchen:20,Kaffee:7,Snack:12,Pizza:28,Pasta:25,Limo:6,'Burger-Menü':24,Schnitzel:26,Salat:15,Cola:5,'KnusperKante Chips':12,'Sprudelstern Cola':5,'Sprudelstern Wasser':3,'Fruchtfunk Limo':6}[name]||10));openPhoneApp('inventory');}));
@@ -1610,7 +1622,7 @@ function showIntroTutorialScene(index){
  const content=introTutorial.querySelector('.tutorial-content');content.classList.remove('tutorial-scene-change');void content.offsetWidth;content.classList.add('tutorial-scene-change');
 }
 function startIntroTutorial(){
- if(localStorage.getItem('flIntroTutorialDone')==='yes'||!introTutorial)return;
+ if(flStorage.getItem('flIntroTutorialDone')==='yes'||!introTutorial)return;
  introTutorial.classList.remove('hidden');document.exitPointerLock?.();showIntroTutorialScene(0);
 }
 function nextIntroTutorial(){
@@ -1620,7 +1632,7 @@ function nextIntroTutorial(){
 }
 function finishIntroTutorial(){
  if(!introTutorial)return;
- localStorage.setItem('flIntroTutorialDone','yes');introTutorial.dataset.scene='0';introTutorial.classList.add('hidden');
+ flStorage.setItem('flIntroTutorialDone','yes');introTutorial.dataset.scene='0';introTutorial.classList.add('hidden');
  status.textContent='WILLKOMMEN IN FRANKFURT · VIEL SPASS!';
 }
 function startCutscene(jobName){
@@ -3370,11 +3382,11 @@ document.addEventListener('visibilitychange',()=>{
 });
 function begin(){
   if(started)return;started=true;flInitProceduralAudio();placeholder?.remove();
-  if(qualitySelect){const saved=localStorage.getItem('flQuality');qualitySelect.value=lowEndDevice?'legacy':(saved&&qualitySettings[saved]?saved:(saved==='ultra'?'legacy':'high'));}
-  if(fpsSelect){const savedFps=localStorage.getItem('flFps');fpsSelect.value=savedFps||(lowEndDevice?'30':'60');maxFps=fpsSelect.value==='unlimited'?0:Number(fpsSelect.value);}
-  if(mouseSelect){mouseSelect.value=localStorage.getItem('flMouse')||'1';mouseSensitivity=Number(mouseSelect.value)||1;}
-  if(fovSelect){fovSelect.value=localStorage.getItem('flFov')||'68';cameraFov=Number(fovSelect.value)||68;}
-  if(cameraSelect){cameraSelect.value=localStorage.getItem('flCamera')||'follow';cameraMode=cameraSelect.value||'follow';}
+  if(qualitySelect){const saved=flStorage.getItem('flQuality');qualitySelect.value=lowEndDevice?'legacy':(saved&&qualitySettings[saved]?saved:(saved==='ultra'?'legacy':'high'));}
+  if(fpsSelect){const savedFps=flStorage.getItem('flFps');fpsSelect.value=savedFps||(lowEndDevice?'30':'60');maxFps=fpsSelect.value==='unlimited'?0:Number(fpsSelect.value);}
+  if(mouseSelect){mouseSelect.value=flStorage.getItem('flMouse')||'1';mouseSensitivity=Number(mouseSelect.value)||1;}
+  if(fovSelect){fovSelect.value=flStorage.getItem('flFov')||'68';cameraFov=Number(fovSelect.value)||68;}
+  if(cameraSelect){cameraSelect.value=flStorage.getItem('flCamera')||'follow';cameraMode=cameraSelect.value||'follow';}
   status.textContent=lowEndDevice?'OLD-SCHOOL-MODUS · STADT BLEIBT GUT ERKENNBAR':'STADT GELADEN · KLICKE INS SPIEL';
   try{
     renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance',stencil:false,depth:true,preserveDrawingBuffer:false});
@@ -3420,8 +3432,8 @@ window.addEventListener('resize',resize);
 (()=>{
   const photoStoreKey='flMainFeedPhotosV1';
   let flPhotos=[];
-  try{flPhotos=JSON.parse(localStorage.getItem(photoStoreKey)||'[]');if(!Array.isArray(flPhotos))flPhotos=[];}catch(_){flPhotos=[];}
-  const savePhotos=()=>{try{localStorage.setItem(photoStoreKey,JSON.stringify(flPhotos.slice(-5)));}catch(_){if(status)status.textContent='FOTOSPEICHER VOLL · ÄLTERE FOTOS LÖSCHEN';}};
+  try{flPhotos=JSON.parse(flStorage.getItem(photoStoreKey)||'[]');if(!Array.isArray(flPhotos))flPhotos=[];}catch(_){flPhotos=[];}
+  const savePhotos=()=>{try{flStorage.setItem(photoStoreKey,JSON.stringify(flPhotos.slice(-5)));}catch(_){if(status)status.textContent='FOTOSPEICHER VOLL · ÄLTERE FOTOS LÖSCHEN';}};
   const escapeHtml=value=>String(value||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const photoStyle=document.createElement('style');
   photoStyle.textContent='.fl-photo-actions{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}.fl-photo-actions button,.fl-post button{border:1px solid #5b9db9;border-radius:8px;background:#15374d;color:#eefaff;padding:10px 12px;font-weight:800;cursor:pointer}.fl-photo-preview{width:100%;max-height:190px;object-fit:cover;border-radius:12px;border:1px solid #ffffff30;background:#07111c}.fl-post{margin:12px 0;padding:10px;border:1px solid #ffffff22;border-radius:12px;background:#ffffff09}.fl-post img{display:block;width:100%;max-height:190px;object-fit:cover;border-radius:9px;margin:8px 0}.fl-post p{font-size:12px;color:#d4e6f1}.fl-photo-empty{padding:18px;border:1px dashed #6a8799;border-radius:12px;color:#b7cbd8;text-align:center;font-size:12px}';
@@ -3430,6 +3442,8 @@ window.addEventListener('resize',resize);
   function captureCityPhoto(){
     if(!renderer?.domElement){if(status)status.textContent='FOTOMODUS ERST NACH SPIELSTART VERFÜGBAR';return;}
     try{
+      // WebGL kann den Zeichenpuffer nach dem Frame leeren; direkt vor dem Kopieren neu rendern.
+      renderer.render(scene,camera);
       const source=renderer.domElement,canvas=document.createElement('canvas');
       const scale=Math.min(1,640/source.width,360/source.height);
       canvas.width=Math.max(1,Math.round(source.width*scale));canvas.height=Math.max(1,Math.round(source.height*scale));

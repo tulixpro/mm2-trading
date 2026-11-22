@@ -2212,7 +2212,7 @@ function flUpdateTowService(dt){
    scene.remove(tow.cable);scene.remove(tow.truck);
    flTowService=null;
    camera.position.set(tow.garage.x+7,2.1,tow.garage.z+9);yaw=0;pitch=-.04;
-   status.textContent='AUTO ABGESCHLEPPT · AUF DER WERKSTATT-HEBEBÜHNE · E ZUM ABSENKEN';
+   status.textContent='AUTO ABGESCHLEPPT · AUF DER WERKSTATT-HEBEBÜHNE · R ZUM ABSENKEN';
   }
  }
  if(flTowService){

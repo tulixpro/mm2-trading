@@ -2366,15 +2366,15 @@ function flBuildWheelchairAvatar(){
 function flUpdateWheelchairAvatar(dt,steer){
  const g=flBuildWheelchairAvatar();if(!g||!flWheelchairPos)return;
  const speed=(keys.ShiftLeft||keys.ShiftRight)?.2:.12,forward=new THREE.Vector3(-Math.sin(yaw),0,-Math.cos(yaw)),right=new THREE.Vector3(Math.cos(yaw),0,-Math.sin(yaw));
- if(keys.KeyW||keys.ArrowUp)flWheelchairPos.addScaledVector(forward,speed);
- if(keys.KeyS||keys.ArrowDown)flWheelchairPos.addScaledVector(forward,-speed);
- if(keys.KeyA||keys.ArrowLeft)flWheelchairPos.addScaledVector(right,-speed);
- if(keys.KeyD||keys.ArrowRight)flWheelchairPos.addScaledVector(right,speed);
+ if((keys.KeyW||keys.ArrowUp)&&!braking)flWheelchairPos.addScaledVector(forward,speed);
+ const braking=keys.KeyS||keys.ArrowDown||keys.Space;
+ const steerInput=(keys.KeyA||keys.ArrowLeft?1:0)-(keys.KeyD||keys.ArrowRight?1:0);
+ if(steerInput)yaw+=steerInput*dt*1.55;
  flWheelchairPos.x=THREE.MathUtils.clamp(flWheelchairPos.x,-178,178);flWheelchairPos.z=THREE.MathUtils.clamp(flWheelchairPos.z,-298,360);
  const active=keys.KeyW||keys.KeyS||keys.KeyA||keys.KeyD||keys.ArrowUp||keys.ArrowDown||keys.ArrowLeft||keys.ArrowRight;
  flWheelchairPhase+=dt*(active?9:2);g.position.copy(flWheelchairPos);g.rotation.y=yaw+Math.PI;g.rotation.z=active?steer*.035:0;
- const spin=active?(keys.KeyS||keys.ArrowDown?-1:1)*dt*5:0;g.userData.wheels.forEach(w=>{w.rotation.x+=spin;});
- g.userData.arms.forEach((arm,i)=>{arm.rotation.x=active?-.16+Math.sin(flWheelchairPhase+i*Math.PI)*.28:0;arm.rotation.z=active?(i===0?-1:1)*(.05+Math.sin(flWheelchairPhase+i*Math.PI)*.08):0;});
+ const spin=active&&!braking?dt*5:0;g.userData.wheels.forEach(w=>{w.rotation.x+=spin;});
+ g.userData.arms.forEach((arm,i)=>{arm.rotation.x=braking?-.42:active?-.16+Math.sin(flWheelchairPhase+i*Math.PI)*.28:0;arm.rotation.z=active?(i===0?-1:1)*(.05+Math.sin(flWheelchairPhase+i*Math.PI)*.08):0;});
  camera.position.set(flWheelchairPos.x+Math.sin(yaw)*3.7,2.65,flWheelchairPos.z+Math.cos(yaw)*3.7);camera.lookAt(flWheelchairPos.x,1.15,flWheelchairPos.z);
 }
 function tryStartFlight(){

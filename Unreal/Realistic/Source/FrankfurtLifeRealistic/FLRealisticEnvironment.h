@@ -26,8 +26,17 @@ public:
 
 protected:
     virtual void BeginPlay() override;
+    virtual void Tick(float DeltaSeconds) override;
 
 private:
+    UPROPERTY(EditAnywhere, Category="Environment|Time", meta=(ClampMin="60.0"))
+    float FullDayDurationSeconds = 1200.0f;
+
+    UPROPERTY(EditAnywhere, Category="Environment|Time", meta=(ClampMin="0.0", ClampMax="24.0"))
+    float TimeOfDayHours = 15.0f;
+
+    float SkyRefreshAccumulator = 0.0f;
+
     UPROPERTY(VisibleAnywhere, Category="Environment")
     TObjectPtr<USceneComponent> SceneRoot;
 

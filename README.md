@@ -40,6 +40,17 @@ Zusätzlicher Bewegungs-/Audio-Pass:
 
 Die Sounds sind synthetische Platzhalter und keine echten Motoraufnahmen. Für eine realistische Produktion braucht es aufgenommene/lizenzierte Motor-, Reifen-, Fahrbahn-, Tür-, Innenraum- und Umgebungsgeräusche sowie überarbeitete Charakter-Rigs, Fußkontakt, Übergänge zwischen Gehen/Laufen und Animationen für verschiedene Bewegungen. Der Prototyp wurde nach diesen Änderungen nicht in einem Browser-Laufzeittest geprüft.
 
+## Zündung und Motorstart (Browser-/PC-Prototyp)
+
+- Mit **F** in das ausgewählte Dienstfahrzeug einsteigen.
+- Im Fahrzeug **M** drücken, um die Zündung bzw. den Motor zu starten.
+- Beim Start gibt es ein kurzes synthetisches Anlassgeräusch; anschließend läuft der prozedurale Leerlauf-/Motorsound an.
+- Erst nach dem Start reagiert das Fahrzeug auf Gas und Bremse. Mit erneutem **M** wird der Motor ausgeschaltet.
+- Beim Aussteigen wird der Motor ausgeschaltet. Bei leerem Tank lässt er sich nicht starten.
+- Auf Touch-Geräten gibt es dafür eine zusätzliche **M**-Schaltfläche.
+
+Das ist eine einfache Zündungs-/Startsequenz für den Prototyp, noch keine vollständige Simulation von Schlüsselstellung, Starterrelais, Batterie, Anlasser, Kupplung, Getriebe oder verschiedenen Motorarten. Motor- und Anlassersounds sind synthetisch.
+
 ## Noch nicht enthalten
 - fotorealistische Frankfurt-Karte oder echte 1:1-Stadt
 - ausgefeilte NPC-KI, Verkehr, Fahrphysik oder begehbare Innenräume

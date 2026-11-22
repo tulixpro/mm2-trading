@@ -166,6 +166,17 @@ void AFLVehicleShowcaseActor::Tick(float DeltaSeconds)
         const float LitresUsed = (LitresPerHourAtFullThrottle * FMath::Abs(CurrentThrottle) * DeltaSeconds) / 3600.0f;
         FuelPercent = FMath::Max(0.0f, FuelPercent - (LitresUsed / FMath::Max(1.0f, FuelCapacityLitres)) * 100.0f);
     }
+
+    // Steering now depends on actual movement speed and travel direction.
+    // This remains arcade movement, but avoids rotating the car in place at full rate.
+    const float SpeedAlpha = FMath::Clamp(GetVelocity().Size2D() / 900.0f, 0.0f, 1.0f);
+    const float TravelDirection = CurrentThrottle < -0.05f ? -1.0f : 1.0f;
+    if (GetController() && SpeedAlpha > 0.01f)
+    {
+        const float YawDelta = CurrentSteering * 72.0f * SpeedAlpha * TravelDirection * DeltaSeconds;
+        AddActorLocalRotation(FRotator(0.0f, YawDelta, 0.0f));
+    }
+
     if (FuelPercent <= 0.0f)
     {
         CurrentThrottle = 0.0f;
@@ -175,8 +186,7 @@ void AFLVehicleShowcaseActor::Tick(float DeltaSeconds)
 
 void AFLVehicleShowcaseActor::Steer(float Value)
 {
-    if (Controller && FMath::Abs(Value) > KINDA_SMALL_NUMBER)
-        AddControllerYawInput(Value * 1.8f);
+    CurrentSteering = FMath::Clamp(Value, -1.0f, 1.0f);
 }
 
 void AFLVehicleShowcaseActor::EnterVehicle(AFLRealisticCharacter* Character)

@@ -171,6 +171,47 @@ void AFLRealisticCityBlock::AddBuilding(const FVector& Center, float Width, floa
     AddBox(Center + FVector(-Width * 0.43f, -Depth * 0.5f - 14.0f, Height * 0.42f), FVector(0.055f, 0.055f, Height * 0.004f), DarkMetal);
 }
 
+void AFLRealisticCityBlock::AddAbandonedSite(const FVector& Center)
+{
+    const FLinearColor WeatheredConcrete(0.28f,0.29f,0.27f,1.0f);
+    const FLinearColor StainedConcrete(0.19f,0.20f,0.19f,1.0f);
+    const FLinearColor BoardedWood(0.22f,0.14f,0.085f,1.0f);
+    const FLinearColor Rust(0.25f,0.12f,0.065f,1.0f);
+    const FLinearColor Weed(0.12f,0.22f,0.10f,1.0f);
+    // Derelict low-rise shell with boarded openings and irregular damaged facade patches.
+    AddBox(Center + FVector(0,0,250), FVector(8.5f,6.0f,2.5f), WeatheredConcrete);
+    AddBox(Center + FVector(0,-610,505), FVector(8.7f,0.22f,0.18f), StainedConcrete);
+    AddBox(Center + FVector(-835,0,250), FVector(0.22f,6.0f,2.5f), StainedConcrete);
+    AddBox(Center + FVector(835,0,250), FVector(0.22f,6.0f,2.5f), WeatheredConcrete);
+    // Boarded windows and a partly collapsed roof section.
+    for (int32 I=0; I<5; ++I)
+    {
+        const float X=-650.0f+I*325.0f;
+        AddBox(Center+FVector(X,-615,280),FVector(0.82f,0.08f,0.72f),BoardedWood);
+        AddBox(Center+FVector(X,-625,280),FVector(0.86f,0.035f,0.055f),Rust,FRotator(0,0,(I%2==0)?12.0f:-9.0f));
+    }
+    AddBox(Center+FVector(-360,0,515),FVector(3.0f,2.8f,0.12f),StainedConcrete,FRotator(0,0,4.0f));
+    AddBox(Center+FVector(520,110,535),FVector(2.0f,2.0f,0.10f),WeatheredConcrete,FRotator(0,0,-7.0f));
+    // Rusted perimeter fence, gate and warning board.
+    for(int32 I=0; I<9; ++I)
+    {
+        const float X=-1050.0f+I*260.0f;
+        AddBox(Center+FVector(X,-850,105),FVector(0.055f,0.055f,1.05f),Rust);
+        AddBox(Center+FVector(X,-850,185),FVector(0.055f,0.055f,0.055f),Rust);
+    }
+    AddBox(Center+FVector(0,-850,135),FVector(1.0f,0.06f,0.06f),Rust);
+    AddBox(Center+FVector(900,-850,170),FVector(0.55f,0.12f,0.35f),BoardedWood);
+    // Debris piles, weeds and scattered discarded materials.
+    for(int32 I=0; I<12; ++I)
+    {
+        const float X=-760.0f+(I%4)*430.0f;
+        const float Y=-420.0f+(I/4)*390.0f;
+        AddBox(Center+FVector(X,Y,24.0f+(I%3)*12.0f),FVector(0.35f+(I%2)*0.2f,0.22f,0.10f),I%2?Rust:StainedConcrete,FRotator(0,I*17.0f,I*9.0f));
+        AddBox(Center+FVector(X+95,Y+65,42),FVector(0.12f,0.12f,0.42f),Weed);
+    }
+    AddBox(Center+FVector(-930,-520,45),FVector(0.22f,0.18f,0.14f),FLinearColor(0.08f,0.09f,0.08f,1.0f));
+}
+
 void AFLRealisticCityBlock::BuildDistrict()
 {
     // Procedural greybox only: replace primitive meshes with authored PBR assets in the art pass.
@@ -200,6 +241,9 @@ void AFLRealisticCityBlock::BuildDistrict()
             AddStreetLight(FVector(900.0f, Axis + Side * 720.0f, 0));
         }
     }
+
+    // A derelict industrial site tucked into the edge of the district.
+    AddAbandonedSite(FVector(3650.0f, 3650.0f, 0.0f));
 
     // Nine city blocks with varied building heights, shopfronts, trees and public space.
     for (int32 X = -1; X <= 1; ++X)

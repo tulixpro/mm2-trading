@@ -375,3 +375,11 @@ These are **project scaffolds only**, not finished playable Unreal games. The ex
 - Kassenkräfte bleiben hinter dem Tresen, zeigen dezente Arbeits-/Bewegungsgesten und schauen sich gelegentlich um.
 - Ladenfronten besitzen nun eine tatsächliche zentrale Öffnung, damit die NPC-Laufwege nicht durch eine geschlossene Fassadenwand führen.
 - Das ist eine sichtbare Alltagssimulation: Es gibt noch keine echte Warenbuchung, Geldtransaktion zwischen NPCs, Warteschlangen mit mehreren Kunden oder individuelle Dialoge. Spieler können weiterhin selbst über das Shop-Menü einkaufen.
+
+
+## Fußgängerüberwege und Ampeln
+- Die Hauptstraße erhält markierte Zebrastreifen an mehreren Kreuzungen sowie zusätzliche Fußgänger-Signalgeber an den Ampelmasten.
+- Fußgängerampeln wechseln passend zur Fahrzeugampel zwischen Rot und Grün. Die beiden Straßenseiten eines Übergangs sind synchronisiert.
+- An ausgewählten Übergängen laufen Fußgänger-NPCs zwischen den Gehwegen hin und her und warten auf die Freigabe.
+- Der simulierte Verkehr reduziert vor roten Signalen seine Geschwindigkeit und hält vor dem Übergang.
+- Die Ampel- und Querungslogik ist ein vereinfachtes lokales Verkehrssystem; sie bildet noch keine vollständige deutsche Verkehrsregel- oder Vorfahrts-Simulation für jede Nebenstraße ab.

@@ -1,0 +1,62 @@
+name: Build Frankfurt Life San Andreas UE4.27 Windows game
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "Unreal/SanAndreas/**"
+      - ".github/workflows/unreal-sanandreas-windows-build.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  package-sanandreas:
+    # Requires a Windows self-hosted runner with Unreal Engine 4.27 installed.
+    # Register the runner with the custom label: unreal-4.27
+    runs-on: [self-hosted, Windows, X64, unreal-4.27]
+    timeout-minutes: 240
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Locate Unreal Engine 4.27
+        shell: pwsh
+        run: |
+          $EngineRoot = $env:UE_ROOT
+          if ([string]::IsNullOrWhiteSpace($EngineRoot)) {
+            $EngineRoot = "C:\Program Files\Epic Games\UE_4.27"
+          }
+          $UAT = Join-Path $EngineRoot "Engine\Build\BatchFiles\RunUAT.bat"
+          if (!(Test-Path $UAT)) {
+            throw "Unreal Engine 4.27 was not found. Install UE 4.27 and set UE_ROOT on the self-hosted runner. Checked: $UAT"
+          }
+          "UE_ROOT=$EngineRoot" | Out-File -FilePath $env:GITHUB_ENV -Append
+          "UAT_PATH=$UAT" | Out-File -FilePath $env:GITHUB_ENV -Append
+          Write-Host "Using $EngineRoot"
+
+      - name: Build, cook and package Win64 Shipping
+        shell: pwsh
+        run: |
+          $Project = Join-Path $env:GITHUB_WORKSPACE "Unreal\SanAndreas\FrankfurtLifeSanAndreas.uproject"
+          $Archive = Join-Path $env:GITHUB_WORKSPACE "artifacts\FrankfurtLifeSanAndreas"
+          if (!(Test-Path $Project)) { throw "Unreal project file not found: $Project" }
+          New-Item -ItemType Directory -Force -Path $Archive | Out-Null
+          & $env:UAT_PATH BuildCookRun "-project=$Project" -noP4 -platform=Win64 -clientconfig=Shipping -build -cook -stage -pak -archive "-archivedirectory=$Archive" -utf8output
+          if ($LASTEXITCODE -ne 0) { throw "Unreal BuildCookRun failed with exit code $LASTEXITCODE" }
+
+      - name: Verify packaged executable exists
+        shell: pwsh
+        run: |
+          $Exe = Get-ChildItem -Path (Join-Path $env:GITHUB_WORKSPACE "artifacts\FrankfurtLifeSanAndreas") -Filter "*.exe" -Recurse | Select-Object -First 1
+          if (!$Exe) { throw "Packaging finished without a Windows executable in the archive directory." }
+          Write-Host "Packaged executable: $($Exe.FullName)"
+
+      - name: Upload Windows package
+        uses: actions/upload-artifact@v4
+        with:
+          name: Frankfurt-Life-SanAndreas-Unreal-Windows-x64
+          path: artifacts/FrankfurtLifeSanAndreas/**
+          if-no-files-found: error
+          retention-days: 14

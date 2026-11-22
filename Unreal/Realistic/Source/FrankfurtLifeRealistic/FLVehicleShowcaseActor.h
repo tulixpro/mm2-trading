@@ -37,6 +37,7 @@ private:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Vehicle|Fuel", meta=(ClampMin="0.01")) float LitresPerHourAtFullThrottle = 11.0f;
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Vehicle|Fuel") float FuelPercent = 100.0f;
     float CurrentThrottle = 0.0f;
+    float CurrentSteering = 0.0f;
     void DriveForward(float Value);
     void Steer(float Value);
     void AddPart(UStaticMesh* Mesh, const FVector& Location, const FVector& Scale, const FLinearColor& Tint, const FRotator& Rotation = FRotator::ZeroRotator);

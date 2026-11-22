@@ -359,3 +359,11 @@ These are **project scaffolds only**, not finished playable Unreal games. The ex
 - Der Beruf Möbeltransport war bereits in der Jobzentrale vorhanden und passt nun sichtbar zum Umzugsbetrieb.
 - Technische Grenze: Kreisverkehre sind derzeit 3D-Straßenanlagen; die NPC-Verkehrs-KI nutzt dort noch keine echte Kreisverkehrs-Vorfahrt oder Spurführung. Die Transporter sind zunächst statische Szenenfahrzeuge, keine autonomen Lieferfahrzeuge. Die neuen Ladenfronten verwenden das bestehende einfache Shop-Interaktionssystem.
 - Änderungen gespeichert; noch kein Browser-Laufzeittest auf realer Hardware durchgeführt.
+
+
+## NPC-Alltagsroutinen und dynamischeres Fahrwerk
+- Passanten wechseln nun zwischen kurzen Gehwegen und kleinen Alltagspausen: Schaufenster ansehen, auf das Handy schauen, warten und einfache Gesprächsgesten.
+- Die Routinen bleiben in der Nähe des jeweiligen Spawn-/Quartierbereichs und verwenden die vorhandenen Low-Poly-Charaktere und Gelenkanimationen.
+- Fahrwerksdarstellung reagiert stärker auf Lastwechsel: sichtbares Eintauchen beim Bremsen, leichtes Entlasten beim Beschleunigen, Seitenneigung in Kurven sowie animierte Feder-/Dämpfer-Kompression.
+- Unebenheiten und Bremsschwellen lösen weiterhin gedämpfte Karosseriebewegungen aus; die Darstellung ist eine Arcade-Visualisierung und keine physikalisch vollständige Rad-/Reifen-Simulation.
+- NPC-Routinen sind einfache lokale Verhaltenszustände, noch keine komplexe Terminplanung, echte Dialog-KI oder vollständige Laden-/Arbeitsplatz-Simulation.

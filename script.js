@@ -291,6 +291,16 @@ function flBuildAmbientEvents(){
   const cone=new THREE.Mesh(new THREE.ConeGeometry(.28,.72,8),new THREE.MeshStandardMaterial({color:0xf08b28,roughness:.7}));
   cone.position.set(10.4+(i%3)*2.1,.36,-49+Math.floor(i/3)*3.2);accident.add(cone);
  }
+ // Rot-weisse Absperrgitter rund um die Unfallstelle.
+ const barrierMat=new THREE.MeshStandardMaterial({color:0xe7e5dc,roughness:.78}),stripeMat=new THREE.MeshStandardMaterial({color:0xc93630,roughness:.82}),footMat=new THREE.MeshStandardMaterial({color:0x252a2d,roughness:.9});
+ const barriers=[];
+ for(let i=0;i<4;i++){
+  const panel=new THREE.Group(),rail=new THREE.Mesh(new THREE.BoxGeometry(3.1,.13,.12),barrierMat);rail.position.y=1.05;panel.add(rail);
+  const lower=new THREE.Mesh(new THREE.BoxGeometry(3.1,.13,.12),barrierMat);lower.position.y=.38;panel.add(lower);
+  for(let k=0;k<5;k++){const stripe=new THREE.Mesh(new THREE.BoxGeometry(.34,.72,.14),stripeMat);stripe.position.set(-1.25+k*.62,.72,0);stripe.rotation.z=-.38;panel.add(stripe);}
+  for(const x of [-1.25,1.25]){const leg=new THREE.Mesh(new THREE.BoxGeometry(.16,.12,.65),footMat);leg.position.set(x,.12,0);panel.add(leg);}
+  panel.position.set(8.1+(i%2)*6.1,.0,-52+Math.floor(i/2)*7.2);panel.rotation.y=(i%2)*Math.PI/2;accident.add(panel);barriers.push(panel);
+ }
  const beacon=new THREE.Group();
  const beaconBase=new THREE.Mesh(new THREE.CylinderGeometry(.42,.5,.24,12),darkMat);beaconBase.position.y=.12;beacon.add(beaconBase);
  const beaconLight=new THREE.Mesh(new THREE.SphereGeometry(.27,12,8),amberMat);beaconLight.position.y=.42;beacon.add(beaconLight);
@@ -370,7 +380,7 @@ function flBuildAmbientEvents(){
  response.visible=false;robbery.visible=false;robbery.position.set(14,0,-178);
  accident.visible=false;forestry.visible=false;forestry.position.set(112,0,75);
  root.add(accident,forestry,response,robbery);root.position.set(0,0,0);scene.add(root);
- flAmbientEvents={root,accident,forestry,response,robbery,beaconLight,workBody,boom,worker,workerArms,workerLegs,workLamp,workCones,emergencyUnits:[police,fire,ambulance,robberyPolice1,robberyPolice2],arrestActors,arrestCar,arrestProgress:0,sirenTimer:2,civic,kind:null};
+ flAmbientEvents={root,accident,forestry,response,robbery,beaconLight,workBody,boom,worker,workerArms,workerLegs,workLamp,workCones,barriers,emergencyUnits:[police,fire,ambulance,robberyPolice1,robberyPolice2],arrestActors,arrestCar,arrestProgress:0,sirenTimer:2,civic,kind:null};
 }
 function flPlayEmergencySiren(){
  if(!flAudioContext||flAudioContext.state!=='running')return;
@@ -424,11 +434,13 @@ function flPlayAmbientEventSound(kind){
  const now=flAudioContext.currentTime;
  try{
   if(kind==='forest'){
-   const osc=flAudioContext.createOscillator(),filter=flAudioContext.createBiquadFilter(),gain=flAudioContext.createGain();
-   osc.type='sawtooth';osc.frequency.setValueAtTime(92,now);osc.frequency.linearRampToValueAtTime(145,now+1.4);
-   filter.type='lowpass';filter.frequency.setValueAtTime(280,now);filter.frequency.linearRampToValueAtTime(620,now+1.4);
-   gain.gain.setValueAtTime(.0001,now);gain.gain.linearRampToValueAtTime(.028,now+.12);gain.gain.setValueAtTime(.028,now+1.1);gain.gain.linearRampToValueAtTime(.0001,now+1.8);
-   osc.connect(filter);filter.connect(gain);gain.connect(flAudioContext.destination);osc.start(now);osc.stop(now+1.85);
+   // Mehrschichtiger, synthetischer Diesel-/Hydraulikklang als Platzhalter.
+   const motor=flAudioContext.createOscillator(),hydraulic=flAudioContext.createOscillator(),noise=flAudioContext.createBufferSource(),filter=flAudioContext.createBiquadFilter(),gain=flAudioContext.createGain();
+   const len=Math.floor(flAudioContext.sampleRate*1.8),buf=flAudioContext.createBuffer(1,len,flAudioContext.sampleRate),data=buf.getChannelData(0);for(let i=0;i<len;i++)data[i]=(Math.random()*2-1)*.22;
+   noise.buffer=buf;motor.type='sawtooth';motor.frequency.setValueAtTime(58,now);motor.frequency.linearRampToValueAtTime(76,now+.65);motor.frequency.linearRampToValueAtTime(63,now+1.7);
+   hydraulic.type='triangle';hydraulic.frequency.setValueAtTime(170,now+.35);hydraulic.frequency.linearRampToValueAtTime(235,now+1.1);hydraulic.frequency.linearRampToValueAtTime(155,now+1.7);
+   filter.type='lowpass';filter.frequency.value=520;gain.gain.setValueAtTime(.0001,now);gain.gain.linearRampToValueAtTime(.025,now+.18);gain.gain.setValueAtTime(.025,now+1.25);gain.gain.linearRampToValueAtTime(.0001,now+1.8);
+   for(const src of [motor,hydraulic,noise])src.connect(filter);filter.connect(gain);gain.connect(flAudioContext.destination);motor.start(now);hydraulic.start(now);noise.start(now);motor.stop(now+1.85);hydraulic.stop(now+1.85);
   }else{
    const osc=flAudioContext.createOscillator(),gain=flAudioContext.createGain();
    osc.type='sine';osc.frequency.setValueAtTime(95,now);osc.frequency.exponentialRampToValueAtTime(38,now+.24);
@@ -461,6 +473,7 @@ function flUpdateAmbientEvents(dt,t){
   }
   if(e.kind==='accident'){
    e.beaconLight.material.emissiveIntensity=.45+Math.abs(Math.sin(t*5))*1.8;
+   e.barriers.forEach((barrier,i)=>{barrier.rotation.y=(i%2)*Math.PI/2+Math.sin(t*.35+i)*.012;});
    e.response.visible=true;
   }else if(e.kind==='forest'){e.workBody.rotation.y=Math.sin(t*1.4)*.012;e.boom.rotation.x=-.35+Math.sin(t*1.8)*.045;e.workLamp.material.emissiveIntensity=.35+Math.abs(Math.sin(t*4))*1.4;e.worker.rotation.y=Math.sin(t*.7)*.22;const workPhase=Math.sin(t*2.1);e.workerArms[0].rotation.x=-.55+workPhase*.22;e.workerArms[1].rotation.x=.35-workPhase*.18;e.workerLegs[0].rotation.x=workPhase*.08;e.workerLegs[1].rotation.x=-workPhase*.08;e.workCones.forEach((cone,i)=>{cone.rotation.z=Math.sin(t*2+i)*.025;});e.response.visible=false;}
   else if(e.kind==='robbery'){e.robbery.visible=true;e.response.visible=false;}

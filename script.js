@@ -2096,7 +2096,12 @@ function buildStreetInfrastructure(){
     const bulb=new THREE.Mesh(new THREE.SphereGeometry(.115,12,10),mat);
     bulb.position.set(side*10.5,3.68-n*.32,z+3.0);scene.add(bulb);lamps.push(bulb);
    }
-   trafficSignals.push({lamps,phase:(z+190)/38+(side>0?1.4:0)});
+   const pedHead=new THREE.Group();
+   const pedBox=new THREE.Mesh(new THREE.BoxGeometry(.34,.68,.22),new THREE.MeshStandardMaterial({color:0x17232b,metalness:.22,roughness:.48}));pedHead.add(pedBox);
+   const pedRed=new THREE.Mesh(new THREE.CircleGeometry(.085,12),new THREE.MeshStandardMaterial({color:0x4a1718,emissive:0x2a0808,emissiveIntensity:.08}));pedRed.position.set(0,.13,.116);pedHead.add(pedRed);
+   const pedGreen=new THREE.Mesh(new THREE.CircleGeometry(.085,12),new THREE.MeshStandardMaterial({color:0x174a2a,emissive:0x092b12,emissiveIntensity:.08}));pedGreen.position.set(0,-.13,.116);pedHead.add(pedGreen);
+   pedHead.position.set(side*10.5,2.7,z+3.35);scene.add(pedHead);
+   trafficSignals.push({lamps,phase:(z+190)/38+(side>0?1.4:0),crossZ:z+5.4,pedRed,pedGreen,walkAllowed:false});
   }
  }
  // Zwei kleine Haltestellen mit Dach, Sitzbank und Linienanzeige.
@@ -2111,6 +2116,16 @@ function buildStreetInfrastructure(){
   const sign=new THREE.Mesh(new THREE.BoxGeometry(.42,1.5,.12),metal);sign.position.set(2.45,1.7,.65);shelter.add(sign);
   const marker=new THREE.Mesh(new THREE.BoxGeometry(.32,.32,.04),new THREE.MeshBasicMaterial({color:0x5ad6e6}));marker.position.set(2.45,2.25,.73);shelter.add(marker);
   shelter.position.set(13.2,0,z);scene.add(shelter);
+ }
+ // Ausgewählte Fußgänger gehen sichtbar von Gehweg zu Gehweg über markierte Übergänge.
+ if(!liteMode){
+  for(const crossZ of [-247,-95,57,171]){
+   for(const side of [-1,1]){
+    const startX=side*10.7;
+    const walker=makePedestrian(startX,crossZ+5.4,pedestrians.length+1200);
+    walker.userData.crossingRoutine={startX,targetX:-side*10.7,crossZ:crossZ+5.4,signalZ:crossZ+5.4,state:'wait',timer:0,side};
+   }
+  }
  }
 }
 
@@ -2413,7 +2428,13 @@ function updateWorld(dt){
    }
   }}
   flUpdateSystems(dt);flUpdateRain(dt);if(flPoliceCooldown>0)flPoliceCooldown=Math.max(0,flPoliceCooldown-dt);flUpdatePolicePursuit(dt);if(shopScene)updateShopFilmScene(dt);
-  if((performanceFrame%4)===0)for(const signal of trafficSignals){const phase=(t+signal.phase*1.7)%8;const active=phase<5?0:phase<6.2?1:2;signal.lamps.forEach((lamp,i)=>lamp.material.emissiveIntensity=i===active?.9:.04);}
+  if((performanceFrame%4)===0)for(const signal of trafficSignals){
+   const phase=(t+signal.phase*1.7)%8,active=phase<5?0:phase<6.2?1:2;
+   signal.lamps.forEach((lamp,i)=>lamp.material.emissiveIntensity=i===active?.9:.04);
+   signal.walkAllowed=phase<4.6;
+   signal.pedRed.material.emissiveIntensity=signal.walkAllowed?.05:1.15;
+   signal.pedGreen.material.emissiveIntensity=signal.walkAllowed?1.15:.05;
+  }
   if((performanceFrame++%4)===0)drawMiniMap();
   for(const heli of airportHelicopters){heli.rotor.rotation.y+=dt*18;heli.tailRotor.rotation.x+=dt*20;}if((performanceFrame%2)===0)for(let i=0;i<beachFoam.length;i++){beachFoam[i].position.x+=Math.sin(t*.5+i)*dt*1.4;beachFoam[i].material.opacity=.35+Math.sin(t*1.8+i)*.15;}if(waterSurface)waterSurface.position.y=-.18+Math.sin(t*.65)*.025;
   if(planeFlying&&airportPlane){for(let i=0;i<militaryEscorts.length;i++){const escort=militaryEscorts[i];const side=i===0?-1:1;const tx=airportPlane.position.x-Math.sin(planeHeading)*22+Math.cos(planeHeading)*side*10;const tz=airportPlane.position.z-Math.cos(planeHeading)*22-Math.sin(planeHeading)*side*10;escort.position.x+=(tx-escort.position.x)*Math.min(1,dt*1.2);escort.position.z+=(tz-escort.position.z)*Math.min(1,dt*1.2);escort.position.y=planeAltitude+2+Math.sin(t*2+i)*.35;escort.rotation.y=planeHeading;}}
@@ -2438,6 +2459,14 @@ function updateWorld(dt){
       car.position.x+=(traffic.baseLane-car.position.x)*Math.min(1,dt*.55);
     }
     let followScale=1;
+    // Fahrzeuge halten an roten Signalen vor Fußgängerüberwegen.
+    for(const signal of trafficSignals){
+      const ahead=(signal.crossZ-car.position.z)*traffic.direction;
+      if(ahead>0&&ahead<9){
+        const phase=(t+signal.phase*1.7)%8;
+        if(phase<5)followScale=Math.min(followScale,THREE.MathUtils.clamp((ahead-2.1)/6.9,0,1));
+      }
+    }
     for(const other of trafficCars){
       if(other===car||!other.userData.traffic)continue;
       const ahead=(other.position.z-car.position.z)*traffic.direction;
@@ -2500,6 +2529,31 @@ function updateWorld(dt){
   }
   if((performanceFrame%2)===0)for(const p of pedestrians){
     const u=p.userData,stepDt=Math.min(.06,dt*2);
+    if(u.crossingRoutine){
+      const c=u.crossingRoutine;
+      const signal=trafficSignals.find(item=>Math.abs(item.crossZ-c.signalZ)<.8);
+      const allowed=!!signal?.walkAllowed;
+      if(c.state==='wait'&&allowed){c.state='cross';c.timer=0;}
+      if(c.state==='cross'){
+        const dx=c.targetX-p.position.x,dist=Math.abs(dx),step=Math.min(dist,1.05*stepDt);
+        p.position.x+=Math.sign(dx)*step;p.rotation.y=dx>0?Math.PI/2:-Math.PI/2;
+        const phase=t*7+u.phase,walkStep=Math.sin(phase);
+        if(u.legs){u.legs[0].rotation.x=walkStep*.48;u.legs[1].rotation.x=-walkStep*.48;}
+        if(u.knees){u.knees[0].rotation.x=Math.max(0,-walkStep)*.65;u.knees[1].rotation.x=Math.max(0,walkStep)*.65;}
+        if(u.arms){u.arms[0].rotation.x=-walkStep*.25;u.arms[1].rotation.x=walkStep*.25;}
+        if(u.torso)u.torso.position.y=1.18+Math.abs(walkStep)*.025;
+        if(dist<.12){c.state='turn';c.timer=0;}
+      }else if(c.state==='turn'){
+        c.timer+=stepDt;
+        if(c.timer>.45){c.side*=-1;c.startX=c.targetX;c.targetX=-c.targetX;c.state='wait';p.rotation.y=c.side>0?Math.PI/2:-Math.PI/2;}
+      }
+      if(c.state==='wait'){
+        if(u.legs){u.legs[0].rotation.x=0;u.legs[1].rotation.x=0;}
+        if(u.arms){u.arms[0].rotation.x=-.04;u.arms[1].rotation.x=.04;}
+        if(u.head)u.head.rotation.y=Math.sin(t*.7+u.phase)*.05;
+      }
+      continue;
+    }
     if(u.shopRoutine){
       const r=u.shopRoutine;
       if(r.role==='cashier'){

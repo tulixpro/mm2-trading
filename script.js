@@ -4130,6 +4130,8 @@ async function begin(){
   try{
     // WebGPU initialisieren. Es gibt absichtlich keinen WebGL-Fallback.
     if(!navigator.gpu)throw new Error('Dieser Browser oder Grafiktreiber unterstützt WebGPU nicht. Bitte einen aktuellen Browser mit WebGPU-Unterstützung verwenden.');
+    const gpuAdapter=await navigator.gpu.requestAdapter();
+    if(!gpuAdapter)throw new Error('WebGPU ist vorhanden, aber es wurde kein kompatibler Grafikadapter gefunden. Bitte Grafikbeschleunigung aktivieren oder einen aktuellen Grafiktreiber installieren.');
     renderer=new WebGPURenderer({antialias:false});
     await renderer.init();
     renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,classicEdition?.40:lowEndDevice?.52:1));

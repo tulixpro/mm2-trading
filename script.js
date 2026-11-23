@@ -359,19 +359,49 @@ const flSurfaceTextureCache=new Map();
 function flCreateSurfaceMaps(kind){
  const cached=flSurfaceTextureCache.get(kind);if(cached)return cached;
  const canvas=document.createElement('canvas');canvas.width=512;canvas.height=512;
- const ctx=canvas.getContext('2d'),image=ctx.createImageData(512,512),data=image.data,concrete=kind==='concrete';
- for(let i=0;i<data.length;i+=4){const n=(Math.random()-.5)*(concrete?30:42),base=concrete?151:83;data[i]=base+n;data[i+1]=(concrete?151:91)+n;data[i+2]=(concrete?146:101)+n;data[i+3]=255;}
+ const ctx=canvas.getContext('2d'),image=ctx.createImageData(512,512),data=image.data;
+ const palettes={asphalt:[65,72,78],concrete:[151,151,146],soil:[111,91,66],grass:[91,116,66],brick:[143,105,83]};
+ const base=palettes[kind]||palettes.concrete;
+ for(let y=0;y<512;y++)for(let x=0;x<512;x++){
+  const i=(y*512+x)*4;
+  const wave=Math.sin(x*.19)*Math.cos(y*.17)*3+Math.sin((x+y)*.047)*4;
+  const grain=(Math.random()-.5)*(kind==='asphalt'?48:kind==='concrete'?27:kind==='grass'?32:24);
+  const n=wave+grain;
+  data[i]=Math.max(0,Math.min(255,base[0]+n));data[i+1]=Math.max(0,Math.min(255,base[1]+n));data[i+2]=Math.max(0,Math.min(255,base[2]+n));data[i+3]=255;
+ }
  ctx.putImageData(image,0,0);
- for(let i=0;i<(concrete?4200:8500);i++){const x=Math.random()*512,y=Math.random()*512,r=Math.random()*(concrete?1.8:1.35)+.25,shade=Math.random()>.5?255:18;ctx.fillStyle='rgba('+shade+','+shade+','+shade+','+(Math.random()*(concrete?.16:.22))+')';ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();}
- if(concrete){ctx.strokeStyle='rgba(55,59,58,.22)';ctx.lineWidth=2;for(let p=0;p<=512;p+=128){ctx.beginPath();ctx.moveTo(p,0);ctx.lineTo(p,512);ctx.stroke();ctx.beginPath();ctx.moveTo(0,p);ctx.lineTo(512,p);ctx.stroke();}}
- else{for(let i=0;i<18;i++){const x=Math.random()*512,y=Math.random()*512;ctx.strokeStyle='rgba(35,39,43,'+(Math.random()*.22+.08)+')';ctx.lineWidth=Math.random()*2+1;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+(Math.random()-.5)*70,y+(Math.random()-.5)*55);ctx.stroke();}}
+ if(kind==='asphalt'){
+  // Fine aggregate, subtle repaired seams and a few hairline cracks.
+  for(let i=0;i<14000;i++){const x=Math.random()*512,y=Math.random()*512,r=Math.random()*1.05+.2,v=Math.random()>.5?205:15;ctx.fillStyle='rgba('+v+','+v+','+v+','+(Math.random()*.23)+')';ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();}
+  for(let i=0;i<10;i++){const x=Math.random()*512,y=Math.random()*512;ctx.strokeStyle='rgba(24,28,31,.36)';ctx.lineWidth=.8;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+(Math.random()-.5)*28,y+Math.random()*35);ctx.lineTo(x+(Math.random()-.5)*24,y+Math.random()*32);ctx.stroke();}
+ }else if(kind==='concrete'){
+  for(let i=0;i<6200;i++){const x=Math.random()*512,y=Math.random()*512;ctx.fillStyle='rgba(35,39,40,'+(Math.random()*.12)+')';ctx.fillRect(x,y,Math.random()*2+.3,Math.random()*2+.3);}
+  ctx.strokeStyle='rgba(65,67,65,.13)';ctx.lineWidth=1;for(let p=0;p<=512;p+=128){ctx.beginPath();ctx.moveTo(p,0);ctx.lineTo(p,512);ctx.stroke();ctx.beginPath();ctx.moveTo(0,p);ctx.lineTo(512,p);ctx.stroke();}
+ }else if(kind==='brick'){
+  for(let y=0;y<512;y+=32){ctx.strokeStyle='rgba(48,39,33,.48)';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(512,y);ctx.stroke();for(let x=(Math.floor(y/32)%2)*40;x<512;x+=80){ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x,y+32);ctx.stroke();}}
+ }else if(kind==='grass'||kind==='soil'){
+  for(let i=0;i<4200;i++){const x=Math.random()*512,y=Math.random()*512;ctx.strokeStyle=kind==='grass'?'rgba(39,76,36,.34)':'rgba(55,42,27,.28)';ctx.lineWidth=.7;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+(Math.random()-.5)*3,y+Math.random()*6);ctx.stroke();}
+ }
  const map=new THREE.CanvasTexture(canvas);map.wrapS=map.wrapT=THREE.RepeatWrapping;map.colorSpace=THREE.SRGBColorSpace;map.anisotropy=Math.min(8,renderer?.capabilities?.getMaxAnisotropy?.()||1);
- const bump=map.clone();bump.colorSpace=THREE.NoColorSpace;bump.needsUpdate=true;const result={map,bump};flSurfaceTextureCache.set(kind,result);return result;
+ const heightCanvas=document.createElement('canvas');heightCanvas.width=heightCanvas.height=512;
+ const hctx=heightCanvas.getContext('2d'),heightImage=hctx.createImageData(512,512),hd=heightImage.data;
+ const source=ctx.getImageData(0,0,512,512).data;
+ for(let i=0;i<source.length;i+=4){const v=(source[i]*.3+source[i+1]*.59+source[i+2]*.11);hd[i]=hd[i+1]=hd[i+2]=v;hd[i+3]=255;}
+ hctx.putImageData(heightImage,0,0);
+ const bump=new THREE.CanvasTexture(heightCanvas);bump.wrapS=bump.wrapT=THREE.RepeatWrapping;bump.colorSpace=THREE.NoColorSpace;bump.anisotropy=map.anisotropy;
+ const roughCanvas=document.createElement('canvas');roughCanvas.width=roughCanvas.height=512;
+ const rctx=roughCanvas.getContext('2d');rctx.fillStyle=kind==='asphalt'?'#d8d8d8':kind==='concrete'?'#eeeeee':'#c8c8c8';rctx.fillRect(0,0,512,512);
+ const roughnessMap=new THREE.CanvasTexture(roughCanvas);roughnessMap.wrapS=roughnessMap.wrapT=THREE.RepeatWrapping;roughnessMap.colorSpace=THREE.NoColorSpace;
+ const result={map,bump,roughnessMap};flSurfaceTextureCache.set(kind,result);return result;
 }
-function flApplySurfaceMaps(material,kind,repeatX,repeatY,bumpScale){const maps=flCreateSurfaceMaps(kind);maps.map.repeat.set(repeatX,repeatY);maps.bump.repeat.set(repeatX,repeatY);material.map=maps.map;material.bumpMap=maps.bump;material.bumpScale=bumpScale;material.needsUpdate=true;return material;}
+function flApplySurfaceMaps(material,kind,repeatX,repeatY,bumpScale){
+ const maps=flCreateSurfaceMaps(kind);
+ for(const texture of [maps.map,maps.bump,maps.roughnessMap])texture.repeat.set(repeatX,repeatY);
+ material.map=maps.map;material.bumpMap=maps.bump;material.bumpScale=bumpScale;material.roughnessMap=maps.roughnessMap;material.needsUpdate=true;return material;
+}
 function flBuildParkingGarage(){
  const g=new THREE.Group();
- const concrete=new THREE.MeshStandardMaterial({color:0x737b82,roughness:.88});
+ const concrete=new THREE.MeshStandardMaterial({color:0x737b82,roughness:.88});if(!liteMode&&typeof document!=='undefined')flApplySurfaceMaps(concrete,'concrete',5,5,.018);
  const dark=new THREE.MeshStandardMaterial({color:0x222a31,roughness:.9});
  const stripe=new THREE.MeshStandardMaterial({color:0xe5d18a,roughness:.8});
  const floor=(y)=>{const slab=new THREE.Mesh(new THREE.BoxGeometry(30,.48,38),concrete);slab.position.set(0,y,0);g.add(slab);};
@@ -395,8 +425,8 @@ function flBuildParkingGarage(){
 }
 function flBuildForest(){
  const forest=new THREE.Group();
- const soil=new THREE.MeshStandardMaterial({color:0x4c5940,roughness:1});
- const grass=new THREE.MeshStandardMaterial({color:0x536b42,roughness:1});
+ const soil=new THREE.MeshStandardMaterial({color:0x4c5940,roughness:1});if(!liteMode&&typeof document!=='undefined')flApplySurfaceMaps(soil,'soil',9,11,.028);
+ const grass=new THREE.MeshStandardMaterial({color:0x536b42,roughness:1});if(!liteMode&&typeof document!=='undefined')flApplySurfaceMaps(grass,'grass',5,5,.018);
  const trunk=new THREE.MeshStandardMaterial({color:0x594331,roughness:1});
  const pine=new THREE.MeshStandardMaterial({color:0x294b38,roughness:1});
  const broadleaf=new THREE.MeshStandardMaterial({color:0x426b43,roughness:1});
@@ -2829,7 +2859,7 @@ function makeCity(){
   camera.add(flashlight,flashlightTarget);flashlight.target=flashlightTarget;
   hemiLight=new THREE.HemisphereLight(classicEdition?0xffd69a:0xd7ecff,classicEdition?0x66513a:0x4a5260,classicEdition?1.65:2);scene.add(hemiLight);
   sunLight=new THREE.DirectionalLight(classicEdition?0xffc078:0xffe0b4,classicEdition?1.25:1.5);sunLight.position.set(-25,45,25);sunLight.castShadow=false;scene.add(sunLight);
-  const ground=new THREE.Mesh(new THREE.PlaneGeometry(1100,900),new THREE.MeshLambertMaterial({color:0x58636b}));ground.rotation.x=-Math.PI/2;ground.position.set(0,-.12,-80);scene.add(ground);
+  const groundMat=new THREE.MeshStandardMaterial({color:0x68705d,roughness:1});if(!classicEdition&&typeof document!=='undefined')flApplySurfaceMaps(groundMat,'grass',95,78,.025);const ground=new THREE.Mesh(new THREE.PlaneGeometry(1100,900),groundMat);ground.rotation.x=-Math.PI/2;ground.position.set(0,-.12,-80);scene.add(ground);
   const asphaltMat=new THREE.MeshStandardMaterial({color:0x202a35,roughness:.94,metalness:.025});
   if(!classicEdition&&typeof document!=='undefined')flApplySurfaceMaps(asphaltMat,'asphalt',5,110,.018);
   const road=new THREE.Mesh(new THREE.PlaneGeometry(18,520),asphaltMat);road.rotation.x=-Math.PI/2;road.position.set(0,0,-45);scene.add(road);
@@ -2840,7 +2870,7 @@ function makeCity(){
   flBuildAmbientEvents();
   const wetMain=new THREE.Mesh(new THREE.PlaneGeometry(17.8,519),new THREE.MeshPhysicalMaterial({color:0x526574,transparent:true,opacity:0,roughness:.28,metalness:.06,clearcoat:.48,clearcoatRoughness:.2,envMapIntensity:1.05,depthWrite:false}));wetMain.rotation.x=-Math.PI/2;wetMain.position.set(0,.012,-45);scene.add(wetMain);flWetRoadMaterials.push(wetMain.material);
   for(let z=-300;z<225;z+=12){const line=new THREE.Mesh(new THREE.PlaneGeometry(.18,5),new THREE.MeshBasicMaterial({color:0xe5dfc5}));line.rotation.x=-Math.PI/2;line.position.set(0,.015,z);scene.add(line);}
-  const sidewalkMat=new THREE.MeshLambertMaterial({color:0x92999b});
+  const sidewalkMat=new THREE.MeshStandardMaterial({color:0x92999b,roughness:.94});if(!classicEdition&&typeof document!=='undefined')flApplySurfaceMaps(sidewalkMat,'concrete',2,72,.012);
   for(const x of [-9.2,9.2]){const s=new THREE.Mesh(new THREE.BoxGeometry(3.5,.25,520),sidewalkMat);s.position.set(x,.08,-45);scene.add(s);}
   // Main-road drainage: curb channels, storm grates, moving runoff highlights and shallow puddles.
   const gutterMat=new THREE.MeshStandardMaterial({color:0x34434a,roughness:.3,metalness:.35});

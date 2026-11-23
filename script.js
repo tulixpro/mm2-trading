@@ -27,12 +27,16 @@ const flVehicleRemoteAssets={
   super:'https://tevy.dev/models/supercar/v2/lod1.glb',
   police:'https://tevy.dev/models/police-car/v1/lod1.glb'
 };
-function flLoadGLTFScene(primaryUrl,fallbackUrl){
+function flLoadGLTFScene(primaryUrl,fallbackUrls=[]){
   return new Promise((resolve,reject)=>{
-    flVehicleLoader.load(primaryUrl,g=>resolve(g.scene),undefined,primaryError=>{
-      if(!fallbackUrl||fallbackUrl===primaryUrl){reject(primaryError);return;}
-      flVehicleLoader.load(fallbackUrl,g=>resolve(g.scene),undefined,reject);
-    });
+    const urls=[primaryUrl,...(Array.isArray(fallbackUrls)?fallbackUrls:[fallbackUrls])].filter((url,index,all)=>url&&all.indexOf(url)===index);
+    let cursor=0,lastError=null;
+    const tryNext=()=>{
+      if(cursor>=urls.length){reject(lastError||new Error('Kein 3D-Modell verfügbar'));return;}
+      const url=urls[cursor++];
+      flVehicleLoader.load(url,g=>resolve(g.scene),undefined,error=>{lastError=error;tryNext();});
+    };
+    tryNext();
   });
 }
 const flVehicleCache=new Map();
@@ -60,7 +64,7 @@ function flLoadEnvironmentVisual(host,assetKey,fitSize,hideExisting=false){
   const url=flEnvironmentAssets[assetKey];
   let pending=flEnvironmentCache.get(url);
   if(!pending){
-    pending=flLoadGLTFScene(url,flEnvironmentRemoteAssets[assetKey]);
+    pending=flLoadGLTFScene(url,[flEnvironmentRemoteAssets[assetKey]]);
     flEnvironmentCache.set(url,pending);
     pending.catch(()=>flEnvironmentCache.delete(url));
   }
@@ -112,7 +116,7 @@ function flLoadVehicleVisual(car,model,color,W,L){
   if(!key)return;
   let pending=flVehicleCache.get(key);
   if(!pending){
-    pending=flLoadGLTFScene(vehicleUrl,flVehicleRemoteAssets[model]);
+    pending=flLoadGLTFScene(vehicleUrl,[flVehicleAssets[model],flVehicleRemoteAssets[model]]);
     flVehicleCache.set(key,pending);
     pending.catch(()=>flVehicleCache.delete(key));
   }

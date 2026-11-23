@@ -4188,11 +4188,11 @@ window.addEventListener('resize',resize);
   photoStyle.textContent='.fl-photo-actions{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}.fl-photo-actions button,.fl-post button{border:1px solid #5b9db9;border-radius:8px;background:#15374d;color:#eefaff;padding:10px 12px;font-weight:800;cursor:pointer}.fl-photo-preview{width:100%;max-height:190px;object-fit:cover;border-radius:12px;border:1px solid #ffffff30;background:#07111c}.fl-post{margin:12px 0;padding:10px;border:1px solid #ffffff22;border-radius:12px;background:#ffffff09}.fl-post img{display:block;width:100%;max-height:190px;object-fit:cover;border-radius:9px;margin:8px 0}.fl-post p{font-size:12px;color:#d4e6f1}.fl-photo-empty{padding:18px;border:1px dashed #6a8799;border-radius:12px;color:#b7cbd8;text-align:center;font-size:12px}';
   document.head.appendChild(photoStyle);
 
-  function captureCityPhoto(){
+  async function captureCityPhoto(){
     if(!renderer?.domElement){if(status)status.textContent='FOTOMODUS ERST NACH SPIELSTART VERFÜGBAR';return;}
     try{
-      // WebGL kann den Zeichenpuffer nach dem Frame leeren; direkt vor dem Kopieren neu rendern.
-      renderer.render(scene,camera);
+      // WebGPU rendert asynchron. Erst nach abgeschlossenem Frame wird das Bild kopiert.
+      await renderer.renderAsync(scene,camera);
       const source=renderer.domElement,canvas=document.createElement('canvas');
       const scale=Math.min(1,640/source.width,360/source.height);
       canvas.width=Math.max(1,Math.round(source.width*scale));canvas.height=Math.max(1,Math.round(source.height*scale));

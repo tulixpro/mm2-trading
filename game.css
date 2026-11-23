@@ -215,3 +215,12 @@ body.action-edition .controls{border-top-color:#b75b4a}
 /* Instrumentenanzeige im Fahrzeug */
 .speedometer-hud{position:absolute;z-index:8;right:22px;bottom:22px;width:min(290px,calc(100vw - 32px));padding:15px 17px 13px;border:1px solid #7dc8e866;border-radius:12px;background:linear-gradient(145deg,#081421f2,#101e2cf0 65%,#172638f2);box-shadow:0 14px 42px #0009,inset 0 1px #ffffff18;color:#eff8ff;font-family:Arial,sans-serif;pointer-events:none;backdrop-filter:blur(9px)}
 .speedometer-hud.hidden{display:none}.speedo-top,.speedo-bottom,.speedo-rpm-label{display:flex;align-items:center;justify-content:space-between}.speedo-top{font-size:9px;letter-spacing:1.8px;color:#8caac0}.speedo-top b{display:grid;place-items:center;min-width:30px;height:27px;border:1px solid #56d5f0;border-radius:6px;color:#7be4ff;font-size:15px}.speedo-main{display:flex;align-items:baseline;gap:9px;margin:4px 0 7px}.speedo-main strong{font-size:62px;line-height:1;font-weight:800;letter-spacing:-3px;font-variant-numeric:tabular-nums;text-shadow:0 0 20px #53c9ff55}.speedo-main span{font-size:11px;font-weight:800;letter-spacing:2px;color:#7bd9f6}.speedo-rpm-label{font-size:9px;letter-spacing:1.2px;color:#91a9bd}.speedo-rpm-label b{color:#e8f7ff;font-size:10px}.speedo-rpm-track{height:6px;margin-top:7px;border-radius:8px;background:#27394a;overflow:hidden}.speedo-rpm-track i{display:block;width:0;height:100%;border-radius:8px;background:linear-gradient(90deg,#55d6bb 0%,#d4db58 70%,#ff765f 100%);transition:width .12s linear}.speedo-bottom{margin-top:12px;padding-top:9px;border-top:1px solid #ffffff18;color:#8ba7bd;font-size:9px;letter-spacing:1px}@media(max-width:760px){.speedometer-hud{right:10px;bottom:10px;width:220px;padding:11px 13px}.speedo-main strong{font-size:48px}}
+
+
+/* Immersive PC game view: no website toolbar or control strip around the game. */
+body.game-app .hud,body.game-app .controls{display:none!important}
+body.game-app{width:100vw;height:100dvh;min-height:100dvh;overflow:hidden}
+body.game-app main{width:100%;height:100%;min-height:0;flex:1 1 auto}
+body.game-app #gameViewport{width:100%;height:100%;min-height:100dvh}
+html:fullscreen,html:fullscreen body.game-app{width:100%;height:100%;min-height:100%;overflow:hidden}
+html:fullscreen body.game-app main,html:fullscreen body.game-app #gameViewport{height:100%;min-height:100%}

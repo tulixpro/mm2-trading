@@ -4,3 +4,25 @@
 .fullscreen-toggle{border:1px solid #79df48;background:#1c2817;color:#eff6df;border-radius:6px;padding:10px 13px;font-size:10px;font-weight:900;letter-spacing:1px;white-space:nowrap;cursor:pointer}.fullscreen-toggle:hover{background:#304723;box-shadow:0 0 14px #76df3c44}@media(max-width:600px){.fullscreen-toggle{padding:7px 9px;font-size:9px}}
 
 .download-launcher{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;margin:0 0 12px;padding:13px 16px;border:1px solid #83d84e;border-radius:8px;background:#26351c;color:#f6f0df;text-decoration:none;font-size:11px;font-weight:900;letter-spacing:1px}.download-launcher:hover{background:#344a25;border-color:#a4f078}.download-launcher span{font-size:20px;color:#9bed6b}
+
+/* Launcher refresh: directly selectable game editions */
+.side-panel{border-radius:18px;padding:26px;background:linear-gradient(155deg,#202719f5,#0b100df5);border-color:#9dbb7955;backdrop-filter:blur(14px)}
+.side-heading h1{font-size:clamp(30px,3vw,42px);letter-spacing:-1px}
+.side-heading p{font-size:13px;max-width:44ch}
+.version-list{display:grid;gap:11px;margin:18px 0}
+.version-card{display:flex;align-items:center;gap:14px;min-height:82px;padding:14px 16px;border:1px solid #87916e88;border-radius:12px;background:linear-gradient(110deg,#283521,#121811);color:#f6f0df;text-decoration:none;transition:transform .18s,border-color .18s,background .18s;box-shadow:0 10px 24px #0005}
+.version-card:hover,.version-card:focus-visible{transform:translateY(-2px);border-color:#9bf36d;background:linear-gradient(110deg,#35492a,#172219);outline:none}
+.retro-version{border-color:#a5bd6d}
+.version-mark{display:grid;place-items:center;flex:0 0 48px;height:48px;border-radius:10px;background:#8bc34a;color:#10170c;font-weight:1000;font-size:18px;letter-spacing:-1px}
+.modern-version .version-mark{background:#d6c79a}
+.version-copy{flex:1;display:grid;gap:5px}
+.version-copy b{font-size:12px;letter-spacing:1px}
+.version-copy small{font-size:10px;color:#c0c7b3}
+.version-arrow{font-size:23px;color:#a4e77c}
+.download-group{display:grid;gap:8px;margin:12px 0 18px;padding:14px;border:1px solid #777f5d66;border-radius:12px;background:#090d0bd9}
+.download-group>span{font-size:9px;letter-spacing:1.5px;color:#a4d879;font-weight:900;margin-bottom:2px}
+.download-group a{display:flex;justify-content:space-between;gap:10px;padding:9px 10px;border-radius:7px;background:#1a2118;color:#e8eddc;text-decoration:none;font-size:11px}
+.download-group a:hover{background:#2b3a23}
+.download-group a b{color:#a9ec7a;font-size:16px}
+.news,.settings-card,.status-box,.save-slot{border-radius:12px}
+@media(max-width:600px){.side-panel{padding:18px}.version-card{min-height:74px;padding:12px}.version-copy b{font-size:11px}}

@@ -1,9 +1,11 @@
 const editionParam=new URLSearchParams(location.search).get('edition');
 const classicEdition=editionParam==='sanandreas'||editionParam==='classic';
 if(classicEdition){document.body.classList.add('classic-edition');document.title='Frankfurt Life San Andreas – Retro-3D';}else{document.body.classList.add('modern-edition');document.title='Frankfurt Life 3D – Moderne Edition';}
-// One shared Three.js module URL in browser and Electron; GLTFLoader's bare import is resolved by game.html's import map.
-const THREE = await import('https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js');
-const {GLTFLoader}=await import('https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/loaders/GLTFLoader.js');
+// Desktop builds load Three.js and GLTFLoader from the packaged node_modules directory.
+// The browser edition keeps using the CDN so GitHub Pages needs no node_modules folder.
+const flDesktopBuild=location.protocol==='file:';
+const THREE=await import(flDesktopBuild?'./node_modules/three/build/three.module.js':'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js');
+const {GLTFLoader}=await import(flDesktopBuild?'./node_modules/three/examples/jsm/loaders/GLTFLoader.js':'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/loaders/GLTFLoader.js');
 const flVehicleLoader=new GLTFLoader();
 const flVehicleAssets={
   hatch:'./assets/models/hatchback.lod1.glb',
@@ -29,7 +31,7 @@ const flVehicleRemoteAssets={
 };
 function flLoadGLTFScene(primaryUrl,fallbackUrls=[]){
   return new Promise((resolve,reject)=>{
-    const urls=[primaryUrl,...(Array.isArray(fallbackUrls)?fallbackUrls:[fallbackUrls])].filter((url,index,all)=>url&&all.indexOf(url)===index);
+    const urls=[primaryUrl,...(flDesktopBuild?[]:(Array.isArray(fallbackUrls)?fallbackUrls:[fallbackUrls]))].filter((url,index,all)=>url&&all.indexOf(url)===index);
     let cursor=0,lastError=null;
     const tryNext=()=>{
       if(cursor>=urls.length){reject(lastError||new Error('Kein 3D-Modell verfügbar'));return;}

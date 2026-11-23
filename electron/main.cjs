@@ -10,7 +10,8 @@ app.commandLine.appendSwitch('ignore-gpu-blocklist');
 app.commandLine.appendSwitch('enable-unsafe-swiftshader');
 function createWindow() {
  const win = new BrowserWindow({width:1480,height:940,minWidth:980,minHeight:680,show:false,backgroundColor:'#07111f',autoHideMenuBar:true,title:'Frankfurt Life Launcher',webPreferences:{contextIsolation:true,nodeIntegration:false,sandbox:false}});
- win.once('ready-to-show',()=>win.show());
+ win.once('ready-to-show',()=>{win.maximize();win.show();});
+ win.webContents.on('before-input-event',(event,input)=>{if(input.type==='keyDown'&&input.key==='F11'){event.preventDefault();win.setFullScreen(!win.isFullScreen());}});
  win.loadFile(path.join(__dirname,'..','launcher.html'));
  win.webContents.setWindowOpenHandler(({url})=>{if(url.startsWith('https://'))shell.openExternal(url);return {action:'deny'};});
 }

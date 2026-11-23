@@ -1,6 +1,8 @@
 const { app, BrowserWindow, shell } = require('electron');
 const path = require('node:path');
 // Prefer hardware WebGL, but allow Chromium's bundled SwiftShader fallback on blocked/unsupported GPUs.
+// Allow local ES modules and bundled assets to load from the packaged file:// app.
+app.commandLine.appendSwitch('allow-file-access-from-files');
 app.commandLine.appendSwitch('enable-webgl');
 app.commandLine.appendSwitch('ignore-gpu-blocklist');
 app.commandLine.appendSwitch('enable-unsafe-swiftshader');

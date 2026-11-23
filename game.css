@@ -280,3 +280,5 @@ html.trailer-mode body{overflow:hidden}
 .classic-edition .phone-back{color:#35452c;font-family:monospace}
 .classic-edition .phone-home{bottom:43px;width:42px;height:23px;border:2px solid #c8c9b8;border-radius:12px;background:linear-gradient(#4a4d43,#20221e);box-shadow:0 2px 4px #0008}
 .classic-edition .phone-exit{bottom:9px;color:#e1e2d4;font-family:monospace}
+
+.game-fullscreen{border:1px solid #79df48;background:#1b2817;color:#eff6df;border-radius:5px;padding:8px 11px;font-size:10px;font-weight:800;cursor:pointer;white-space:nowrap}.game-fullscreen:hover{background:#304723}@media(max-width:760px){.game-fullscreen{padding:7px 8px;font-size:9px}}

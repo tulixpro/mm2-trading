@@ -2079,27 +2079,33 @@ function flStartCinematicMusic(){
 window.addEventListener('message',e=>{if(e.data==='fl-start-trailer-audio')flStartCinematicMusic();if(e.data==='fl-stop-trailer-audio'&&flCinematicAudio){flCinematicAudio.suspend();if(flCinematicMusicTimer){clearInterval(flCinematicMusicTimer);flCinematicMusicTimer=null;}}});
 function startIntroCinematic(){
  if(!viewport||!camera||!renderer)return;
- if(new URLSearchParams(location.search).get('trailer')!=='1')flStartCinematicMusic();
+ const trailerMode=new URLSearchParams(location.search).get('trailer')==='1';
+ if(!trailerMode)flStartCinematicMusic();
  flOpeningCinematic=true;document.exitPointerLock?.();
  const overlay=document.createElement('div');overlay.className='opening-cinematic game-world-cinematic';
- overlay.innerHTML='<div class="opening-letterbox top"></div><div class="opening-letterbox bottom"></div><div class="opening-copy"><small id="openingKicker">FRANKFURT AM MAIN · CITY BLOCK 01</small><h2 id="openingTitle">WILLKOMMEN IN FRANKFURT.</h2><p id="openingText">Ein neuer Anfang. Tausend Wege.</p></div><div class="opening-count" id="openingCount">01 / 03</div><button type="button" class="opening-skip">CUTSCENE ÜBERSPRINGEN ⏭</button>';
+ overlay.innerHTML='<div class="opening-letterbox top"></div><div class="opening-letterbox bottom"></div><div class="opening-copy"><small id="openingKicker">FRANKFURT AM MAIN · CITY BLOCK 01</small><h2 id="openingTitle">ANKUNFT IN FRANKFURT.</h2><p id="openingText">Die Stadt erwacht.</p></div><div class="opening-count" id="openingCount">01 / 05</div><button type="button" class="opening-skip">'+(trailerMode?'TRAILER ÜBERSPRINGEN ⏭':'INTRO ÜBERSPRINGEN ⏭')+'</button>';
  viewport.appendChild(overlay);
  const scenes=[
-  {pos:[0,13,37],look:[0,3,-55],title:'WILLKOMMEN IN FRANKFURT.',text:'Eine Stadt voller Möglichkeiten.',time:0},
-  {pos:[-10,7,-2],look:[0,3,-80],title:'DEINE STADT. DEIN ALLTAG.',text:'Entdecke Straßen, Geschäfte und das Leben am Main.',time:4200},
-  {pos:[4,3.4,22],look:[0,2,-35],title:'DEIN FRANKFURT. DEIN LEBEN.',text:'Steig ein. Deine Geschichte beginnt jetzt.',time:8400}
+  {pos:[0,15,43],look:[0,3,-62],title:'ANKUNFT IN FRANKFURT.',text:'Eine neue Perspektive auf deine Stadt.'},
+  {pos:[-3,4.2,18],look:[0,1.7,-58],title:'MITTEN IM STADTLEBEN.',text:'Straßenverkehr und Menschen – direkt aus dem Spiel.'},
+  {pos:[-18,6,-4],look:[2,2,-64],title:'DURCH DIE STRASSEN.',text:'Entdecke deinen eigenen Weg durch Frankfurt.'},
+  {pos:[17,10,8],look:[0,3,-78],title:'DIE STADT VON OBEN.',text:'Gebäude, Straßen und Bewegung in deiner 3D-Spielwelt.'},
+  {pos:[2.5,3.1,24],look:[0,1.8,-62],title:'DEINE STADT. DEIN LEBEN.',text:'Frankfurt Life – deine Geschichte beginnt jetzt.'}
  ];
- const initial=camera.position.clone(),initialYaw=yaw,initialPitch=pitch,start=performance.now();let finished=false,frame=0;
- const finish=()=>{if(finished)return;finished=true;cancelAnimationFrame(frame);flOpeningCinematic=false;camera.position.set(0,2.1,14);yaw=0;pitch=0;camera.rotation.order='YXZ';camera.rotation.y=yaw;camera.rotation.x=pitch;overlay.remove();startIntroTutorial();};
+ const initial=camera.position.clone(),start=performance.now();let finished=false,frame=0,lastScene=-1;
+ const finish=()=>{
+  if(finished)return;finished=true;cancelAnimationFrame(frame);flOpeningCinematic=false;overlay.remove();
+  if(!trailerMode){camera.position.set(0,2.1,14);yaw=0;pitch=0;camera.rotation.order='YXZ';camera.rotation.y=yaw;camera.rotation.x=pitch;startIntroTutorial();}
+ };
  overlay.querySelector('.opening-skip').addEventListener('click',finish);
  const tick=now=>{
-  if(finished)return;const elapsed=now-start;
-  const index=Math.min(2,Math.floor(elapsed/4200)),local=Math.min(1,(elapsed-index*4200)/4200),d=scenes[index],from=index===0?initial:new THREE.Vector3(...scenes[index-1].pos),to=new THREE.Vector3(...d.pos);
-  const eased=local*local*(3-2*local);camera.position.lerpVectors(from,to,eased);
-  const target=new THREE.Vector3(...d.look);camera.lookAt(target);
-  const kicker=overlay.querySelector('#openingKicker'),title=overlay.querySelector('#openingTitle'),copy=overlay.querySelector('#openingText'),count=overlay.querySelector('#openingCount');
-  if(title.dataset.scene!==String(index)){kicker.textContent='FRANKFURT AM MAIN · CITY BLOCK 01';title.textContent=d.title;copy.textContent=d.text;count.textContent='0'+(index+1)+' / 03';title.dataset.scene=String(index);}
-  if(elapsed>=12600){finish();return;}frame=requestAnimationFrame(tick);
+  if(finished)return;const elapsed=now-start,duration=4300,index=Math.min(scenes.length-1,Math.floor(elapsed/duration)),local=Math.min(1,(elapsed-index*duration)/duration),d=scenes[index];
+  const from=index===0?initial:new THREE.Vector3(...scenes[index-1].pos),to=new THREE.Vector3(...d.pos),eased=local*local*(3-2*local);
+  camera.position.lerpVectors(from,to,eased);
+  const lookFrom=index===0?new THREE.Vector3(0,2,-45):new THREE.Vector3(...scenes[index-1].look),lookTo=new THREE.Vector3(...d.look);
+  camera.lookAt(lookFrom.lerp(lookTo,eased));
+  if(index!==lastScene){lastScene=index;overlay.querySelector('#openingKicker').textContent='FRANKFURT AM MAIN · IN-GAME CINEMATIC';overlay.querySelector('#openingTitle').textContent=d.title;overlay.querySelector('#openingText').textContent=d.text;overlay.querySelector('#openingCount').textContent='0'+(index+1)+' / 05';}
+  if(elapsed>=duration*scenes.length){finish();return;}frame=requestAnimationFrame(tick);
  };
  frame=requestAnimationFrame(tick);
 }

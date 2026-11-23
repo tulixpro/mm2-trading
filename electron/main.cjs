@@ -5,6 +5,7 @@ const path = require('node:path');
 // but disable Chromium's renderer sandbox because it can prevent local module loading in packaged builds.
 app.commandLine.appendSwitch('allow-file-access-from-files');
 app.commandLine.appendSwitch('enable-webgl');
+app.commandLine.appendSwitch('enable-unsafe-webgpu');
 app.commandLine.appendSwitch('ignore-gpu-blocklist');
 app.commandLine.appendSwitch('enable-unsafe-swiftshader');
 function createWindow() {

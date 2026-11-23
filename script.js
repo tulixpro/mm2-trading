@@ -2053,21 +2053,54 @@ function showIntroTutorialScene(index){
  const next=introTutorial.querySelector('#tutorialNext');next.innerHTML=index===introTutorialScenes.length-1?'STADT BETRETEN <span>→</span>':'WEITER <span>→</span>';
  const content=introTutorial.querySelector('.tutorial-content');content.classList.remove('tutorial-scene-change');void content.offsetWidth;content.classList.add('tutorial-scene-change');
 }
+let flOpeningCinematic=false,flCinematicAudio=null,flCinematicMusicTimer=null;
+function flStartCinematicMusic(){
+ try{
+  const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return;
+  if(!flCinematicAudio)flCinematicAudio=new AC();
+  const ctx=flCinematicAudio;if(ctx.state==='suspended')ctx.resume();
+  if(flCinematicMusicTimer)return;
+  const master=ctx.createGain();master.gain.value=.13;master.connect(ctx.destination);
+  const notes=[110,164.81,220,164.81,130.81,196,261.63,196];
+  let step=0;
+  const play=()=>{
+   if(!flCinematicAudio||ctx.state!=='running')return;
+   const now=ctx.currentTime,base=notes[step%notes.length];
+   [[base,.9,'sine'],[base*1.5,.55,'triangle'],[base*2,.32,'sine']].forEach(([freq,vol,type])=>{
+    const osc=ctx.createOscillator(),gain=ctx.createGain();osc.type=type;osc.frequency.setValueAtTime(freq,now);
+    gain.gain.setValueAtTime(.0001,now);gain.gain.exponentialRampToValueAtTime(vol*.12,now+.18);gain.gain.exponentialRampToValueAtTime(.0001,now+2.2);
+    osc.connect(gain);gain.connect(master);osc.start(now);osc.stop(now+2.25);
+   });
+   step++;
+  };
+  play();flCinematicMusicTimer=setInterval(play,1800);
+ }catch(_){}
+}
+window.addEventListener('message',e=>{if(e.data==='fl-start-trailer-audio')flStartCinematicMusic();});
 function startIntroCinematic(){
- if(!viewport)return;
- const overlay=document.createElement('section');overlay.className='opening-cinematic';overlay.setAttribute('aria-label','Frankfurt Life Intro-Cutscene');
- overlay.innerHTML='<div class="opening-sky"><div class="opening-sun"></div><div class="opening-tower t1"></div><div class="opening-tower t2"></div><div class="opening-tower t3"></div><div class="opening-tower t4"></div><div class="opening-river"></div><div class="opening-road"></div><div class="opening-car"></div></div><div class="opening-letterbox top"></div><div class="opening-letterbox bottom"></div><div class="opening-copy"><small id="openingKicker">FRANKFURT AM MAIN · 06:42 UHR</small><h2 id="openingTitle">EINE NEUE STADT.</h2><p id="openingText">Ein neuer Anfang. Tausend Wege.</p></div><div class="opening-count" id="openingCount">01 / 03</div><button type="button" class="opening-skip">CUTSCENE ÜBERSPRINGEN ⏭</button>';
- viewport.appendChild(overlay);document.exitPointerLock?.();
+ if(!viewport||!camera||!renderer)return;
+ flOpeningCinematic=true;document.exitPointerLock?.();
+ const overlay=document.createElement('div');overlay.className='opening-cinematic game-world-cinematic';
+ overlay.innerHTML='<div class="opening-letterbox top"></div><div class="opening-letterbox bottom"></div><div class="opening-copy"><small id="openingKicker">FRANKFURT AM MAIN · CITY BLOCK 01</small><h2 id="openingTitle">WILLKOMMEN IN FRANKFURT.</h2><p id="openingText">Ein neuer Anfang. Tausend Wege.</p></div><div class="opening-count" id="openingCount">01 / 03</div><button type="button" class="opening-skip">CUTSCENE ÜBERSPRINGEN ⏭</button>';
+ viewport.appendChild(overlay);
  const scenes=[
-  ['FRANKFURT AM MAIN · 06:42 UHR','EINE NEUE STADT.','Ein neuer Anfang. Tausend Wege.'],
-  ['ZWISCHEN SKYLINE UND MAIN','DEIN ALLTAG BEGINNT.','Entdecke Straßen, Menschen und neue Möglichkeiten.'],
-  ['FRANKFURT LIFE','DEINE STADT. DEIN LEBEN.','Steig ein und schreib deine eigene Geschichte.']
+  {pos:[0,13,37],look:[0,3,-55],title:'WILLKOMMEN IN FRANKFURT.',text:'Eine Stadt voller Möglichkeiten.',time:0},
+  {pos:[-10,7,-2],look:[0,3,-80],title:'DEINE STADT. DEIN ALLTAG.',text:'Entdecke Straßen, Geschäfte und das Leben am Main.',time:4200},
+  {pos:[4,3.4,22],look:[0,2,-35],title:'DEIN FRANKFURT. DEIN LEBEN.',text:'Steig ein. Deine Geschichte beginnt jetzt.',time:8400}
  ];
- let index=0,timer=null,finished=false;
- const show=()=>{const d=scenes[index];overlay.querySelector('#openingKicker').textContent=d[0];overlay.querySelector('#openingTitle').textContent=d[1];overlay.querySelector('#openingText').textContent=d[2];overlay.querySelector('#openingCount').textContent='0'+(index+1)+' / 03';overlay.classList.remove('scene-change');void overlay.offsetWidth;overlay.classList.add('scene-change');};
- const finish=()=>{if(finished)return;finished=true;if(timer)clearTimeout(timer);overlay.remove();startIntroTutorial();};
- const advance=()=>{if(finished)return;index++;if(index>=scenes.length){finish();return;}show();timer=setTimeout(advance,3900);};
- overlay.querySelector('.opening-skip').addEventListener('click',finish);show();timer=setTimeout(advance,3900);
+ const initial=camera.position.clone(),initialYaw=yaw,initialPitch=pitch,start=performance.now();let finished=false,frame=0;
+ const finish=()=>{if(finished)return;finished=true;cancelAnimationFrame(frame);flOpeningCinematic=false;camera.position.set(0,2.1,14);yaw=0;pitch=0;camera.rotation.order='YXZ';camera.rotation.y=yaw;camera.rotation.x=pitch;overlay.remove();startIntroTutorial();};
+ overlay.querySelector('.opening-skip').addEventListener('click',finish);
+ const tick=now=>{
+  if(finished)return;const elapsed=now-start;
+  const index=Math.min(2,Math.floor(elapsed/4200)),local=Math.min(1,(elapsed-index*4200)/4200),d=scenes[index],from=index===0?initial:new THREE.Vector3(...scenes[index-1].pos),to=new THREE.Vector3(...d.pos);
+  const eased=local*local*(3-2*local);camera.position.lerpVectors(from,to,eased);
+  const target=new THREE.Vector3(...d.look);camera.lookAt(target);
+  const kicker=overlay.querySelector('#openingKicker'),title=overlay.querySelector('#openingTitle'),copy=overlay.querySelector('#openingText'),count=overlay.querySelector('#openingCount');
+  if(title.dataset.scene!==String(index)){kicker.textContent='FRANKFURT AM MAIN · CITY BLOCK 01';title.textContent=d.title;copy.textContent=d.text;count.textContent='0'+(index+1)+' / 03';title.dataset.scene=String(index);}
+  if(elapsed>=12600){finish();return;}frame=requestAnimationFrame(tick);
+ };
+ frame=requestAnimationFrame(tick);
 }
 function startIntroTutorial(){
  if(flStorage.getItem('flIntroTutorialDone')==='yes'||!introTutorial)return;
@@ -3743,7 +3776,7 @@ function buildGamepadStatus(){
  gamepadStatus.textContent='CONTROLLER: SUCHE…';viewport.appendChild(gamepadStatus);
 }
 
-function move(dt=1/60){
+function move(dt=1/60){\n  if(flOpeningCinematic)return;
   if(activeBoat){const fs=Math.min(3,Math.max(.25,dt*60));if(keys.KeyW||keys.ArrowUp)boatSpeed=Math.min(.62,boatSpeed+.004*fs);else if(keys.KeyS||keys.ArrowDown)boatSpeed=Math.max(-.18,boatSpeed-.006*fs);else boatSpeed*=Math.pow(.994,fs);const steer=(keys.KeyA||keys.ArrowLeft?1:0)-(keys.KeyD||keys.ArrowRight?1:0);boatHeading+=steer*(.009+Math.abs(boatSpeed)*.018)*fs;activeBoat.rotation.y=boatHeading;activeBoat.position.x+=Math.sin(boatHeading)*boatSpeed*fs;activeBoat.position.z+=Math.cos(boatHeading)*boatSpeed*fs;activeBoat.position.x=Math.max(-165,Math.min(165,activeBoat.position.x));activeBoat.position.z=Math.max(333,Math.min(720,activeBoat.position.z));activeBoat.position.y=.05+Math.sin(clock.elapsedTime*3)*.07;camera.position.set(activeBoat.position.x-Math.sin(boatHeading)*8,activeBoat.position.y+4,activeBoat.position.z-Math.cos(boatHeading)*8);camera.lookAt(activeBoat.position.x,1,activeBoat.position.z+Math.cos(boatHeading)*5);coords.textContent='MOTORBOOT · '+Math.round(Math.abs(boatSpeed)*95)+' KM/H';return;}
   if(planeFlying&&airportPlane){
     const frameScale=Math.min(3,Math.max(.25,dt*60));

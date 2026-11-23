@@ -28,7 +28,7 @@ Die Windows-App startet zuerst den eigenen Frankfurt-Life-Launcher:
 Der Launcher ist eine native Electron-Oberfläche. Ein automatischer Update-Installer ist noch nicht integriert; die Projekt- und Release-Seite ist über den Launcher erreichbar.
 
 ## Windows-App
-Ein Electron-Projekt und ein GitHub-Actions-Workflow bereiten Windows-x64-Artefakte (Installer und portable Ausgabe) vor. Der Workflow muss erfolgreich laufen, bevor ein echter Download bereitgestellt werden kann. Die App lädt Three.js derzeit über jsDelivr und benötigt beim Start eine Internetverbindung.
+Ein Electron-Projekt und ein GitHub-Actions-Workflow bereiten Windows-x64-Artefakte (Installer und portable Ausgabe) vor. Der Workflow muss erfolgreich laufen, bevor ein echter Download bereitgestellt werden kann. Die Windows-Builds enthalten Three.js und die ausgewählten CC0-3D-Modelle lokal im App-Paket. Die Browser-Version kann Modelle bei fehlenden lokalen Dateien über HTTPS nachladen. Die 3D-Modelle werden im Windows-CI-Build aus dem Tevy-Katalog heruntergeladen und vor dem Packaging auf das GLB-Dateiformat geprüft.
 
 ## Neu in Version 0.1.8
 - Geschäfte in der Stadt können zu Fuß mit **E** geöffnet werden.
@@ -399,3 +399,11 @@ These are **project scaffolds only**, not finished playable Unreal games. The ex
 - Während des Forsteinsatzes bewegen sich Arbeitsausleger und Mitarbeiter dezent; die Szene wird zeitweise als Arbeitsbereich markiert.
 - Stadtunfälle werden als nicht-grafische Einsatzszenen mit Absicherung, Warnleuchten sowie Polizei-, Feuerwehr- und Rettungsfahrzeugen dargestellt.
 - Die Abläufe sind inszenierte Umgebungsereignisse und keine vollständige Simulation: keine echte Baumfällphysik, kein dynamisches Rettungs-/Abschleppsystem und keine komplexe Einsatzleitstellen-KI.
+
+
+## Lokale 3D-Asset-Pakete
+- Der Windows-Build lädt die verwendeten Fahrzeug-, Baum- und Gebäudemodelle vor dem Packaging nach `assets/models/`.
+- Das Spiel lädt zuerst die lokalen GLB-Dateien; die Browser-Version besitzt einen HTTPS-Fallback.
+- Für schwächere Geräte bleiben reduzierte Renderauflösung und deaktivierte Echtzeit-Schatten aktiv.
+- Die Modellpakete sind kein Beleg für eine fertige AAA-Produktion: Stadtumfang, Figurenanimation, Fahrphysik, Innenräume und Laufzeittests bleiben Entwicklungsaufgaben.
+- Download-Skript: `node scripts/fetch-3d-assets.mjs`.

@@ -1976,6 +1976,14 @@ function makeCar(x,z,color,police=false,model='sedan',performanceOverride=null){
       aeroFin.position.set(side*W*.47,.39,L*.35);aeroFin.rotation.x=-.12;car.add(aeroFin);
     }
   }
+  // Vier separat schaltbare Blinkleuchten (vorn und hinten).
+  const turnSignalParts=[];
+  for(const side of [-1,1])for(const end of [-1,1]){
+    const signalMat=new THREE.MeshStandardMaterial({color:0xffa326,emissive:0xff7a08,emissiveIntensity:2.2,roughness:.3});
+    const signal=new THREE.Mesh(new THREE.BoxGeometry(.13,.055,.035),signalMat);
+    signal.position.set(side*W*.43,.78,end*L*.535);signal.name='flTurnSignal';signal.visible=false;car.add(signal);turnSignalParts.push(signal);
+  }
+  car.userData.turnSignalParts=turnSignalParts;
   flLoadVehicleVisual(car,police?'police':model,color,W,L);
   car.position.set(x,0,z);scene.add(car);return car;
 }
@@ -2007,7 +2015,7 @@ const jobs=[
 ];
 let jobPanel,careerHud,jobActive=false,jobCar=null,jobDestination=null;
 let driving=false,carSpeed=0,carSlip=0,carYawRate=0,careerMoney=0,completedJobs=0;
-let flEngineOn=false,flEngineStartingUntil=0;
+let flEngineOn=false,flEngineStartingUntil=0;let flTurnSignal='off';
 let damageLevel=0,damageHud=null,damageFlash=0,cameraLookOffset=0,damageCooldown=0,flSavedDamage=0;
 let speedometerHud=null,speedometerLastGear=1;
 let flTowService=null;
@@ -3608,6 +3616,17 @@ function damagePlayerCar(impact=.24){
  applyCarDamage(jobCar,damageLevel);refreshDamageHud();
  if(damageLevel>=3)carSpeed*=.72;
  if(damageLevel>=4){
+  // Seltenes, rein visuelles Arcade-Feuerereignis bei Totalschaden.
+  if(!jobCar.userData.flFireEvent&&Math.random()<.22){
+   jobCar.userData.flFireEvent=true;
+   const burst=new THREE.Group();burst.position.set(0,.9,0);jobCar.add(burst);
+   const flash=new THREE.Mesh(new THREE.SphereGeometry(.72,10,8),new THREE.MeshBasicMaterial({color:0xff8a22,transparent:true,opacity:.78}));burst.add(flash);
+   for(let n=0;n<9;n++){const ember=new THREE.Mesh(new THREE.SphereGeometry(.09+Math.random()*.11,6,5),new THREE.MeshBasicMaterial({color:n%2?0xffc044:0xf04a16,transparent:true,opacity:.9}));ember.position.set((Math.random()-.5)*1.7,Math.random()*1.1-.2,(Math.random()-.5)*2.1);burst.add(ember);}
+   const smoke=new THREE.Mesh(new THREE.SphereGeometry(.48,8,7),new THREE.MeshBasicMaterial({color:0x454545,transparent:true,opacity:.48}));smoke.position.y=.8;burst.add(smoke);
+   const glow=new THREE.PointLight(0xff6a18,5,9);glow.position.y=.6;burst.add(glow);
+   window.setTimeout(()=>{if(burst.parent)burst.parent.remove(burst);},1250);
+   status.textContent='FAHRZEUGBRAND · MOTOR AUS · T ABSCHLEPPER RUFEN';
+  }
   carSpeed=0;carSlip=0;flEngineOn=false;flEngineStartingUntil=0;
   if(driving)status.textContent='MOTORSCHADEN · FAHRZEUG NICHT MEHR FAHRBEREIT · T ABSCHLEPPER RUFEN';
   if(speedometerHud)speedometerHud.classList.add('hidden');
@@ -4000,7 +4019,15 @@ function loop(now=0){
   if(gamePaused)return;
   perfHudTimer+=dt;
   if(perfHud&&perfHudTimer>.75){perfHudTimer=0;const avg=perfFrames.length?perfFrames.reduce((a,b)=>a+b,0)/perfFrames.length:0;const fps=avg>0?Math.round(1000/avg):0;perfHud.textContent='FPS: '+(fps||'--')+'\nRender-Skalierung: '+Math.round(autoResolutionScale*100)+'%';}
-  move(dt);updateWorld(dt);renderer.render(scene,camera);
+  move(dt);updateWorld(dt);
+  if(jobCar?.userData?.turnSignalParts){
+    const blinkOn=(Math.floor(performance.now()/420)%2)===0;
+    jobCar.userData.turnSignalParts.forEach((part,index)=>{
+      const side=index%2===0?'left':'right';
+      part.visible=blinkOn&&(flTurnSignal==='hazard'||flTurnSignal===side);
+    });
+  }
+  renderer.render(scene,camera);
 }
 // Stop the animation loop entirely while the game tab is in the background.
 document.addEventListener('visibilitychange',()=>{
@@ -4052,7 +4079,7 @@ function begin(){
 startButton?.addEventListener('click',begin);
 // In der eigenständigen Windows-Spielansicht direkt in die 3D-Stadt starten.
 if(document.body.classList.contains('game-app')) begin();
-document.addEventListener('keydown',e=>{keys[e.code]=true;keyboardKeys[e.code]=true;if(e.code==='Escape'&&!e.repeat){const overlays=[jobPanel,shopPanel,phonePanel,dealerPanel];const visible=overlays.find(p=>p&&!p.classList.contains('hidden'));if(visible){visible.classList.add('hidden');return;}togglePauseMenu();return;}if(e.code==='F1'){e.preventDefault();if(!e.repeat)togglePhone();return;}if(e.code==='KeyQ'&&!e.repeat){e.preventDefault();toggleQuickAccessWheel();return;}if(e.code==='KeyE'&&!e.repeat){const atLift=driving&&jobCar&&shops.some(shop=>shop.lift&&Math.hypot(jobCar.position.x-shop.lift.group.position.x,jobCar.position.z-shop.lift.group.position.z)<8.5);if(atLift)toggleWorkshopLift();else if(!flToggleHome()&&!tryRefuelAtPump()&&!tryPickupShopItem())toggleShopOrDealer();}if(e.code==='KeyF'&&!e.repeat){if(!tryStartBoat()&&!tryStartFlight())toggleVehicle();}if(e.code==='KeyH'&&!e.repeat)toggleCarHood();if(e.code==='KeyM'&&!e.repeat){e.preventDefault();flToggleEngine();}if(e.code==='KeyG'&&!e.repeat)tryTakeoverVehicle();if(e.code==='KeyJ'&&!e.repeat)toggleJobs();if(e.code==='KeyR'&&!e.repeat)toggleWorkshopLift();if(e.code==='KeyT'&&!e.repeat)flCallTowService();if(e.code==='KeyL'&&!e.repeat)toggleFlashlight();if(e.code==='F5'&&!e.repeat){e.preventDefault();flSaveGame(true);}if(e.code==='KeyC'&&!e.repeat)cycleCamera();if(e.code==='Escape'&&jobPanel&&!jobPanel.classList.contains('hidden'))jobPanel.classList.add('hidden');if(e.code==='Escape'&&shopPanel&&!shopPanel.classList.contains('hidden'))shopPanel.classList.add('hidden');if(e.code==='Escape'&&phonePanel&&!phonePanel.classList.contains('hidden'))phonePanel.classList.add('hidden');if(e.code==='Escape')document.querySelector('#quickAccessWheel')?.classList.add('hidden');if(e.code==='Escape'&&!e.repeat&&(!jobPanel||jobPanel.classList.contains('hidden'))&&(!shopPanel||shopPanel.classList.contains('hidden'))&&(!phonePanel||phonePanel.classList.contains('hidden'))&&(!dealerPanel||dealerPanel.classList.contains('hidden')))togglePauseMenu();if(e.code==='Escape'&&dealerPanel&&!dealerPanel.classList.contains('hidden'))dealerPanel.classList.add('hidden');if(['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code))e.preventDefault();});
+document.addEventListener('keydown',e=>{keys[e.code]=true;keyboardKeys[e.code]=true;if(e.code==='Escape'&&!e.repeat){const overlays=[jobPanel,shopPanel,phonePanel,dealerPanel];const visible=overlays.find(p=>p&&!p.classList.contains('hidden'));if(visible){visible.classList.add('hidden');return;}togglePauseMenu();return;}if(e.code==='F1'){e.preventDefault();if(!e.repeat)togglePhone();return;}if(e.code==='KeyQ'&&!e.repeat){e.preventDefault();toggleQuickAccessWheel();return;}if(e.code==='KeyE'&&!e.repeat){const atLift=driving&&jobCar&&shops.some(shop=>shop.lift&&Math.hypot(jobCar.position.x-shop.lift.group.position.x,jobCar.position.z-shop.lift.group.position.z)<8.5);if(atLift)toggleWorkshopLift();else if(!flToggleHome()&&!tryRefuelAtPump()&&!tryPickupShopItem())toggleShopOrDealer();}if(e.code==='KeyF'&&!e.repeat){if(!tryStartBoat()&&!tryStartFlight())toggleVehicle();}if(e.code==='KeyH'&&!e.repeat)toggleCarHood();if(e.code==='KeyM'&&!e.repeat){e.preventDefault();flToggleEngine();}if(e.code==='KeyZ'&&!e.repeat){flTurnSignal=flTurnSignal==='left'?'off':'left';}if(e.code==='KeyX'&&!e.repeat){flTurnSignal=flTurnSignal==='right'?'off':'right';}if(e.code==='KeyB'&&!e.repeat){flTurnSignal=flTurnSignal==='hazard'?'off':'hazard';}if(e.code==='KeyG'&&!e.repeat)tryTakeoverVehicle();if(e.code==='KeyJ'&&!e.repeat)toggleJobs();if(e.code==='KeyR'&&!e.repeat)toggleWorkshopLift();if(e.code==='KeyT'&&!e.repeat)flCallTowService();if(e.code==='KeyL'&&!e.repeat)toggleFlashlight();if(e.code==='F5'&&!e.repeat){e.preventDefault();flSaveGame(true);}if(e.code==='KeyC'&&!e.repeat)cycleCamera();if(e.code==='Escape'&&jobPanel&&!jobPanel.classList.contains('hidden'))jobPanel.classList.add('hidden');if(e.code==='Escape'&&shopPanel&&!shopPanel.classList.contains('hidden'))shopPanel.classList.add('hidden');if(e.code==='Escape'&&phonePanel&&!phonePanel.classList.contains('hidden'))phonePanel.classList.add('hidden');if(e.code==='Escape')document.querySelector('#quickAccessWheel')?.classList.add('hidden');if(e.code==='Escape'&&!e.repeat&&(!jobPanel||jobPanel.classList.contains('hidden'))&&(!shopPanel||shopPanel.classList.contains('hidden'))&&(!phonePanel||phonePanel.classList.contains('hidden'))&&(!dealerPanel||dealerPanel.classList.contains('hidden')))togglePauseMenu();if(e.code==='Escape'&&dealerPanel&&!dealerPanel.classList.contains('hidden'))dealerPanel.classList.add('hidden');if(['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code))e.preventDefault();});
 document.addEventListener('keyup',e=>{keys[e.code]=false;keyboardKeys[e.code]=false;});
 window.addEventListener('resize',resize);
 

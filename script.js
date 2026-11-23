@@ -234,7 +234,7 @@ let sunLight=null,hemiLight=null,flashlight=null,flashlightTarget=null,flashligh
 function applyQuality(){
  if(!renderer||!scene)return;
  const mode=qualitySelect?.value||'medium',q=qualitySettings[mode]||qualitySettings.medium;
- const devicePixelCap=classicEdition?.58:lowEndDevice?.68:1.45;
+ const devicePixelCap=classicEdition?.48:lowEndDevice?.58:1.45;
  renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,devicePixelCap,q.pixelRatio*autoResolutionScale));
  const allowShadows=!classicEdition&&!lowEndDevice&&q.shadows;
  renderer.shadowMap.enabled=allowShadows;
@@ -243,7 +243,7 @@ function applyQuality(){
  renderer.toneMappingExposure=classicEdition?.92:q.exposure;
  if(scene.fog)scene.fog.far=classicEdition?125:q.fog;
  if(sunLight){sunLight.intensity=classicEdition?1.2:mode==='minimum'?1.0:mode==='legacy'?1.15:mode==='low'?1.25:mode==='medium'?1.55:mode==='high'?1.9:mode==='ultra'?2.15:2.05;sunLight.castShadow=allowShadows;const shadowResolution=q.shadowMapSize||1024;sunLight.shadow.mapSize.set(shadowResolution,shadowResolution);sunLight.shadow.camera.left=-65;sunLight.shadow.camera.right=65;sunLight.shadow.camera.top=65;sunLight.shadow.camera.bottom=-65;sunLight.shadow.camera.near=1;sunLight.shadow.camera.far=140;sunLight.shadow.camera.updateProjectionMatrix();}
- if(hemiLight)hemiLight.intensity=q.ambient;
+ if(hemiLight)hemiLight.intensity=classicEdition?1.42:q.ambient;
  scene.traverse(obj=>{if(obj.isMesh){obj.castShadow=allowShadows;obj.receiveShadow=allowShadows;}});
  const hint=document.querySelector('#graphicsHint')||document.querySelector('#qualityStatus');
  if(hint)hint.textContent=classicEdition?'SAN ANDREAS RETRO-3D · SPEICHERSPARMODUS':lowEndDevice?'KOMPATIBILITÄTSMODUS · '+q.label+' · reduzierte Renderlast': 'Grafik: '+q.label+' · '+(allowShadows?'Schatten AN':'Schatten AUS');
@@ -2914,7 +2914,7 @@ function flBuildUrbanWear(){
 }
 function flBuildClassicStreetWear(){const root=new THREE.Group(),rust=new THREE.MeshStandardMaterial({color:0x76533d,roughness:1}),faded=new THREE.MeshStandardMaterial({color:0x817a67,roughness:1}),metal=new THREE.MeshStandardMaterial({color:0x515653,metalness:.48,roughness:.82}),sign=new THREE.MeshStandardMaterial({color:0xb8a27a,roughness:1});for(let i=0;i<7;i++){const z=-190+i*43,side=i%2?1:-1,x=side*10.1,post=new THREE.Mesh(new THREE.CylinderGeometry(.045,.065,2.45,7),rust);post.position.set(x,1.22,z);root.add(post);const board=new THREE.Mesh(new THREE.BoxGeometry(.12,.62,1.65),faded);board.position.set(x,2.55,z);root.add(board);const face=new THREE.Mesh(new THREE.BoxGeometry(.025,.43,1.42),sign);face.position.set(x+side*.07,2.55,z);root.add(face);}for(let i=0;i<8;i++){const z=-220+i*52,side=i%2?1:-1,x=side*9.55,bin=new THREE.Mesh(new THREE.BoxGeometry(.52,.82,.5),metal);bin.position.set(x,.43,z);root.add(bin);const lid=new THREE.Mesh(new THREE.BoxGeometry(.56,.07,.54),rust);lid.position.set(x,.87,z);root.add(lid);}const board=new THREE.Mesh(new THREE.BoxGeometry(.18,2.2,7.8),rust);board.position.set(12.1,4.1,-150);root.add(board);const panel=new THREE.Mesh(new THREE.BoxGeometry(.08,1.85,7.35),faded);panel.position.set(12.22,4.1,-150);root.add(panel);for(let i=0;i<5;i++){const stripe=new THREE.Mesh(new THREE.BoxGeometry(.025,.035,5.9-i*.15),metal);stripe.position.set(12.27,3.45+i*.28,-150);root.add(stripe);}root.traverse(o=>{if(o.isMesh){o.castShadow=false;o.receiveShadow=false;}});scene.add(root);}
 function makeCity(){
-  const skyColor=classicEdition?0xb99a70:0x91b1c8;scene=new THREE.Scene();scene.background=new THREE.Color(skyColor);scene.fog=new THREE.Fog(skyColor,classicEdition?82:105,classicEdition?155:(liteMode?195:340));
+  const skyColor=classicEdition?0xa58d70:0x91b1c8;scene=new THREE.Scene();scene.background=new THREE.Color(skyColor);scene.fog=new THREE.Fog(skyColor,classicEdition?65:105,classicEdition?125:(liteMode?195:340));
   if(!classicEdition)flBuildReflectionEnvironment();
   camera=new THREE.PerspectiveCamera(cameraFov,viewport.clientWidth/viewport.clientHeight,.1,900);camera.position.set(0,2.1,14);
   flashlight=new THREE.SpotLight(0xddeeff,0,48,Math.PI/7,.42,1.35);
@@ -2936,6 +2936,8 @@ function makeCity(){
   const sidewalkMat=new THREE.MeshStandardMaterial({color:0x92999b,roughness:.94});if(!classicEdition&&typeof document!=='undefined')flApplySurfaceMaps(sidewalkMat,'concrete',2,72,.012);
   for(const x of [-9.2,9.2]){const s=new THREE.Mesh(new THREE.BoxGeometry(3.5,.25,520),sidewalkMat);s.position.set(x,.08,-45);scene.add(s);}
   if(!classicEdition)flBuildUrbanWear();else flBuildClassicStreetWear();
+   // Modern wet-road drainage and animated puddles are disabled in the retro edition to save older GPUs.
+   if(!classicEdition){
   // Main-road drainage: curb channels, storm grates, moving runoff highlights and shallow puddles.
   const gutterMat=new THREE.MeshStandardMaterial({color:0x34434a,roughness:.3,metalness:.35});
   const grateMat=new THREE.MeshStandardMaterial({color:0x66747a,roughness:.48,metalness:.72});
@@ -2959,8 +2961,9 @@ function makeCity(){
     const ripple=new THREE.Mesh(new THREE.RingGeometry(.28,.34,24),rippleMat.clone());ripple.rotation.x=-Math.PI/2;ripple.position.set(x,.032,z);scene.add(ripple);
     flPuddleMeshes.push({mesh:puddle,ripple,opacity:.18+(i%4)*.025});
   }
-  if(!liteMode){buildStreetInfrastructure();buildTransitStops();buildRoadSigns();}
-  buildAirportAndBuses();buildCoastAndBoats();flCreateWeatherEffects();
+     }
+   if(!liteMode){buildStreetInfrastructure();buildTransitStops();buildRoadSigns();}
+  if(!classicEdition){buildAirportAndBuses();buildCoastAndBoats();flCreateWeatherEffects();}
   const leftShops=new Map([[-87,['SUPERMARKT','MARKT · FRISCHE WAREN',0x3c966c]],[ -51,['BÄCKEREI','BROT · KAFFEE · KUCHEN',0xc58b43]],[ -15,['MODEHAUS','MODE FÜR JEDEN TAG',0x8a638e]],[21,['ELEKTRO','TECHNIK & ZUBEHÖR',0x397ca5]]]);
   const rightShops=new Map([[-94,['CAFÉ AM MAIN','KAFFEE · SNACKS',0x9b6547]],[ -58,['AUTOWELT','FAHRZEUGE & SERVICE',0x397a91]],[ -22,['SPORTTREFF','SPORT · OUTDOOR',0x62884f]],[14,['KIOSK 24','ZEITUNGEN · GETRÄNKE',0xb68a39]]]);
   for(let z=-105;z<35;z+=18){
@@ -2975,7 +2978,7 @@ function makeCity(){
   buildFuelPumps();
   createShop(-15,-128,-1,'RESTAURANT ZEIL','MITTAGSTISCH · ABENDKARTE',0x426f83);
   // Wohnviertel mit Mehrfamilienhäusern, Balkonen und Hauseingängen
-  const homeColors=[0xc5b9a5,0xb8c2c5,0xd1c3ae,0x9daeb4,0xc8b6a6,0xb4b9aa];
+  const homeColors=classicEdition?[0x9b8d78,0x8b8777,0xa99b82,0x77796f,0x9b8a76,0x858576]:[0xc5b9a5,0xb8c2c5,0xd1c3ae,0x9daeb4,0xc8b6a6,0xb4b9aa];
   for(let i=0;i<6;i++){
     const z=-96+i*25;
     residentialBuilding(-26.5,z,8.5,11,15+(i%3)*3,homeColors[i%homeColors.length]);
@@ -3006,7 +3009,7 @@ function makeCity(){
     cross.rotation.x=-Math.PI/2;cross.position.set(0,.012,z);scene.add(cross);flAddWetRoad(359,8.8,0,z);
     for(const x of [-166,-136,-96,-66,-30,30,66,96,136,166]){
       const h=18+((Math.abs(Math.floor(z/38))+Math.abs(Math.floor(x/30)))%5)*7;
-      const palette=[0xb7b2a7,0x8c9da5,0xc2b59f,0x697c89,0xa6b0ad];
+      const palette=classicEdition?[0x8e8675,0x77796f,0xa39882,0x656a64,0x968a77]:[0xb7b2a7,0x8c9da5,0xc2b59f,0x697c89,0xa6b0ad];
       if(Math.abs(x)>40){
         residentialBuilding(x,z+12,12,14,h,palette[(Math.floor(Math.abs(x)/30)+Math.floor(Math.abs(z)/38))%palette.length]);
       }else{
@@ -3019,7 +3022,7 @@ function makeCity(){
     for(const x of [-170,-145,-103,-61,61,103,145,170])streetLamp(x,z);
   }
   // Neue Außenbezirke: zusätzliche Straßen, Wohnblocks und kleine Gewerbequartiere.
-  const outerPalette=[0xb8b7aa,0x82949d,0xc5b69f,0x71838b,0x9eaaa4,0xc2c8c5];
+  const outerPalette=classicEdition?[0x8d8575,0x77796e,0xa99c83,0x666b63,0x938774,0x7f8176]:[0xb8b7aa,0x82949d,0xc5b69f,0x71838b,0x9eaaa4,0xc2c8c5];
   for(let z=-266;z<=210;z+=(liteMode?76:38)){
    for(const x of [-150,-120,120,150]){
     const height=17+((Math.abs(Math.floor(z/38))+Math.abs(Math.floor(x/30)))%5)*6;
@@ -4047,14 +4050,14 @@ document.addEventListener('visibilitychange',()=>{
 function begin(){
   if(started)return;started=true;flInitProceduralAudio();placeholder?.remove();
   if(qualitySelect){const saved=flStorage.getItem('flQuality');qualitySelect.value=lowEndDevice?'legacy':(saved&&qualitySettings[saved]?saved:(saved==='ultra'?'legacy':'high'));}
-  if(fpsSelect){const savedFps=flStorage.getItem('flFps');fpsSelect.value=savedFps||(lowEndDevice?'30':'60');maxFps=fpsSelect.value==='unlimited'?0:Number(fpsSelect.value);}
+  if(fpsSelect){const savedFps=classicEdition?'30':flStorage.getItem('flFps');fpsSelect.value=savedFps||(lowEndDevice?'30':'60');maxFps=fpsSelect.value==='unlimited'?0:Number(fpsSelect.value);}
   if(mouseSelect){mouseSelect.value=flStorage.getItem('flMouse')||'1';mouseSensitivity=Number(mouseSelect.value)||1;}
   if(fovSelect){fovSelect.value=flStorage.getItem('flFov')||'68';cameraFov=Number(fovSelect.value)||68;}
   if(cameraSelect){cameraSelect.value=flStorage.getItem('flCamera')||'follow';cameraMode=cameraSelect.value||'follow';}
   status.textContent=lowEndDevice?'OLD-SCHOOL-MODUS · STADT BLEIBT GUT ERKENNBAR':'STADT GELADEN · KLICKE INS SPIEL';
   try{
-    renderer=new THREE.WebGLRenderer({antialias:!lowEndDevice&&!classicEdition,powerPreference:lowEndDevice?'low-power':'high-performance',stencil:false,depth:true,preserveDrawingBuffer:false});
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,classicEdition?.58:lowEndDevice?.58:1));
+    renderer=new THREE.WebGLRenderer({antialias:!lowEndDevice&&!classicEdition,powerPreference:lowEndDevice||classicEdition?'low-power':'high-performance',stencil:false,depth:true,preserveDrawingBuffer:false});
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,classicEdition?.48:lowEndDevice?.52:1));
     renderer.outputColorSpace=THREE.SRGBColorSpace;
     renderer.toneMapping=THREE.ACESFilmicToneMapping;
     renderer.toneMappingExposure=classicEdition?.92:1.08;

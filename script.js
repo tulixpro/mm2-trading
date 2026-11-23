@@ -2076,9 +2076,10 @@ function flStartCinematicMusic(){
   play();flCinematicMusicTimer=setInterval(play,1800);
  }catch(_){}
 }
-window.addEventListener('message',e=>{if(e.data==='fl-start-trailer-audio')flStartCinematicMusic();});
+window.addEventListener('message',e=>{if(e.data==='fl-start-trailer-audio')flStartCinematicMusic();if(e.data==='fl-stop-trailer-audio'&&flCinematicAudio){flCinematicAudio.suspend();if(flCinematicMusicTimer){clearInterval(flCinematicMusicTimer);flCinematicMusicTimer=null;}}});
 function startIntroCinematic(){
  if(!viewport||!camera||!renderer)return;
+ if(new URLSearchParams(location.search).get('trailer')!=='1')flStartCinematicMusic();
  flOpeningCinematic=true;document.exitPointerLock?.();
  const overlay=document.createElement('div');overlay.className='opening-cinematic game-world-cinematic';
  overlay.innerHTML='<div class="opening-letterbox top"></div><div class="opening-letterbox bottom"></div><div class="opening-copy"><small id="openingKicker">FRANKFURT AM MAIN · CITY BLOCK 01</small><h2 id="openingTitle">WILLKOMMEN IN FRANKFURT.</h2><p id="openingText">Ein neuer Anfang. Tausend Wege.</p></div><div class="opening-count" id="openingCount">01 / 03</div><button type="button" class="opening-skip">CUTSCENE ÜBERSPRINGEN ⏭</button>';
@@ -2103,6 +2104,7 @@ function startIntroCinematic(){
  frame=requestAnimationFrame(tick);
 }
 function startIntroTutorial(){
+ if(new URLSearchParams(location.search).get('trailer')==='1')return;
  if(flStorage.getItem('flIntroTutorialDone')==='yes'||!introTutorial)return;
  introTutorial.classList.remove('hidden');document.exitPointerLock?.();showIntroTutorialScene(0);
 }

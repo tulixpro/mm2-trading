@@ -6,7 +6,7 @@ if(classicEdition){document.body.classList.add('classic-edition');document.title
 const flDesktopBuild=location.protocol==='file:';
 // Reiner WebGPU-Renderer: bewusst kein WebGL-Fallback.
 const THREE=await import(flDesktopBuild?'./node_modules/three/build/three.module.js':'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js');
-const {WebGPURenderer}=await import(flDesktopBuild?'./node_modules/three/examples/jsm/renderers/webgpu/WebGPURenderer.js':'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/renderers/webgpu/WebGPURenderer.js');
+const {default:WebGPURenderer}=await import(flDesktopBuild?'./node_modules/three/examples/jsm/renderers/webgpu/WebGPURenderer.js':'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/renderers/webgpu/WebGPURenderer.js');
 const {GLTFLoader}=await import(flDesktopBuild?'./node_modules/three/examples/jsm/loaders/GLTFLoader.js':'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/loaders/GLTFLoader.js');
 const flVehicleLoader=new GLTFLoader();
 const flVehicleAssets={

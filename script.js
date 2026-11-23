@@ -2858,6 +2858,45 @@ function flBuildCityServices(){
  }
 }
 
+function flBuildUrbanWear(){
+ const root=new THREE.Group();
+ const rust=new THREE.MeshStandardMaterial({color:0x75452e,roughness:.94,metalness:.12});
+ const dark=new THREE.MeshStandardMaterial({color:0x292d2d,roughness:1});
+ const rubble=[0x777873,0x625f58,0x96948b].map(color=>new THREE.MeshStandardMaterial({color,roughness:1}));
+ // Visible hairline cracks across worn sidewalk slabs.
+ for(const side of [-1,1])for(let n=0;n<9;n++){
+  const x=side*(8.15+(n%3)*.82),z=-250+n*56,pts=[];let px=x,pz=z;
+  for(let k=0;k<7;k++){pts.push(new THREE.Vector3(px,.211,pz));px+=Math.sin(n*3+k*2.1)*.12;pz+=.22;}
+  root.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts),new THREE.LineBasicMaterial({color:0x414644,transparent:true,opacity:.78})));
+  if(n%2===0){const chip=new THREE.Mesh(new THREE.BoxGeometry(.32,.035,.24),rubble[n%3]);chip.position.set(side*10.48,.22,z+1);chip.rotation.y=n*.6;root.add(chip);}
+ }
+ // Patched potholes and a few fragments on the road shoulder, away from the driving lane.
+ for(let n=0;n<10;n++){
+  const x=(n%2?1:-1)*(7.05+(n%3)*.2),z=-250+n*51;
+  const patch=new THREE.Mesh(new THREE.CircleGeometry(.45+(n%3)*.1,12),dark);patch.rotation.x=-Math.PI/2;patch.scale.set(1.4,.72,1);patch.position.set(x,.01,z);root.add(patch);
+  for(let k=0;k<3;k++){const shard=new THREE.Mesh(new THREE.DodecahedronGeometry(.1+k*.025,0),rubble[(n+k)%3]);shard.position.set(x+(Math.random()-.5)*.65,.07,z+(Math.random()-.5)*.6);shard.rotation.set(Math.random(),Math.random(),Math.random());root.add(shard);}
+ }
+ // Weather-beaten litter bin with rust streaks and chipped enamel.
+ const bin=new THREE.Group(),body=new THREE.Mesh(new THREE.CylinderGeometry(.37,.43,1.05,10),rust),lid=new THREE.Mesh(new THREE.CylinderGeometry(.42,.4,.12,10),dark);
+ body.position.y=.54;lid.position.y=1.1;bin.add(body,lid);
+ const scrape=new THREE.Mesh(new THREE.BoxGeometry(.02,.42,.22),new THREE.MeshStandardMaterial({color:0xb9b5a7,roughness:1}));scrape.position.set(.38,.56,.08);bin.add(scrape);bin.position.set(10.25,0,-94);root.add(bin);
+ // Faded, graffitied service wall with peeling-render patches.
+ const wallMat=new THREE.MeshStandardMaterial({color:0x77766f,roughness:.98}),wall=new THREE.Mesh(new THREE.BoxGeometry(.32,3.1,8.2),wallMat);wall.position.set(12.35,1.55,-132);root.add(wall);
+ const plaster=new THREE.Mesh(new THREE.BoxGeometry(.035,2.4,7.65),new THREE.MeshStandardMaterial({color:0xb8b5a8,roughness:.97}));plaster.position.set(12.17,1.55,-132);root.add(plaster);
+ const canvas=document.createElement('canvas');canvas.width=512;canvas.height=256;const ctx=canvas.getContext('2d');ctx.fillStyle='#aaa79b';ctx.fillRect(0,0,512,256);
+ for(let i=0;i<1600;i++){const v=75+Math.random()*90;ctx.fillStyle='rgba('+v+','+v+','+v+',.13)';ctx.fillRect(Math.random()*512,Math.random()*256,Math.random()*5+1,Math.random()*3+1);}
+ ctx.save();ctx.translate(42,155);ctx.rotate(-.04);ctx.font='900 91px sans-serif';ctx.lineWidth=12;ctx.strokeStyle='#263b3a';ctx.strokeText('FRANKFURT',0,0);ctx.fillStyle='#98513e';ctx.fillText('FRANKFURT',0,0);ctx.font='bold 30px sans-serif';ctx.fillStyle='#354d50';ctx.fillText('STADTLEBEN',20,45);ctx.restore();
+ const map=new THREE.CanvasTexture(canvas);map.colorSpace=THREE.SRGBColorSpace;
+ const art=new THREE.Mesh(new THREE.PlaneGeometry(7.3,2.25),new THREE.MeshStandardMaterial({map,roughness:.97}));art.rotation.y=-Math.PI/2;art.position.set(12.145,1.55,-132);root.add(art);
+ // Slightly leaning old sign with chipped paint.
+ const pole=new THREE.Mesh(new THREE.CylinderGeometry(.055,.075,2.8,8),rust);pole.position.set(10.65,1.4,-178);pole.rotation.z=-.055;root.add(pole);
+ const sign=new THREE.Mesh(new THREE.BoxGeometry(.12,.72,1.3),new THREE.MeshStandardMaterial({color:0x526c68,roughness:.95}));sign.position.set(10.58,2.35,-178);sign.rotation.z=-.04;root.add(sign);
+ const scratchMat=new THREE.MeshStandardMaterial({color:0xbab8aa,roughness:1});
+ for(let i=0;i<6;i++){const scratch=new THREE.Mesh(new THREE.BoxGeometry(.014,.022,.2+Math.random()*.22),scratchMat);scratch.position.set(10.505,2.15+Math.random()*.42,-178-.4+Math.random()*.8);root.add(scratch);}
+ // Discarded cardboard and paper beside the pavement.
+ for(let i=0;i<5;i++){const paper=new THREE.Mesh(new THREE.BoxGeometry(.42,.018,.3),new THREE.MeshStandardMaterial({color:i%2?0x9d957e:0x6c6557,roughness:1}));paper.position.set(8.1+Math.random()*2,.225,-205+i*2.1);paper.rotation.y=Math.random()*Math.PI;root.add(paper);}
+ root.traverse(o=>{if(o.isMesh){o.castShadow=false;o.receiveShadow=false;}});scene.add(root);
+}
 function makeCity(){
   const skyColor=classicEdition?0xb99a70:0x91b1c8;scene=new THREE.Scene();scene.background=new THREE.Color(skyColor);scene.fog=new THREE.Fog(skyColor,classicEdition?82:105,classicEdition?155:(liteMode?195:340));
   if(!classicEdition)flBuildReflectionEnvironment();
@@ -2880,6 +2919,7 @@ function makeCity(){
   for(let z=-300;z<225;z+=12){const line=new THREE.Mesh(new THREE.PlaneGeometry(.18,5),new THREE.MeshBasicMaterial({color:0xe5dfc5}));line.rotation.x=-Math.PI/2;line.position.set(0,.015,z);scene.add(line);}
   const sidewalkMat=new THREE.MeshStandardMaterial({color:0x92999b,roughness:.94});if(!classicEdition&&typeof document!=='undefined')flApplySurfaceMaps(sidewalkMat,'concrete',2,72,.012);
   for(const x of [-9.2,9.2]){const s=new THREE.Mesh(new THREE.BoxGeometry(3.5,.25,520),sidewalkMat);s.position.set(x,.08,-45);scene.add(s);}
+  if(!classicEdition)flBuildUrbanWear();
   // Main-road drainage: curb channels, storm grates, moving runoff highlights and shallow puddles.
   const gutterMat=new THREE.MeshStandardMaterial({color:0x34434a,roughness:.3,metalness:.35});
   const grateMat=new THREE.MeshStandardMaterial({color:0x66747a,roughness:.48,metalness:.72});

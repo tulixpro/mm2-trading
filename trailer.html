@@ -1,21 +1,24 @@
-<!doctype html>
-<html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Frankfurt Life – Cinematic Teaser</title>
+<!doctype html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Frankfurt Life – In-Game Trailer</title>
 <style>
-*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#08111d;color:#f5f6f2;font-family:Arial,sans-serif}.player{position:relative;width:100%;height:100%;overflow:hidden;background:#14243a}.scene{position:absolute;inset:0;opacity:0;animation:sequence 24s infinite}.scene.one{animation-delay:0s}.scene.two{animation-delay:8s}.scene.three{animation-delay:16s}
-.sky{position:absolute;inset:0;background:linear-gradient(#172c4b,#6e8da2 52%,#dca779 74%,#1b2c40)}.sun{position:absolute;right:16%;top:17%;width:17%;aspect-ratio:1;border-radius:50%;background:#ffe0b1;box-shadow:0 0 70px 30px #ffbd7955}
-.city{position:absolute;bottom:26%;left:7%;right:7%;height:57%;display:flex;align-items:end;justify-content:center;gap:2%}.tower{height:55%;width:9%;background:linear-gradient(90deg,#172b43,#63788a,#192b40);border:1px solid #c5d6df44;position:relative;box-shadow:inset 0 0 20px #b9d6e022}.tower:after{content:'';position:absolute;inset:10%;background:repeating-linear-gradient(0deg,transparent 0 12px,#d7e5ed33 13px 15px)}.tower:nth-child(2){height:83%}.tower:nth-child(3){height:65%;clip-path:polygon(0 8%,42% 8%,50% 0,58% 8%,100% 8%,100% 100%,0 100%)}.tower:nth-child(4){height:93%;width:8%}.tower:nth-child(5){height:60%}.tower:nth-child(6){height:74%}
-.river{position:absolute;bottom:16%;height:13%;left:-5%;right:-5%;background:linear-gradient(#7199a8,#1c354e);transform:skewY(-3deg)}.road{position:absolute;bottom:-10%;height:29%;left:-5%;right:-5%;background:linear-gradient(#3d4650,#090f19);transform:perspective(400px) rotateX(10deg);border-top:3px solid #c6bca4}
-.car{position:absolute;bottom:13%;left:55%;width:22%;height:10%;border-radius:55% 35% 12px 12px;background:linear-gradient(#91a9b5,#1a2a3b 75%);box-shadow:0 18px 25px #0009;animation:drive 8s linear infinite}.car:before{content:'';position:absolute;left:22%;top:-55%;width:55%;height:60%;background:#4b687c;clip-path:polygon(18% 0,78% 0,100% 100%,0 100%)}
-.copy{position:absolute;left:8%;bottom:17%;z-index:2;text-shadow:0 4px 20px #000b;max-width:80%}.kicker{font-size:clamp(8px,1vw,12px);letter-spacing:.28em;color:#7bdcff;font-weight:900}.copy h1{font-size:clamp(28px,6vw,76px);line-height:.9;letter-spacing:-.04em;margin:12px 0}.copy p{font-size:clamp(10px,1.5vw,16px);color:#d6e1e8;margin:0}
-.scene.two .sky{background:linear-gradient(#182b44,#5b829b 48%,#d5a176 73%,#172b3d)}.scene.two .sun{right:65%;top:23%;background:#e9d1ae}.scene.two .car{left:22%;animation-direction:reverse}.scene.three .sky{background:linear-gradient(#101a2d,#334f6c 50%,#e1a36d 76%,#142236)}.scene.three .sun{width:12%;right:44%;top:13%}
-.controls{position:absolute;z-index:5;left:0;right:0;bottom:0;display:flex;align-items:center;gap:12px;padding:12px 16px;background:linear-gradient(transparent,#050a12cc)}.controls button{border:1px solid #ffffff77;border-radius:4px;background:#071522cc;color:white;padding:8px 12px;font-weight:800;cursor:pointer}.bar{height:4px;flex:1;background:#ffffff55;border-radius:9px;overflow:hidden}.progress{height:100%;width:0;background:#68caff;animation:progress 24s linear infinite}.brand{font-size:10px;letter-spacing:.18em;color:#dce9f0;font-weight:900}
-.paused .scene,.paused .progress,.paused .car{animation-play-state:paused!important}
-@keyframes sequence{0%,2%{opacity:0;transform:scale(1.08)}5%,29%{opacity:1;transform:scale(1)}34%,100%{opacity:0;transform:scale(1.04)}}@keyframes drive{0%{transform:translateX(35vw)}100%{transform:translateX(-55vw)}}@keyframes progress{from{width:0}to{width:100%}}
-@media(prefers-reduced-motion:reduce){.scene,.car,.progress{animation-play-state:paused}}
-</style></head><body><main class="player" id="player">
-<section class="scene one"><div class="sky"><div class="sun"></div><div class="city"><i class="tower"></i><i class="tower"></i><i class="tower"></i><i class="tower"></i><i class="tower"></i><i class="tower"></i></div><div class="river"></div><div class="road"></div><div class="car"></div></div><div class="copy"><div class="kicker">FRANKFURT AM MAIN · 06:42 UHR</div><h1>EINE NEUE<br>STADT.</h1><p>Ein neuer Anfang. Tausend Wege.</p></div></section>
-<section class="scene two"><div class="sky"><div class="sun"></div><div class="city"><i class="tower"></i><i class="tower"></i><i class="tower"></i><i class="tower"></i><i class="tower"></i><i class="tower"></i></div><div class="river"></div><div class="road"></div><div class="car"></div></div><div class="copy"><div class="kicker">ZWISCHEN SKYLINE UND MAIN</div><h1>DEIN ALLTAG<br>BEGINNT.</h1><p>Entdecke Straßen, Menschen und neue Möglichkeiten.</p></div></section>
-<section class="scene three"><div class="sky"><div class="sun"></div><div class="city"><i class="tower"></i><i class="tower"></i><i class="tower"></i><i class="tower"></i><i class="tower"></i><i class="tower"></i></div><div class="river"></div><div class="road"></div><div class="car"></div></div><div class="copy"><div class="kicker">FRANKFURT LIFE</div><h1>DEINE STADT.<br><span style="color:#69caff">DEIN LEBEN.</span></h1><p>Steig ein und schreib deine eigene Geschichte.</p></div></section>
-<div class="controls"><button id="toggle" type="button">Ⅱ PAUSE</button><div class="bar"><div class="progress"></div></div><span class="brand">FRANKFURT LIFE</span></div></main>
-<script>const player=document.querySelector('#player'),button=document.querySelector('#toggle');let paused=false;button.addEventListener('click',()=>{paused=!paused;player.classList.toggle('paused',paused);button.textContent=paused?'▶ WEITER':'Ⅱ PAUSE';});</script>
-</body></html>
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#07111c;color:#f4f5ef;font-family:Arial,sans-serif}
+#game{position:absolute;inset:0;width:100%;height:100%;border:0;background:#111}
+.shade{position:absolute;inset:0;pointer-events:none;background:linear-gradient(180deg,#020711aa 0%,transparent 22%,transparent 65%,#020711bb 100%)}
+.brand{position:absolute;z-index:3;top:28px;left:34px;font-size:11px;font-weight:900;letter-spacing:.28em;color:#8bdcff;text-shadow:0 2px 12px #000}
+.caption{position:absolute;z-index:3;left:6%;bottom:13%;max-width:75%;pointer-events:none;text-shadow:0 4px 22px #000}
+.caption small{color:#83dfff;font-size:10px;letter-spacing:.3em;font-weight:900}.caption h1{font-size:clamp(32px,6vw,76px);line-height:.92;margin:12px 0;font-weight:950;letter-spacing:-.04em}.caption p{margin:0;color:#e0e9ed;font-size:clamp(12px,1.5vw,17px)}
+.controls{position:absolute;z-index:5;right:26px;bottom:25px;display:flex;gap:10px;align-items:center}
+button{border:1px solid #ffffff77;border-radius:4px;background:#071626dd;color:white;padding:12px 16px;font-weight:900;letter-spacing:.06em;cursor:pointer}
+button.primary{background:#67c9fa;color:#061522;border-color:#67c9fa}
+.note{position:absolute;z-index:3;right:28px;top:28px;font-size:10px;letter-spacing:.15em;color:#dbe7ec;text-shadow:0 2px 8px #000}
+@media(max-width:600px){.brand{left:16px;top:16px}.caption{left:6%;bottom:18%;max-width:90%}.controls{right:12px;bottom:12px}.note{right:16px;top:50px}}
+</style></head><body>
+<iframe id="game" src="game.html?trailer=1" title="Frankfurt Life – echte Spielgrafik"></iframe>
+<div class="shade"></div><div class="brand">FRANKFURT LIFE · OFFIZIELLER IN-GAME TRAILER</div>
+<div class="note">ORIGINAL GAME ENGINE · THREE.JS</div>
+<div class="caption"><small>FRANKFURT AM MAIN</small><h1>DEINE STADT.<br><span style="color:#69caff">DEIN LEBEN.</span></h1><p>Die echte Spielwelt. Direkt aus Frankfurt Life gerendert.</p></div>
+<div class="controls"><button id="sound" class="primary">♫ MUSIK STARTEN</button><button id="fullscreen">⛶ VOLLBILD</button></div>
+<script>
+const game=document.getElementById('game'),sound=document.getElementById('sound');let audioOn=false;
+sound.addEventListener('click',()=>{audioOn=!audioOn;game.contentWindow.postMessage(audioOn?'fl-start-trailer-audio':'fl-stop-trailer-audio','*');sound.textContent=audioOn?'♫ MUSIK AN':'♫ MUSIK STARTEN';});
+document.getElementById('fullscreen').addEventListener('click',()=>{document.documentElement.requestFullscreen?.();});
+</script></body></html>

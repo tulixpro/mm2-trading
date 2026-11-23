@@ -261,3 +261,22 @@ html.trailer-mode body #gameViewport{position:fixed;inset:0!important;width:100v
 html.trailer-mode body{overflow:hidden}
 
 .brand-wordmark{width:176px;height:54px;object-fit:contain;border:0;display:block;flex:0 0 auto}@media(max-width:900px){.brand-wordmark{width:132px;height:44px}}
+
+/* San Andreas: early-2000s candybar phone / amber LCD look */
+.classic-edition .phone-overlay{background:#050504d9;backdrop-filter:blur(2px)}
+.classic-edition .phone-device{width:min(340px,calc(100vw - 26px));height:min(660px,calc(100% - 24px));padding:28px 17px 82px;border:8px solid #272821;border-radius:30px;background:linear-gradient(110deg,#77786d,#b6b7a7 18%,#55594f 25%,#20231e 70%,#77796d);box-shadow:0 28px 70px #000e,inset 0 0 0 2px #d1d2bd66}
+.classic-edition .phone-notch{top:9px;width:54px;height:6px;border-radius:5px;background:#171914}
+.classic-edition .phone-status{margin:1px 1px 10px;padding:7px 8px;background:#1c271b;color:#c5d99b;border:3px solid #343a2c;border-radius:4px;font-family:monospace;font-size:8px}
+.classic-edition .phone-clock{padding:8px 12px 0;background:#a8b78a;color:#263322;font-family:monospace;font-size:35px;letter-spacing:0;border:3px solid #3d4734;border-bottom:0}
+.classic-edition .phone-date{margin:0 0 12px;padding:0 12px 9px;background:#a8b78a;color:#35432d;border:3px solid #3d4734;border-top:0;font-family:monospace;font-size:8px;letter-spacing:.5px}
+.classic-edition .phone-appgrid{padding:12px 8px;background:#182018;border:3px solid #414638;border-radius:4px;gap:10px 5px}
+.classic-edition .phone-app{color:#e0e5d0;font-family:monospace;font-size:9px}
+.classic-edition .phone-app b{width:43px;height:39px;border-radius:5px;background:linear-gradient(145deg,#68785a,#303e2d)!important;border:2px solid #a0ad85;box-shadow:inset 0 0 0 2px #172316,0 2px 4px #0008;font-size:21px}
+.classic-edition .phone-page{inset:113px 16px 90px;padding:11px;border:3px solid #424a37;border-radius:4px;background:#aab88d;color:#263421;font-family:monospace;animation:none}
+.classic-edition .phone-page-head,.classic-edition .phone-balance{color:#293c26;font-family:monospace}
+.classic-edition .phone-page p,.classic-edition .phone-stat{color:#35432e;font-family:monospace;font-size:10px}
+.classic-edition .phone-stat{border-bottom:1px dashed #627252}
+.classic-edition .phone-page button{border:2px solid #313d2a;border-radius:3px;background:#394a30;color:#e6edcf;font-family:monospace}
+.classic-edition .phone-back{color:#35452c;font-family:monospace}
+.classic-edition .phone-home{bottom:43px;width:42px;height:23px;border:2px solid #c8c9b8;border-radius:12px;background:linear-gradient(#4a4d43,#20221e);box-shadow:0 2px 4px #0008}
+.classic-edition .phone-exit{bottom:9px;color:#e1e2d4;font-family:monospace}

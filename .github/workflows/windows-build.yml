@@ -21,6 +21,7 @@ on:
       - 'game.css'
       - 'style.css'
       - 'script.js'
+      - 'scripts/fetch-3d-assets.mjs'
       - 'package.json'
       - 'electron/**'
       - 'electron-builder-action.yml'
@@ -38,6 +39,8 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
+      - name: Download and validate bundled CC0 3D models
+        run: node scripts/fetch-3d-assets.mjs
       - name: Check JavaScript syntax
         run: Get-Content -Raw script.js | node --input-type=module --check
       - name: Check launcher and Electron syntax

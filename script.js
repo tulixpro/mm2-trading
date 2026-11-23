@@ -4023,7 +4023,7 @@ function loop(now=0){
   flUpdateProceduralAudio();
   flUpdateSuspensionVisuals();
   // Dynamic resolution only reacts to real rendering load, not an intentional 30-FPS cap.
-  if((!maxFps||maxFps>=50)&&now-perfLastCheck>3000&&perfFrames.length>=20){
+  if((classicEdition||!maxFps||maxFps>=50)&&now-perfLastCheck>3000&&perfFrames.length>=20){
     perfLastCheck=now;const avgMs=perfFrames.reduce((a,b)=>a+b,0)/perfFrames.length;
     if(avgMs>(lowEndDevice?34:28)&&autoResolutionScale>(lowEndDevice?.34:.42)){autoResolutionScale=Math.max(lowEndDevice?.34:.42,autoResolutionScale*.88);applyQuality();}
     else if(avgMs<(lowEndDevice?27:17.5)&&autoResolutionScale<1){autoResolutionScale=Math.min(1,autoResolutionScale+(lowEndDevice?.025:.04));applyQuality();}

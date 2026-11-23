@@ -23,7 +23,8 @@ const flEnvironmentAssets={
   apartment:'https://tevy.dev/models/apartment-block/v2/lod1.glb',
   officeTower:'https://tevy.dev/models/office-tower/v2/lod1.glb',
   housingSlab:'https://tevy.dev/models/public-housing-slab/v1/lod1.glb',
-  mixedBlock:'https://tevy.dev/models/mixed-tenant-block/v1/lod1.glb'
+  mixedBlock:'https://tevy.dev/models/mixed-tenant-block/v1/lod1.glb',
+  supermarket:'https://tevy.dev/models/supermarket-shell/v2/lod1.glb'
 };
 const flEnvironmentCache=new Map();
 function flLoadEnvironmentVisual(host,assetKey,fitSize,hideExisting=false){
@@ -67,7 +68,8 @@ function flBuildEnvironmentAssets(){
     {key:'apartment',x:-207,z:-142,fit:{x:39,y:30,z:23}},
     {key:'officeTower',x:210,z:-170,fit:{x:50,y:74,z:33}},
     {key:'housingSlab',x:-214,z:42,fit:{x:60,y:19,z:16}},
-    {key:'mixedBlock',x:211,z:54,fit:{x:16,y:30,z:15}}
+    {key:'mixedBlock',x:211,z:54,fit:{x:16,y:30,z:15}},
+    {key:'supermarket',x:-218,z:-226,fit:{x:33,y:9,z:25}}
   ];
   for(const item of placements){
     const host=new THREE.Group();host.position.set(item.x,0,item.z);scene.add(host);

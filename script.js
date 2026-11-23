@@ -141,11 +141,28 @@ function flLoadVehicleVisual(car,model,color,W,L){
             copy.roughness=Math.min(copy.roughness??.32,.28);
             copy.metalness=Math.max(copy.metalness??0,.22);
           }else if(/glass|window|windshield|windscreen/.test(label)){
-            copy.roughness=.12;
+            copy.roughness=Math.min(copy.roughness??.18,.14);
             copy.envMapIntensity=1.55;
+            if(copy.transparent)copy.depthWrite=false;
+          }else if(/tire|tyre|rubber|wheel.?arch|reifen/.test(label)){
+            // Reifen bleiben matt und dunkel, damit sie nicht wie lackierter Kunststoff wirken.
+            copy.roughness=Math.max(copy.roughness??.82,.78);
+            copy.metalness=Math.min(copy.metalness??0,.04);
+            copy.clearcoat=.04;
+            copy.color?.multiplyScalar(.78);
+          }else if(/chrome|chrom|metal|grille|grill|rim|alloy|felge|exhaust|auspuff/.test(label)){
+            copy.roughness=Math.min(copy.roughness??.24,.22);
+            copy.metalness=Math.max(copy.metalness??0,.72);
+            copy.clearcoat=.72;
+            copy.clearcoatRoughness=.1;
+            copy.envMapIntensity=1.65;
+          }else if(/plastic|trim|interior|dashboard|kunststoff|innenraum/.test(label)){
+            copy.roughness=Math.max(copy.roughness??.42,.38);
+            copy.metalness=Math.min(copy.metalness??0,.12);
+            copy.clearcoat=.12;
           }
         }
-        if(copy.color&&/paint|body|shell|car.?paint/i.test(mat.name||''))copy.color.setHex(color);
+        if(copy.color&&/body|paint|shell|car.?paint|karosserie/i.test(label))copy.color.setHex(color);
         return copy;
       });
       node.material=Array.isArray(node.material)?cloned:cloned[0];

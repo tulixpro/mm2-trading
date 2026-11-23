@@ -249,3 +249,13 @@ html:fullscreen body.game-app main,html:fullscreen body.game-app #gameViewport{h
 @keyframes opening-drive{0%{transform:translateX(25vw)}100%{transform:translateX(-18vw)}}
 @keyframes opening-copy-in{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
 @media(max-width:650px){.opening-copy{left:6%;bottom:17%;max-width:88%}.opening-skip{top:9%;right:10px;font-size:10px}.opening-count{right:12px}}
+
+/* Live in-game cinematic overlay: the real Three.js city stays visible underneath. */
+.game-world-cinematic{background:linear-gradient(180deg,#02071166 0%,transparent 34%,transparent 55%,#020711b8 100%);pointer-events:auto}
+.game-world-cinematic .opening-copy{left:6%;bottom:15%;max-width:82%}
+.game-world-cinematic .opening-copy h2{font-size:clamp(26px,5vw,64px)}
+.game-world-cinematic .opening-letterbox{height:7%}
+.game-world-cinematic .opening-skip{top:10%;right:22px}
+html.trailer-mode body .hud,html.trailer-mode body .controls{display:none!important}
+html.trailer-mode body #gameViewport{position:fixed;inset:0!important;width:100vw;height:100vh;margin:0}
+html.trailer-mode body{overflow:hidden}

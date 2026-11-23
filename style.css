@@ -24,3 +24,5 @@
 @media(max-width:760px){.trailer-section{padding-bottom:65px}.trailer-caption{align-items:flex-start;flex-direction:column}.trailer-screen{aspect-ratio:4/3;min-height:300px}}
 
 .tech-note{margin:0;padding:12px 16px;border-top:1px solid #ffffff12;background:#0b1725;color:#91a9bb;font-size:11px;line-height:1.6}.tech-note strong{color:#d9e8f7}
+
+.sanandreas-logo{display:block;width:min(100%,360px);height:116px;object-fit:contain;object-position:left center;margin:8px 0 18px;filter:drop-shadow(0 8px 18px #0008)}

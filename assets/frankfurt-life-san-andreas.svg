@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 220" role="img" aria-labelledby="t d">
+<title id="t">Frankfurt Life – San Andreas Edition</title><desc id="d">Original cream and green Frankfurt skyline game logo</desc>
+<defs><linearGradient id="g" x2="0" y2="1"><stop stop-color="#fff3cf"/><stop offset="1" stop-color="#d9b66d"/></linearGradient><filter id="s" x="-20%" y="-20%" width="140%" height="150%"><feGaussianBlur in="SourceAlpha" stdDeviation="3"/><feOffset dy="4"/><feComponentTransfer><feFuncA type="linear" slope=".7"/></feComponentTransfer><feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
+<g fill="#07100b" stroke="#07100b" stroke-width="12" stroke-linejoin="round">
+<path d="M38 116V82h20V54h12v62h12V72h17v44h12V40h13v76h15V66h18v50h12V20h13v96h12V58h17v58h15V78h18v38h16V60h15v56h15V88h16v28h18V76h16v40h16V60h15v56h20V90h16v26h20V68h16v48h20V90h15v26h18V70h16v46h18V86h16v30h22V90h15v26h20V78h15v38h20V96h14v20h22v-20h14v20h30v20H38z"/>
+<path d="M622 99q-20-40-2-62 5 23 13 31-3-32 17-49-3 30 6 44 10-25 34-30-17 24-17 43 14-15 32-14-21 15-28 37z"/>
+</g>
+<g fill="none" stroke="#55d52f" stroke-width="4"><path d="M621 98q-8-31-1-56m13 28q-2-24 17-48m-2 57q12-21 32-25m-48 39q-18-23-17-42m37 42q18-18 38-15"/></g>
+<g filter="url(#s)" text-anchor="middle" font-family="Georgia,serif" font-weight="900">
+<text x="350" y="139" font-size="91" fill="url(#g)" stroke="#07100b" stroke-width="13" paint-order="stroke">FRANKFURT</text>
+<text x="350" y="204" font-size="76" fill="#55d52f" stroke="#07100b" stroke-width="13" paint-order="stroke">LIFE</text>
+</g>
+<rect x="490" y="164" width="250" height="37" rx="7" fill="#07100b" stroke="#e8d5a5" stroke-width="3"/>
+<text x="615" y="189" text-anchor="middle" fill="#fff0c7" font-family="Arial,sans-serif" font-size="16" font-weight="900" letter-spacing="2">SAN ANDREAS</text>
+</svg>

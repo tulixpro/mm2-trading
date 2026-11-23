@@ -13,6 +13,7 @@
 <header class="hud">
   <div class="brand"><img class="brand-mark brand-wordmark" src="assets/frankfurt-life-san-andreas-logo.svg" alt="Frankfurt Life – San Andreas Edition"></div>
   <div class="hud-center"><span id="gameStatus">BEREIT ZUM START</span><span id="coords">SEKTOR 01</span></div>
+  <button id="gameFullscreen" class="game-fullscreen" type="button" title="Vollbild umschalten">⛶ VOLLBILD</button>
   <button id="installApp" class="install-app-button" type="button">APP INSTALLIEREN</button>
   <div class="settings">
     <label>GRAFIK <select id="qualitySelect"><option value="legacy">San Andreas Retro (flüssig)</option><option value="minimum">Minimal</option><option value="low">Niedrig</option><option value="medium" selected>Mittel</option><option value="high">Hoch</option><option value="maximum">Maximal</option><option value="ultra">Ultra (4K-Schatten)</option><option value="advanced">Erweitert</option></select></label>
@@ -36,6 +37,7 @@
 <script>
 (()=>{const report=message=>{const box=document.querySelector('#gameViewport .game-placeholder');const status=document.querySelector('#gameStatus');if(status)status.textContent='3D-MODUL NICHT GELADEN';if(box){box.innerHTML='<div class="placeholder-title">3D-START<br><em>NICHT MÖGLICH</em></div><p></p><button type="button" id="moduleRetry">ERNEUT VERSUCHEN</button>';box.querySelector('p').textContent=message||'Das 3D-Modul konnte nicht geladen werden. Prüfe Internetverbindung und WebGPU-Unterstützung.';box.querySelector('#moduleRetry').addEventListener('click',()=>location.reload());}};window.addEventListener('error',event=>{if(event.filename&&/script\.js|three|WebGPU/i.test(event.filename))report('Fehler beim Laden der 3D-Engine. Bitte Seite neu laden und WebGPU-Unterstützung prüfen.');});window.addEventListener('unhandledrejection',event=>{const reason=String(event.reason?.message||event.reason||'');if(/three|webgpu|module|import|gpu/i.test(reason))report('3D-Engine konnte nicht geladen werden: '+reason.slice(0,180));});})();
 </script>
+<script>document.querySelector('#gameFullscreen')?.addEventListener('click',async()=>{const b=document.querySelector('#gameFullscreen');try{if(!document.fullscreenElement){await document.documentElement.requestFullscreen();b.textContent='✕ FENSTER';}else{await document.exitFullscreen();b.textContent='⛶ VOLLBILD';}}catch(_){b.textContent='Vollbild nicht verfügbar';}});document.addEventListener('fullscreenchange',()=>{const b=document.querySelector('#gameFullscreen');if(b)b.textContent=document.fullscreenElement?'✕ FENSTER':'⛶ VOLLBILD';});</script>
 <script type="module" src="script.js"></script>
 <script>if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js").catch(()=>{}));}</script>
 </body>

@@ -32,7 +32,7 @@
   <span><kbd>W A S D</kbd> Bewegen</span><span><kbd>MAUS</kbd> Umsehen</span><span><kbd>SHIFT</kbd> Sprinten</span><span><kbd>J</kbd> Jobzentrale</span><span><kbd>F</kbd> Fahrzeug</span><span><kbd>G</kbd> Fahrzeug teilen</span><span><kbd>ESC</kbd> Pause-Menü</span><span><kbd>L</kbd> Taschenlampe</span><span><kbd>E</kbd> Interaktion</span><span><kbd>F1</kbd> Handy</span>
   <span class="hint">Gamepad: A Interaktion · X Auto · Y Jobs · B Handy · LB Kamera · RB Licht</span>
 </footer>
-<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js"}}</script>
+<script>const threeModule=location.protocol==="file:"?"./node_modules/three/build/three.module.js":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js";document.write('<script type="importmap">{"imports":{"three":"'+threeModule+'"}}<\/script>');</script>
 <script type="module" src="script.js"></script>
 <script>if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js").catch(()=>{}));}</script>
 </body>

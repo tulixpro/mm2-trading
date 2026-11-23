@@ -31,7 +31,8 @@
       "assets/**/*",
       "launcher.html",
       "launcher.css",
-      "launcher.js"
+      "launcher.js",
+      "node_modules/three/**/*"
     ],
     "win": {
       "target": [

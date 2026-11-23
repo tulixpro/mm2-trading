@@ -237,7 +237,7 @@ let sunLight=null,hemiLight=null,flashlight=null,flashlightTarget=null,flashligh
 function applyQuality(){
  if(!renderer||!scene)return;
  const mode=qualitySelect?.value||'medium',q=qualitySettings[mode]||qualitySettings.medium;
- const devicePixelCap=classicEdition?.48:lowEndDevice?.58:1.45;
+ const devicePixelCap=classicEdition?.40:lowEndDevice?.52:1.45;
  renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,devicePixelCap,q.pixelRatio*autoResolutionScale));
  const allowShadows=!classicEdition&&!lowEndDevice&&q.shadows;
  renderer.shadowMap.enabled=allowShadows;
@@ -4129,9 +4129,9 @@ async function begin(){
   try{
     // WebGPU initialisieren. Es gibt absichtlich keinen WebGL-Fallback.
     if(!navigator.gpu)throw new Error('Dieser Browser oder Grafiktreiber unterstützt WebGPU nicht. Bitte einen aktuellen Browser mit WebGPU-Unterstützung verwenden.');
-    renderer=new THREE.WebGPURenderer({antialias:!lowEndDevice&&!classicEdition,forceWebGL:false});
+    renderer=new THREE.WebGPURenderer({antialias:false,forceWebGL:false});
     await renderer.init();
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,classicEdition?.48:lowEndDevice?.52:1));
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,classicEdition?.40:lowEndDevice?.52:1));
     renderer.outputColorSpace=THREE.SRGBColorSpace;
     renderer.toneMapping=THREE.ACESFilmicToneMapping;
     renderer.toneMappingExposure=classicEdition?.92:1.08;

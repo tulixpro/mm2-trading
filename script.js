@@ -847,7 +847,8 @@ let flCarEnvTarget=null,flCarEnvKey='';
 function flUpdateCarEnvironment(){
   if(classicEdition||!renderer||!scene)return;
   const hour=flGameHour,weather=flWeather;
-  // Rebuild the PMREM at half-hour intervals; the directional sun itself updates more often.
+  // Rebuild the lightweight equirectangular environment at half-hour intervals.
+  // WebGPURenderer processes scene.environment itself; PMREMGenerator is not used here.
   const bucket=Math.floor(hour*2)/2,key=bucket+'|'+weather;
   if(key===flCarEnvKey)return;
   const canvas=document.createElement('canvas');canvas.width=768;canvas.height=384;
@@ -875,10 +876,8 @@ function flUpdateCarEnvironment(){
   for(let x=0;x<768;){const w=13+((x*17)%31),h=26+((x*29)%104);ctx.fillRect(x,276-h,w,h);if(night){ctx.fillStyle='rgba(255,205,130,.72)';for(let y=284-h+10;y<272;y+=17)if((x+y)%4!==0)ctx.fillRect(x+4,y,4,6);ctx.fillStyle='#101c2b';}x+=w+4;}
   ctx.fillStyle=night?'#182638':'#6b777b';ctx.fillRect(0,276,768,108);
   const texture=new THREE.CanvasTexture(canvas);texture.mapping=THREE.EquirectangularReflectionMapping;texture.colorSpace=THREE.SRGBColorSpace;
-  const generator=new THREE.PMREMGenerator(renderer);
-  const target=generator.fromEquirectangular(texture);generator.dispose();texture.dispose();
   if(flCarEnvTarget)flCarEnvTarget.dispose();
-  flCarEnvTarget=target;scene.environment=target.texture;scene.environmentIntensity=liteMode?.72:1.15;flCarEnvKey=key;
+  flCarEnvTarget=texture;scene.environment=texture;scene.environmentIntensity=liteMode?.72:1.15;flCarEnvKey=key;
 }
 function flApplyWeather(){
  if(!scene||!sunLight||!hemiLight)return;

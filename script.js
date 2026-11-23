@@ -4,7 +4,8 @@ if(classicEdition){document.body.classList.add('classic-edition');document.title
 // Desktop builds load Three.js and GLTFLoader from the packaged node_modules directory.
 // The browser edition keeps using the CDN so GitHub Pages needs no node_modules folder.
 const flDesktopBuild=location.protocol==='file:';
-const THREE=await import(flDesktopBuild?'./node_modules/three/build/three.module.js':'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js');
+// Reiner WebGPU-Renderer: bewusst kein WebGL-Fallback.
+const THREE=await import(flDesktopBuild?'./node_modules/three/build/three.webgpu.js':'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.webgpu.js');
 const {GLTFLoader}=await import(flDesktopBuild?'./node_modules/three/examples/jsm/loaders/GLTFLoader.js':'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/loaders/GLTFLoader.js');
 const flVehicleLoader=new GLTFLoader();
 const flVehicleAssets={
@@ -4080,6 +4081,7 @@ function buildPerformanceHud(){
 function flUpdateFoliageWind(time){
   for(const tree of flWindTrees){const phase=time*.62+(tree.userData.windPhase||0),strength=tree.userData.windStrength||.01;tree.rotation.z=Math.sin(phase)*strength;tree.rotation.x=Math.cos(phase*.83)*strength*.65;}
 }
+let flWebGpuRenderPending=false;
 function loop(now=0){
   if(document.hidden)return;
   raf=requestAnimationFrame(loop);
@@ -4108,7 +4110,7 @@ function loop(now=0){
       part.visible=blinkOn&&(flTurnSignal==='hazard'||flTurnSignal===side);
     });
   }
-  renderer.render(scene,camera);
+  if(!flWebGpuRenderPending){flWebGpuRenderPending=true;renderer.renderAsync(scene,camera).catch(error=>{console.error('Frankfurt Life WebGPU-Renderfehler:',error);status.textContent='WEBGPU-RENDERFEHLER';}).finally(()=>{flWebGpuRenderPending=false;});}
 }
 // Stop the animation loop entirely while the game tab is in the background.
 document.addEventListener('visibilitychange',()=>{
@@ -4116,7 +4118,7 @@ document.addEventListener('visibilitychange',()=>{
   if(document.hidden){if(raf)cancelAnimationFrame(raf);raf=0;lastFrame=0;perfFrames.length=0;}
   else if(!raf){lastFrame=0;clock.getDelta();raf=requestAnimationFrame(loop);}
 });
-function begin(){
+async function begin(){
   if(started)return;started=true;flInitProceduralAudio();placeholder?.remove();
   if(qualitySelect){const saved=flStorage.getItem('flQuality');qualitySelect.value=lowEndDevice?'legacy':(saved&&qualitySettings[saved]?saved:(saved==='ultra'?'legacy':'high'));}
   if(fpsSelect){const savedFps=classicEdition?'30':flStorage.getItem('flFps');fpsSelect.value=savedFps||(lowEndDevice?'30':'60');maxFps=fpsSelect.value==='unlimited'?0:Number(fpsSelect.value);}
@@ -4125,20 +4127,15 @@ function begin(){
   if(cameraSelect){cameraSelect.value=flStorage.getItem('flCamera')||'follow';cameraMode=cameraSelect.value||'follow';}
   status.textContent=lowEndDevice?'OLD-SCHOOL-MODUS · STADT BLEIBT GUT ERKENNBAR':'STADT GELADEN · KLICKE INS SPIEL';
   try{
-    // Einige Chrome-/Windows-Treiber scheitern mit low-power oder den erweiterten Optionen.
-    // Erst die bevorzugte Konfiguration versuchen, danach einen konservativen WebGL2-Fallback.
-    try{
-      renderer=new THREE.WebGLRenderer({antialias:!lowEndDevice&&!classicEdition,powerPreference:lowEndDevice||classicEdition?'low-power':'high-performance',stencil:false,depth:true,preserveDrawingBuffer:false});
-    }catch(firstRendererError){
-      console.warn('Frankfurt Life: Standard-WebGL-Initialisierung fehlgeschlagen, versuche Kompatibilitätsmodus.',firstRendererError);
-      const fallbackCanvas=document.createElement('canvas');
-      renderer=new THREE.WebGLRenderer({canvas:fallbackCanvas,antialias:false,alpha:false,stencil:false,depth:true,powerPreference:'high-performance',preserveDrawingBuffer:false});
-    }
+    // WebGPU initialisieren. Es gibt absichtlich keinen WebGL-Fallback.
+    if(!navigator.gpu)throw new Error('Dieser Browser oder Grafiktreiber unterstützt WebGPU nicht. Bitte einen aktuellen Browser mit WebGPU-Unterstützung verwenden.');
+    renderer=new THREE.WebGPURenderer({antialias:!lowEndDevice&&!classicEdition,forceWebGL:false});
+    await renderer.init();
     renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,classicEdition?.48:lowEndDevice?.52:1));
     renderer.outputColorSpace=THREE.SRGBColorSpace;
     renderer.toneMapping=THREE.ACESFilmicToneMapping;
     renderer.toneMappingExposure=classicEdition?.92:1.08;
-    renderer.useLegacyLights=false;
+    if('useLegacyLights' in renderer)renderer.useLegacyLights=false;
     renderer.setClearColor(0x91b1c8,1);
     renderer.shadowMap.type=THREE.PCFSoftShadowMap;
     renderer.shadowMap.enabled=false;

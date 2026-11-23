@@ -1981,7 +1981,7 @@ function makeCar(x,z,color,police=false,model='sedan',performanceOverride=null){
   for(const side of [-1,1])for(const end of [-1,1]){
     const signalMat=new THREE.MeshStandardMaterial({color:0xffa326,emissive:0xff7a08,emissiveIntensity:2.2,roughness:.3});
     const signal=new THREE.Mesh(new THREE.BoxGeometry(.13,.055,.035),signalMat);
-    signal.position.set(side*W*.43,.78,end*L*.535);signal.name='flTurnSignal';signal.visible=false;car.add(signal);turnSignalParts.push(signal);
+    signal.position.set(side*W*.43,.78,end*L*.535);signal.name='flTurnSignal';signal.userData.turnSide=side<0?'left':'right';signal.visible=false;car.add(signal);turnSignalParts.push(signal);
   }
   car.userData.turnSignalParts=turnSignalParts;
   flLoadVehicleVisual(car,police?'police':model,color,W,L);
@@ -3972,7 +3972,7 @@ function toggleVehicle(){
     driving=true;flEngineOn=false;carSpeed=0;carSlip=0;carYawRate=0;cameraLookOffset=0;yaw=jobCar.rotation.y-Math.PI;
     if(flCharacterType==='wheelchair')flStoreWheelchairInCar(true);
     speedometerHud.classList.remove('hidden');
-    if(flCharacterType!=='wheelchair')status.textContent='IM FAHRZEUG · M MOTOR STARTEN · WASD FAHREN · F AUSSTEIGEN';
+    if(flCharacterType!=='wheelchair')status.textContent='IM FAHRZEUG · M MOTOR STARTEN · WASD FAHREN · Z/X BLINKER · B WARNBLINKER · F AUSSTEIGEN';
   }else{
     driving=false;flEngineOn=false;carSpeed=0;carSlip=0;carYawRate=0;cameraLookOffset=0;
     speedometerHud.classList.add('hidden');
@@ -4023,7 +4023,7 @@ function loop(now=0){
   if(jobCar?.userData?.turnSignalParts){
     const blinkOn=(Math.floor(performance.now()/420)%2)===0;
     jobCar.userData.turnSignalParts.forEach((part,index)=>{
-      const side=index%2===0?'left':'right';
+      const side=part.userData.turnSide;
       part.visible=blinkOn&&(flTurnSignal==='hazard'||flTurnSignal===side);
     });
   }

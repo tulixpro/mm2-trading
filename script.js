@@ -2053,6 +2053,22 @@ function showIntroTutorialScene(index){
  const next=introTutorial.querySelector('#tutorialNext');next.innerHTML=index===introTutorialScenes.length-1?'STADT BETRETEN <span>→</span>':'WEITER <span>→</span>';
  const content=introTutorial.querySelector('.tutorial-content');content.classList.remove('tutorial-scene-change');void content.offsetWidth;content.classList.add('tutorial-scene-change');
 }
+function startIntroCinematic(){
+ if(!viewport)return;
+ const overlay=document.createElement('section');overlay.className='opening-cinematic';overlay.setAttribute('aria-label','Frankfurt Life Intro-Cutscene');
+ overlay.innerHTML='<div class="opening-sky"><div class="opening-sun"></div><div class="opening-tower t1"></div><div class="opening-tower t2"></div><div class="opening-tower t3"></div><div class="opening-tower t4"></div><div class="opening-river"></div><div class="opening-road"></div><div class="opening-car"></div></div><div class="opening-letterbox top"></div><div class="opening-letterbox bottom"></div><div class="opening-copy"><small id="openingKicker">FRANKFURT AM MAIN · 06:42 UHR</small><h2 id="openingTitle">EINE NEUE STADT.</h2><p id="openingText">Ein neuer Anfang. Tausend Wege.</p></div><div class="opening-count" id="openingCount">01 / 03</div><button type="button" class="opening-skip">CUTSCENE ÜBERSPRINGEN ⏭</button>';
+ viewport.appendChild(overlay);document.exitPointerLock?.();
+ const scenes=[
+  ['FRANKFURT AM MAIN · 06:42 UHR','EINE NEUE STADT.','Ein neuer Anfang. Tausend Wege.'],
+  ['ZWISCHEN SKYLINE UND MAIN','DEIN ALLTAG BEGINNT.','Entdecke Straßen, Menschen und neue Möglichkeiten.'],
+  ['FRANKFURT LIFE','DEINE STADT. DEIN LEBEN.','Steig ein und schreib deine eigene Geschichte.']
+ ];
+ let index=0,timer=null,finished=false;
+ const show=()=>{const d=scenes[index];overlay.querySelector('#openingKicker').textContent=d[0];overlay.querySelector('#openingTitle').textContent=d[1];overlay.querySelector('#openingText').textContent=d[2];overlay.querySelector('#openingCount').textContent='0'+(index+1)+' / 03';overlay.classList.remove('scene-change');void overlay.offsetWidth;overlay.classList.add('scene-change');};
+ const finish=()=>{if(finished)return;finished=true;if(timer)clearTimeout(timer);overlay.remove();startIntroTutorial();};
+ const advance=()=>{if(finished)return;index++;if(index>=scenes.length){finish();return;}show();timer=setTimeout(advance,3900);};
+ overlay.querySelector('.opening-skip').addEventListener('click',finish);show();timer=setTimeout(advance,3900);
+}
 function startIntroTutorial(){
  if(flStorage.getItem('flIntroTutorialDone')==='yes'||!introTutorial)return;
  introTutorial.classList.remove('hidden');document.exitPointerLock?.();showIntroTutorialScene(0);
@@ -4068,7 +4084,7 @@ function begin(){
     renderer.shadowMap.type=THREE.PCFSoftShadowMap;
     renderer.shadowMap.enabled=false;
     sunLight=null;hemiLight=null;
-    makeCity();buildBreakableProps();buildInGameJobs();buildShopInteraction();buildPhone();document.querySelector("#openSettings")?.addEventListener("click",()=>{if(phonePanel?.classList.contains("hidden"))phonePanel.classList.remove("hidden");showPhoneHome();openPhoneApp("settings");document.exitPointerLock?.();});buildDealerPanel();buildMiniMap();buildGamepadStatus();flBuildStatus();applyQuality();viewport.appendChild(renderer.domElement);buildPerformanceHud();buildMobileControls();flLoadGame();flApplyWeather();resize();loop();startIntroTutorial();
+    makeCity();buildBreakableProps();buildInGameJobs();buildShopInteraction();buildPhone();document.querySelector("#openSettings")?.addEventListener("click",()=>{if(phonePanel?.classList.contains("hidden"))phonePanel.classList.remove("hidden");showPhoneHome();openPhoneApp("settings");document.exitPointerLock?.();});buildDealerPanel();buildMiniMap();buildGamepadStatus();flBuildStatus();applyQuality();viewport.appendChild(renderer.domElement);buildPerformanceHud();buildMobileControls();flLoadGame();flApplyWeather();resize();loop();startIntroCinematic();
     renderer.domElement.tabIndex=0;
     renderer.domElement.addEventListener('click',()=>{renderer.domElement.focus();if(!document.fullscreenElement){try{document.documentElement.requestFullscreen?.().catch(()=>{});}catch(_){}}if(!phonePanel||phonePanel.classList.contains('hidden')){try{const result=renderer.domElement.requestPointerLock?.();if(result?.catch)result.catch(()=>{status.textContent='MAUSZIEHEN ZUM UMSEHEN';});}catch(_){status.textContent='MAUSZIEHEN ZUM UMSEHEN';}}});
     renderer.domElement.addEventListener('pointerdown',e=>{if(e.button!==0||locked)return;lookDrag=true;lastPointerX=e.clientX;lastPointerY=e.clientY;});

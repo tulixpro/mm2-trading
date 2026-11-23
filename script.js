@@ -1,9 +1,9 @@
 const editionParam=new URLSearchParams(location.search).get('edition');
 const classicEdition=editionParam==='sanandreas'||editionParam==='classic';
 if(classicEdition){document.body.classList.add('classic-edition');document.title='Frankfurt Life San Andreas – Retro-3D';}else{document.body.classList.add('modern-edition');document.title='Frankfurt Life 3D – Moderne Edition';}
-const THREE = await import('./node_modules/three/build/three.module.js').catch(()=>import('https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js'));
-
-const {GLTFLoader}=await import('./node_modules/three/examples/jsm/loaders/GLTFLoader.js').catch(()=>import('https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/loaders/GLTFLoader.js'));
+// One shared Three.js module URL in browser and Electron; GLTFLoader's bare import is resolved by game.html's import map.
+const THREE = await import('https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js');
+const {GLTFLoader}=await import('https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/loaders/GLTFLoader.js');
 const flVehicleLoader=new GLTFLoader();
 const flVehicleAssets={
   hatch:'./assets/models/hatchback.lod1.glb',
@@ -2083,41 +2083,43 @@ function startCutscene(jobName){
  cutsceneOverlay.querySelector('.cinema-kicker').textContent='FRANKFURT LIFE · KAPITEL '+String(chapter).padStart(2,'0');
  cutsceneOverlay.querySelector('#cinemaTitle').textContent=story[0];
  cutsceneOverlay.querySelector('#cinemaCaption').textContent=story[1]+' Dein Auftrag: '+jobName+'.';
- cutsceneOverlay.querySelector('#cinemaCount').textContent='FILMSEQUENZ · 01 / 05';
+ cutsceneOverlay.querySelector('#cinemaCount').textContent='FILMSEQUENZ · 01 / 07';
 }
 function finishCutscene(){if(!cutscene)return;cutscene=null;cutsceneOverlay?.classList.add('hidden');if(jobCar){camera.position.set(jobCar.position.x+4,3.1,jobCar.position.z+7);yaw=jobCar.rotation.y-Math.PI;}status.textContent='MISSION BEREIT · STEIGE MIT F INS AUTO';}
 function updateCutscene(dt){
- if(!cutscene||!camera)return;
- cutsceneElapsed+=dt;
- const t=cutsceneElapsed,car=cutscene.target,angle=cutscene.originYaw;
- const title=cutsceneOverlay.querySelector('#cinemaTitle'),caption=cutsceneOverlay.querySelector('#cinemaCaption'),count=cutsceneOverlay.querySelector('#cinemaCount');
- if(t<2.8){
-  const k=THREE.MathUtils.smoothstep(t/2.8,0,1);
-  camera.position.set(car.x+25*(1-k)+8*k,16*(1-k)+6*k,car.z+24*(1-k)+12*k);
-  camera.lookAt(car.x,1,car.z);count.textContent='FILMSEQUENZ · 01 / 05 · FRANKFURT AUS DER LUFT';
-  caption.textContent=cutscene.story[1];
- }else if(t<5.4){
-  const k=(t-2.8)/2.6,a=angle+Math.PI*.72*k;
-  camera.position.set(car.x+Math.sin(a)*7,2.6+Math.sin(k*Math.PI)*.65,car.z+Math.cos(a)*7);
-  camera.lookAt(car.x,.9,car.z);count.textContent='FILMSEQUENZ · 02 / 05 · KAMERARUNDFAHRT';
-  caption.textContent='Ein neuer Auftrag wartet. '+cutscene.jobName+'.';
- }else if(t<7.8){
-  const k=(t-5.4)/2.4;
-  camera.position.set(car.x+Math.sin(angle+Math.PI*.5)*3.1,1.15+k*.2,car.z+Math.cos(angle+Math.PI*.5)*3.1);
-  camera.lookAt(car.x,1,car.z);count.textContent='FILMSEQUENZ · 03 / 05 · DETAILS';
-  caption.textContent='Dein Fahrzeug ist bereit. Prüfe dein Ziel und mach dich auf den Weg.';
- }else if(t<10.8){
-  const k=(t-7.8)/3;
-  camera.position.set(car.x-Math.sin(angle)*8*(1+k*.35),3.2,car.z-Math.cos(angle)*8*(1+k*.35));
-  camera.lookAt(car.x,1,car.z);count.textContent='FILMSEQUENZ · 04 / 05 · AUFBRUCH';
-  caption.textContent='Jede Fahrt bringt dich deinem nächsten Kapitel näher.';
- }else if(t<13.2){
-  const k=(t-10.8)/2.4;
-  camera.position.set(car.x+4*(1-k)+2*k,3.1,car.z+7*(1-k)+5*k);
-  camera.lookAt(car.x,1,car.z);count.textContent='FILMSEQUENZ · 05 / 05 · DEIN EINSATZ';
-  title.textContent=cutscene.story[0];
-  caption.textContent='Kapitel '+cutscene.chapter+' · '+cutscene.jobName+' — Steig ein und starte deinen Auftrag.';
- }else finishCutscene();
+  if(!cutscene||!camera)return;
+  cutsceneElapsed+=dt;
+  const t=cutsceneElapsed,car=cutscene.target,angle=cutscene.originYaw;
+  const title=cutsceneOverlay.querySelector('#cinemaTitle'),caption=cutsceneOverlay.querySelector('#cinemaCaption'),count=cutsceneOverlay.querySelector('#cinemaCount');
+  const smooth=k=>THREE.MathUtils.smoothstep(Math.max(0,Math.min(1,k)),0,1);
+  if(t<3.4){
+    const k=smooth(t/3.4);
+    camera.position.set(car.x+31*(1-k)+10*k,19*(1-k)+7*k,car.z+29*(1-k)+15*k);
+    camera.lookAt(car.x,1,car.z);count.textContent='FILMSEQUENZ · 01 / 07 · FRANKFURT AUS DER LUFT';caption.textContent=cutscene.story[1];
+  }else if(t<6.8){
+    const k=(t-3.4)/3.4,a=angle+Math.PI*.9*k;
+    camera.position.set(car.x+Math.sin(a)*8.5,3.2+Math.sin(k*Math.PI)*1.1,car.z+Math.cos(a)*8.5);
+    camera.lookAt(car.x,1,car.z);count.textContent='FILMSEQUENZ · 02 / 07 · KAMERARUNDFAHRT';caption.textContent='Die Stadt lebt – und deine Geschichte beginnt genau hier.';
+  }else if(t<9.8){
+    const k=smooth((t-6.8)/3);
+    camera.position.set(car.x+Math.sin(angle+Math.PI*.5)*(4.4-1.1*k),1.65,car.z+Math.cos(angle+Math.PI*.5)*(4.4-1.1*k));
+    camera.lookAt(car.x,.95,car.z);count.textContent='FILMSEQUENZ · 03 / 07 · NAHAUFNAHME';caption.textContent='Ein kurzer Blick auf dein Fahrzeug, bevor der erste Auftrag startet.';
+  }else if(t<12.8){
+    const k=(t-9.8)/3;
+    camera.position.set(car.x-Math.sin(angle)*5,2.2+k*.35,car.z-Math.cos(angle)*5);
+    camera.lookAt(car.x,1,car.z);count.textContent='FILMSEQUENZ · 04 / 07 · DEIN STANDORT';caption.textContent='Neue Straßen, neue Gesichter und viele Möglichkeiten warten auf dich.';
+  }else if(t<16.2){
+    const k=smooth((t-12.8)/3.4);
+    camera.position.set(car.x-Math.sin(angle)*(8+5*k),3.3+1.1*k,car.z-Math.cos(angle)*(8+5*k));
+    camera.lookAt(car.x,1,car.z);count.textContent='FILMSEQUENZ · 05 / 07 · AUFBRUCH';caption.textContent='Dein Auftrag: '+cutscene.jobName+'. Mach dich bereit für deine erste Fahrt.';
+  }else if(t<19.2){
+    const k=smooth((t-16.2)/3);
+    camera.position.set(car.x+4*(1-k)+2*k,3.1,car.z+7*(1-k)+5*k);
+    camera.lookAt(car.x,1,car.z);count.textContent='FILMSEQUENZ · 06 / 07 · DEIN EINSATZ';title.textContent=cutscene.story[0];caption.textContent='Kapitel '+cutscene.chapter+' · '+cutscene.jobName+' — Steig ein und starte deinen Auftrag.';
+  }else if(t<20.4){
+    camera.position.set(car.x+2,3.1,car.z+5);camera.lookAt(car.x,1,car.z);
+    count.textContent='FILMSEQUENZ · 07 / 07 · LOS GEHT’S';caption.textContent='Drücke F zum Einsteigen und M, um den Motor zu starten.';
+  }else finishCutscene();
 }
 function buildInGameJobs(){
  jobPanel=document.createElement('div');jobPanel.id='inGameJobs';jobPanel.className='ingame-jobs hidden';
@@ -4073,8 +4075,12 @@ function begin(){
       if(!locked)return;applyMouseLook(e.movementX,e.movementY);
     });
   }catch(e){
-    status.textContent='3D NICHT VERFÜGBAR';
-    viewport.innerHTML='<div class="game-placeholder"><div class="placeholder-title">3D-DEMO NICHT<br><em>VERFÜGBAR</em></div><p>Dein Browser oder deine Grafikkarte unterstützt WebGL möglicherweise nicht.</p></div>';
+    console.error('Frankfurt Life konnte die 3D-Stadt nicht starten:',e);
+    status.textContent='3D-START FEHLGESCHLAGEN';
+    const detail=String(e?.message||e||'Unbekannter Fehler').slice(0,220);
+    viewport.innerHTML='<div class="game-placeholder"><div class="placeholder-title">3D-START<br><em>FEHLGESCHLAGEN</em></div><p>Die 3D-Engine konnte nicht initialisiert werden. Prüfe die Browser-Grafikbeschleunigung und lade die Seite danach neu.</p><p class="game-error-detail"></p><button type="button" id="retry3D">ERNEUT VERSUCHEN</button></div>';
+    const errorLine=viewport.querySelector('.game-error-detail');if(errorLine)errorLine.textContent='Technischer Hinweis: '+detail;
+    viewport.querySelector('#retry3D')?.addEventListener('click',()=>location.reload());
   }
 }
 startButton?.addEventListener('click',begin);

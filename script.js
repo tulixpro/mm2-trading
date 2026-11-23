@@ -1464,7 +1464,7 @@ function makePedestrian(x,z,index){
 }
 function makeCar(x,z,color,police=false,model='sedan',performanceOverride=null){
   const car=new THREE.Group();
-  const paint=new THREE.MeshPhysicalMaterial({color,roughness:.2,metalness:.68,clearcoat:1,clearcoatRoughness:.055,envMapIntensity:1.85});
+  const paint=new THREE.MeshPhysicalMaterial({color,roughness:classicEdition?.78:.2,metalness:classicEdition?.18:.68,clearcoat:classicEdition?0:1,clearcoatRoughness:classicEdition?.5:.055,envMapIntensity:classicEdition?.45:1.85});
   const glass=new THREE.MeshPhysicalMaterial({color:0x182b3a,roughness:.075,metalness:.03,clearcoat:1,clearcoatRoughness:.08,transparent:true,opacity:.2,depthWrite:false,envMapIntensity:1.2});
   const black=new THREE.MeshStandardMaterial({color:0x10151b,roughness:.58});
   const mirrorFinish=new THREE.MeshPhysicalMaterial({color:0x263744,metalness:.88,roughness:.12,clearcoat:1,clearcoatRoughness:.045,envMapIntensity:1.8});
@@ -1705,7 +1705,7 @@ function makeCar(x,z,color,police=false,model='sedan',performanceOverride=null){
       fogLamp.position.set(side*W*.34,.49,L*.535);car.add(fogLamp);
     }
   }
-  car.userData.damageParts={paint,bumper,crack,frontBumper,rearBumper,hoodDent,smoke,scratches,sideDents,headlights,originalColor:paint.color.getHex()};
+  if(classicEdition){const agedChrome=new THREE.MeshStandardMaterial({color:0x89908e,metalness:.72,roughness:.48}),rubberBand=new THREE.MeshStandardMaterial({color:0x292b29,roughness:.98});for(const end of [-1,1]){const steel=new THREE.Mesh(new THREE.BoxGeometry(W*1.045,.13,.2),agedChrome);steel.position.set(0,.48,end*(L*.515));car.add(steel);const rubber=new THREE.Mesh(new THREE.BoxGeometry(W*.72,.045,.205),rubberBand);rubber.position.set(0,.48,end*(L*.522));car.add(rubber);for(const side of [-1,1]){const guard=new THREE.Mesh(new THREE.BoxGeometry(.11,.23,.22),agedChrome);guard.position.set(side*W*.39,.49,end*(L*.52));car.add(guard);}}for(const side of [-1,1]){for(const wz of [-L*.32,L*.32]){const cap=new THREE.Mesh(new THREE.CylinderGeometry(.19,.19,.025,16),agedChrome);cap.rotation.z=Math.PI/2;cap.position.set(side*(W*.51+.13),.42,wz);car.add(cap);}const trim=new THREE.Mesh(new THREE.BoxGeometry(.035,.035,L*.68),agedChrome);trim.position.set(side*W*.505,.72,-.02);car.add(trim);for(let n=0;n<3;n++){const rust=new THREE.Mesh(new THREE.BoxGeometry(.018,.025,.12+(n%2)*.12),new THREE.MeshStandardMaterial({color:n%2?0x76503a:0x9a6745,roughness:1}));rust.position.set(side*W*.506,.56+n*.09,-.9+n*.73);car.add(rust);}}const plate=new THREE.Mesh(new THREE.BoxGeometry(.42,.13,.025),new THREE.MeshStandardMaterial({color:0xd7d0b8,roughness:1}));plate.position.set(0,.58,L*.535);car.add(plate);}car.userData.damageParts={paint,bumper,crack,frontBumper,rearBumper,hoodDent,smoke,scratches,sideDents,headlights,originalColor:paint.color.getHex()};
   // Zusätzliche Rad- und Karosseriedetails für eine deutlich ausgearbeitete Silhouette.
   const wheelTrimRubber=new THREE.MeshStandardMaterial({color:0x090c10,roughness:.96});
   const rimDark=new THREE.MeshStandardMaterial({color:0x26313b,metalness:.72,roughness:.3});
@@ -2435,7 +2435,12 @@ function toggleWorkshopLift(){
 }
 
 function createTraffic(){
- const trafficSpecs=[
+ const trafficSpecs=classicEdition?[
+  [0x77715f,'sedan'],[0x9a342b,'sedan'],[0xb5a47d,'hatch'],[0x52645b,'wagon'],[0xaaa69a,'sedan'],
+  [0x4e5961,'coupe'],[0x8c6b42,'sedan'],[0x66736b,'hatch'],[0xb6ad98,'wagon'],[0x6d3933,'sedan'],
+  [0x777c79,'coupe'],[0x9c8c68,'sedan'],[0x3d5550,'hatch'],[0x9c9a8d,'wagon'],[0x70554a,'sedan'],
+  [0xb2a58a,'sedan'],[0x51565a,'coupe'],[0x8d3930,'hatch'],[0x77715f,'wagon'],[0x9a9a91,'sedan']
+ ]:[
   [0xb9c5d0,'hatch'],[0x253e59,'sedan'],[0xc6a83a,'hatch'],[0xeeeeea,'van'],[0x7b3034,'sportback'],
   [0x374d43,'coupe'],[0x8d969d,'sedan'],[0x1d2732,'hatch'],[0xe0e4e6,'van'],[0x5b6d84,'sportback'],
   [0x9d3030,'sedan'],[0x246f65,'hatch'],[0xd7dadd,'coupe'],[0x424b5c,'van'],[0xb4a06a,'sportback'],
@@ -2907,6 +2912,7 @@ function flBuildUrbanWear(){
  for(let i=0;i<5;i++){const paper=new THREE.Mesh(new THREE.BoxGeometry(.42,.018,.3),new THREE.MeshStandardMaterial({color:i%2?0x9d957e:0x6c6557,roughness:1}));paper.position.set(8.1+Math.random()*2,.225,-205+i*2.1);paper.rotation.y=Math.random()*Math.PI;root.add(paper);}
  root.traverse(o=>{if(o.isMesh){o.castShadow=false;o.receiveShadow=false;}});scene.add(root);
 }
+function flBuildClassicStreetWear(){const root=new THREE.Group(),rust=new THREE.MeshStandardMaterial({color:0x76533d,roughness:1}),faded=new THREE.MeshStandardMaterial({color:0x817a67,roughness:1}),metal=new THREE.MeshStandardMaterial({color:0x515653,metalness:.48,roughness:.82}),sign=new THREE.MeshStandardMaterial({color:0xb8a27a,roughness:1});for(let i=0;i<7;i++){const z=-190+i*43,side=i%2?1:-1,x=side*10.1,post=new THREE.Mesh(new THREE.CylinderGeometry(.045,.065,2.45,7),rust);post.position.set(x,1.22,z);root.add(post);const board=new THREE.Mesh(new THREE.BoxGeometry(.12,.62,1.65),faded);board.position.set(x,2.55,z);root.add(board);const face=new THREE.Mesh(new THREE.BoxGeometry(.025,.43,1.42),sign);face.position.set(x+side*.07,2.55,z);root.add(face);}for(let i=0;i<8;i++){const z=-220+i*52,side=i%2?1:-1,x=side*9.55,bin=new THREE.Mesh(new THREE.BoxGeometry(.52,.82,.5),metal);bin.position.set(x,.43,z);root.add(bin);const lid=new THREE.Mesh(new THREE.BoxGeometry(.56,.07,.54),rust);lid.position.set(x,.87,z);root.add(lid);}const board=new THREE.Mesh(new THREE.BoxGeometry(.18,2.2,7.8),rust);board.position.set(12.1,4.1,-150);root.add(board);const panel=new THREE.Mesh(new THREE.BoxGeometry(.08,1.85,7.35),faded);panel.position.set(12.22,4.1,-150);root.add(panel);for(let i=0;i<5;i++){const stripe=new THREE.Mesh(new THREE.BoxGeometry(.025,.035,5.9-i*.15),metal);stripe.position.set(12.27,3.45+i*.28,-150);root.add(stripe);}root.traverse(o=>{if(o.isMesh){o.castShadow=false;o.receiveShadow=false;}});scene.add(root);}
 function makeCity(){
   const skyColor=classicEdition?0xb99a70:0x91b1c8;scene=new THREE.Scene();scene.background=new THREE.Color(skyColor);scene.fog=new THREE.Fog(skyColor,classicEdition?82:105,classicEdition?155:(liteMode?195:340));
   if(!classicEdition)flBuildReflectionEnvironment();
@@ -2929,7 +2935,7 @@ function makeCity(){
   for(let z=-300;z<225;z+=12){const line=new THREE.Mesh(new THREE.PlaneGeometry(.18,5),new THREE.MeshBasicMaterial({color:0xe5dfc5}));line.rotation.x=-Math.PI/2;line.position.set(0,.015,z);scene.add(line);}
   const sidewalkMat=new THREE.MeshStandardMaterial({color:0x92999b,roughness:.94});if(!classicEdition&&typeof document!=='undefined')flApplySurfaceMaps(sidewalkMat,'concrete',2,72,.012);
   for(const x of [-9.2,9.2]){const s=new THREE.Mesh(new THREE.BoxGeometry(3.5,.25,520),sidewalkMat);s.position.set(x,.08,-45);scene.add(s);}
-  if(!classicEdition)flBuildUrbanWear();
+  if(!classicEdition)flBuildUrbanWear();else flBuildClassicStreetWear();
   // Main-road drainage: curb channels, storm grates, moving runoff highlights and shallow puddles.
   const gutterMat=new THREE.MeshStandardMaterial({color:0x34434a,roughness:.3,metalness:.35});
   const grateMat=new THREE.MeshStandardMaterial({color:0x66747a,roughness:.48,metalness:.72});

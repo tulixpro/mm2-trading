@@ -33,6 +33,9 @@
   <span class="hint">Gamepad: A Interaktion · X Auto · Y Jobs · B Handy · LB Kamera · RB Licht</span>
 </footer>
 <script>const threeModule=location.protocol==="file:"?"./node_modules/three/build/three.module.js":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js";document.write('<script type="importmap">{"imports":{"three":"'+threeModule+'"}}<\/script>');</script>
+<script>
+(()=>{const report=message=>{const box=document.querySelector('#gameViewport .game-placeholder');const status=document.querySelector('#gameStatus');if(status)status.textContent='3D-MODUL NICHT GELADEN';if(box){box.innerHTML='<div class="placeholder-title">3D-START<br><em>NICHT MÖGLICH</em></div><p></p><button type="button" id="moduleRetry">ERNEUT VERSUCHEN</button>';box.querySelector('p').textContent=message||'Das 3D-Modul konnte nicht geladen werden. Prüfe Internetverbindung und WebGPU-Unterstützung.';box.querySelector('#moduleRetry').addEventListener('click',()=>location.reload());}};window.addEventListener('error',event=>{if(event.filename&&/script\.js|three|WebGPU/i.test(event.filename))report('Fehler beim Laden der 3D-Engine. Bitte Seite neu laden und WebGPU-Unterstützung prüfen.');});window.addEventListener('unhandledrejection',event=>{const reason=String(event.reason?.message||event.reason||'');if(/three|webgpu|module|import|gpu/i.test(reason))report('3D-Engine konnte nicht geladen werden: '+reason.slice(0,180));});})();
+</script>
 <script type="module" src="script.js"></script>
 <script>if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js").catch(()=>{}));}</script>
 </body>

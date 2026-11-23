@@ -1090,10 +1090,18 @@ function flCreateFacadeMaps(baseColor,style='office'){
  ctx.putImageData(image,0,0);
  if(style==='brick'){for(let y=0;y<512;y+=24){ctx.strokeStyle='rgba(45,40,34,.25)';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(512,y);ctx.stroke();for(let x=(Math.floor(y/24)%2)*32;x<512;x+=64){ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x,y+24);ctx.stroke();}}}
  else{ctx.strokeStyle='rgba(35,42,45,.12)';ctx.lineWidth=1;for(let y=64;y<512;y+=64){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(512,y);ctx.stroke();}for(let i=0;i<260;i++){const x=Math.random()*512,y=Math.random()*512;ctx.fillStyle='rgba(35,38,40,'+(Math.random()*.09)+')';ctx.fillRect(x,y,Math.random()*7+.5,Math.random()*2+.5);}}
- const map=new THREE.CanvasTexture(canvas);map.colorSpace=THREE.SRGBColorSpace;map.wrapS=map.wrapT=THREE.RepeatWrapping;map.anisotropy=Math.min(4,renderer?.capabilities?.getMaxAnisotropy?.()||1);
- const bump=map.clone();bump.colorSpace=THREE.NoColorSpace;bump.needsUpdate=true;const result={map,bump};flFacadeTextureCache.set(key,result);return result;
+ const map=new THREE.CanvasTexture(canvas);map.colorSpace=THREE.SRGBColorSpace;map.wrapS=map.wrapT=THREE.RepeatWrapping;map.anisotropy=Math.min(8,renderer?.capabilities?.getMaxAnisotropy?.()||1);
+ const heightCanvas=document.createElement('canvas');heightCanvas.width=heightCanvas.height=512;
+ const hctx=heightCanvas.getContext('2d'),heightImage=hctx.createImageData(512,512),hd=heightImage.data,source=ctx.getImageData(0,0,512,512).data;
+ for(let i=0;i<source.length;i+=4){const v=source[i]*.3+source[i+1]*.59+source[i+2]*.11;hd[i]=hd[i+1]=hd[i+2]=v;hd[i+3]=255;}
+ hctx.putImageData(heightImage,0,0);
+ const bump=new THREE.CanvasTexture(heightCanvas);bump.colorSpace=THREE.NoColorSpace;bump.wrapS=bump.wrapT=THREE.RepeatWrapping;bump.anisotropy=map.anisotropy;
+ const roughCanvas=document.createElement('canvas');roughCanvas.width=roughCanvas.height=512;const rctx=roughCanvas.getContext('2d');
+ rctx.fillStyle=style==='brick'?'#eeeeee':'#c9c9c9';rctx.fillRect(0,0,512,512);
+ const roughnessMap=new THREE.CanvasTexture(roughCanvas);roughnessMap.colorSpace=THREE.NoColorSpace;roughnessMap.wrapS=roughnessMap.wrapT=THREE.RepeatWrapping;
+ const result={map,bump,roughnessMap};flFacadeTextureCache.set(key,result);return result;
 }
-function flApplyFacadeMaps(material,color,style){const maps=flCreateFacadeMaps(color,style);material.map=maps.map;material.bumpMap=maps.bump;material.bumpScale=.018;material.needsUpdate=true;return material;}
+function flApplyFacadeMaps(material,color,style){const maps=flCreateFacadeMaps(color,style);material.map=maps.map;material.bumpMap=maps.bump;material.bumpScale=.018;material.roughnessMap=maps.roughnessMap;material.needsUpdate=true;return material;}
 function building(x,z,w,d,h,color){
   const g=new THREE.Group();
   const facadeMat=new THREE.MeshStandardMaterial({color,roughness:.9,metalness:.025});if(!liteMode&&typeof document!=='undefined')flApplyFacadeMaps(facadeMat,color,'office');

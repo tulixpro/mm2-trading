@@ -338,6 +338,20 @@ function flUpdateSuspensionVisuals(){
   });
  }
 }
+const flSurfaceTextureCache=new Map();
+function flCreateSurfaceMaps(kind){
+ const cached=flSurfaceTextureCache.get(kind);if(cached)return cached;
+ const canvas=document.createElement('canvas');canvas.width=512;canvas.height=512;
+ const ctx=canvas.getContext('2d'),image=ctx.createImageData(512,512),data=image.data,concrete=kind==='concrete';
+ for(let i=0;i<data.length;i+=4){const n=(Math.random()-.5)*(concrete?30:42),base=concrete?151:83;data[i]=base+n;data[i+1]=(concrete?151:91)+n;data[i+2]=(concrete?146:101)+n;data[i+3]=255;}
+ ctx.putImageData(image,0,0);
+ for(let i=0;i<(concrete?4200:8500);i++){const x=Math.random()*512,y=Math.random()*512,r=Math.random()*(concrete?1.8:1.35)+.25,shade=Math.random()>.5?255:18;ctx.fillStyle='rgba('+shade+','+shade+','+shade+','+(Math.random()*(concrete?.16:.22))+')';ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();}
+ if(concrete){ctx.strokeStyle='rgba(55,59,58,.22)';ctx.lineWidth=2;for(let p=0;p<=512;p+=128){ctx.beginPath();ctx.moveTo(p,0);ctx.lineTo(p,512);ctx.stroke();ctx.beginPath();ctx.moveTo(0,p);ctx.lineTo(512,p);ctx.stroke();}}
+ else{for(let i=0;i<18;i++){const x=Math.random()*512,y=Math.random()*512;ctx.strokeStyle='rgba(35,39,43,'+(Math.random()*.22+.08)+')';ctx.lineWidth=Math.random()*2+1;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+(Math.random()-.5)*70,y+(Math.random()-.5)*55);ctx.stroke();}}
+ const map=new THREE.CanvasTexture(canvas);map.wrapS=map.wrapT=THREE.RepeatWrapping;map.colorSpace=THREE.SRGBColorSpace;map.anisotropy=Math.min(8,renderer?.capabilities?.getMaxAnisotropy?.()||1);
+ const bump=map.clone();bump.colorSpace=THREE.NoColorSpace;bump.needsUpdate=true;const result={map,bump};flSurfaceTextureCache.set(kind,result);return result;
+}
+function flApplySurfaceMaps(material,kind,repeatX,repeatY,bumpScale){const maps=flCreateSurfaceMaps(kind);maps.map.repeat.set(repeatX,repeatY);maps.bump.repeat.set(repeatX,repeatY);material.map=maps.map;material.bumpMap=maps.bump;material.bumpScale=bumpScale;material.needsUpdate=true;return material;}
 function flBuildParkingGarage(){
  const g=new THREE.Group();
  const concrete=new THREE.MeshStandardMaterial({color:0x737b82,roughness:.88});
@@ -2785,15 +2799,7 @@ function makeCity(){
   sunLight=new THREE.DirectionalLight(classicEdition?0xffc078:0xffe0b4,classicEdition?1.25:1.5);sunLight.position.set(-25,45,25);sunLight.castShadow=false;scene.add(sunLight);
   const ground=new THREE.Mesh(new THREE.PlaneGeometry(1100,900),new THREE.MeshLambertMaterial({color:0x58636b}));ground.rotation.x=-Math.PI/2;ground.position.set(0,-.12,-80);scene.add(ground);
   const asphaltMat=new THREE.MeshStandardMaterial({color:0x202a35,roughness:.94,metalness:.025});
-  if(!classicEdition&&typeof document!=='undefined'){
-    const asphaltCanvas=document.createElement('canvas');asphaltCanvas.width=256;asphaltCanvas.height=256;
-    const ac=asphaltCanvas.getContext('2d');
-    if(ac){
-      ac.fillStyle='#59616a';ac.fillRect(0,0,256,256);
-      for(let i=0;i<5200;i++){const shade=55+Math.floor(Math.random()*90);ac.fillStyle='rgba('+shade+','+shade+','+shade+','+(Math.random()*.22)+')';const size=Math.random()*2.2+.35;ac.fillRect(Math.random()*256,Math.random()*256,size,size);}
-      const asphaltTexture=new THREE.CanvasTexture(asphaltCanvas);asphaltTexture.wrapS=THREE.RepeatWrapping;asphaltTexture.wrapT=THREE.RepeatWrapping;asphaltTexture.repeat.set(5,110);asphaltTexture.colorSpace=THREE.SRGBColorSpace;asphaltTexture.anisotropy=Math.min(8,renderer?.capabilities?.getMaxAnisotropy?.()||1);asphaltMat.map=asphaltTexture;const asphaltBump=asphaltTexture.clone();asphaltBump.colorSpace=THREE.NoColorSpace;asphaltBump.needsUpdate=true;asphaltMat.bumpMap=asphaltBump;asphaltMat.bumpScale=.012;asphaltMat.needsUpdate=true;
-    }
-  }
+  if(!classicEdition&&typeof document!=='undefined')flApplySurfaceMaps(asphaltMat,'asphalt',5,110,.018);
   const road=new THREE.Mesh(new THREE.PlaneGeometry(18,520),asphaltMat);road.rotation.x=-Math.PI/2;road.position.set(0,0,-45);scene.add(road);
   // Mehrere flache, gut sichtbare Bremsschwellen auf der Hauptstraße.
   flBuildSpeedBumps();
@@ -3205,8 +3211,9 @@ function buildFrankfurtLuxuryQuarter(){
 
 function buildFrankfurtCityExpansion(){
  // Larger outer city ring: northern residential district and an eastern premium boulevard.
- const roadMat=new THREE.MeshStandardMaterial({color:0x26313b,roughness:.96});
- const pavementMat=new THREE.MeshStandardMaterial({color:0x9ca2a0,roughness:.92});
+ const roadMat=new THREE.MeshStandardMaterial({color:0x26313b,roughness:.97});
+ const pavementMat=new THREE.MeshStandardMaterial({color:0x9ca2a0,roughness:.94});
+ if(!classicEdition){flApplySurfaceMaps(roadMat,'asphalt',2,54,.016);flApplySurfaceMaps(pavementMat,'concrete',2,48,.012);}
  const curbMat=new THREE.MeshStandardMaterial({color:0x667278,roughness:.86});
  const lineMat=new THREE.MeshBasicMaterial({color:0xe5dfca});
  // Extend the central avenue north and south so the original city no longer ends abruptly.

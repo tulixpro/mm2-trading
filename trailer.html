@@ -29,11 +29,11 @@ p{color:#c3d2df;line-height:1.6;font-size:14px}
 </style>
 </head>
 <body>
-<div id="startScreen"><div class="start-card"><div class="eyebrow">FRANKFURT LIFE · LIVE GAMEPLAY</div><h1>DEINE STADT.<br><em>DEIN TRAILER.</em></h1><p>Starte die echte 3D-Spielwelt. Die Kamerafahrt wird direkt in der Game-Engine gerendert – kein vorgerendertes Video.</p><button id="start" class="primary">▶ TRAILER STARTEN</button></div></div>
+<div id="startScreen"><div class="start-card"><div class="eyebrow">FRANKFURT LIFE · LIVE GAMEPLAY</div><h1>DEINE STADT.<br><em>DEIN TRAILER.</em></h1><p>Starte die echte 3D-Spielwelt. Du spielst direkt das richtige Frankfurt-Life-Game mit normaler Steuerung – kein Cinematic-Modus.</p><button id="start" class="primary">▶ TRAILER STARTEN</button></div></div>
 <div id="loading">3D-SPIELWELT WIRD GELADEN …</div>
 <iframe id="game" title="Frankfurt Life – echte 3D-Spielwelt" allow="autoplay; fullscreen; gamepad" allowfullscreen></iframe>
 <div class="shade"></div><div class="brand">FRANKFURT LIFE · GAMEPLAY TRAILER</div>
-<div class="live"><i></i>ECHTE SPIELWELT · LIVE GERENDERT</div>
+<div class="live"><i></i>ECHTES GAMEPLAY · DU HAST DIE KONTROLLE</div>
 <div class="controls"><button id="sound" class="primary" disabled>♫ MUSIK STARTEN</button><button id="replay" disabled>↻ NEU STARTEN</button><button id="fullscreen">⛶ VOLLBILD</button></div>
 <script>
 const game=document.getElementById('game');
@@ -47,7 +47,7 @@ function launch(){
  started=true;
  startScreen.style.display='none';
  loading.style.display='grid';
- game.src='game.html?trailer=1&take='+Date.now();
+ game.src='game.html?play=1&take='+Date.now();
 }
 function sendAudio(){
  if(audioOn&&game.contentWindow)game.contentWindow.postMessage('fl-start-trailer-audio',location.origin);
@@ -66,7 +66,7 @@ sound.addEventListener('click',()=>{
 });
 replay.addEventListener('click',()=>{
  loading.style.display='grid';sound.disabled=true;replay.disabled=true;audioOn=false;sound.textContent='♫ MUSIK STARTEN';
- game.src='game.html?trailer=1&take='+Date.now();
+ game.src='game.html?play=1&take='+Date.now();
 });
 document.getElementById('fullscreen').addEventListener('click',()=>{
  document.documentElement.requestFullscreen?.();

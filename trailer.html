@@ -1,24 +1,25 @@
-<!doctype html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Frankfurt Life – In-Game Trailer</title>
+<!doctype html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Frankfurt Life – Gameplay Trailer</title>
 <style>
 *{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#07111c;color:#f4f5ef;font-family:Arial,sans-serif}
 #game{position:absolute;inset:0;width:100%;height:100%;border:0;background:#111}
-.shade{position:absolute;inset:0;pointer-events:none;background:linear-gradient(180deg,#020711aa 0%,transparent 22%,transparent 65%,#020711bb 100%)}
-.brand{position:absolute;z-index:3;top:28px;left:34px;font-size:11px;font-weight:900;letter-spacing:.28em;color:#8bdcff;text-shadow:0 2px 12px #000}
-.caption{position:absolute;z-index:3;left:6%;bottom:13%;max-width:75%;pointer-events:none;text-shadow:0 4px 22px #000}
-.caption small{color:#83dfff;font-size:10px;letter-spacing:.3em;font-weight:900}.caption h1{font-size:clamp(32px,6vw,76px);line-height:.92;margin:12px 0;font-weight:950;letter-spacing:-.04em}.caption p{margin:0;color:#e0e9ed;font-size:clamp(12px,1.5vw,17px)}
-.controls{position:absolute;z-index:5;right:26px;bottom:25px;display:flex;gap:10px;align-items:center}
-button{border:1px solid #ffffff77;border-radius:4px;background:#071626dd;color:white;padding:12px 16px;font-weight:900;letter-spacing:.06em;cursor:pointer}
+.shade{position:absolute;inset:0;pointer-events:none;background:linear-gradient(180deg,#02071188 0%,transparent 18%,transparent 72%,#02071199 100%)}
+.brand{position:absolute;z-index:3;top:24px;left:28px;font-size:11px;font-weight:900;letter-spacing:.25em;color:#8bdcff;text-shadow:0 2px 12px #000;pointer-events:none}
+.controls{position:absolute;z-index:5;right:22px;bottom:20px;display:flex;gap:9px;align-items:center}
+button{border:1px solid #ffffff77;border-radius:4px;background:#071626dd;color:white;padding:11px 14px;font-weight:900;letter-spacing:.04em;cursor:pointer}
 button.primary{background:#67c9fa;color:#061522;border-color:#67c9fa}
-.note{position:absolute;z-index:3;right:28px;top:28px;font-size:10px;letter-spacing:.15em;color:#dbe7ec;text-shadow:0 2px 8px #000}
-@media(max-width:600px){.brand{left:16px;top:16px}.caption{left:6%;bottom:18%;max-width:90%}.controls{right:12px;bottom:12px}.note{right:16px;top:50px}}
+.live{position:absolute;z-index:3;left:28px;bottom:26px;font-size:10px;letter-spacing:.16em;color:#dbe7ec;text-shadow:0 2px 8px #000;pointer-events:none}
+.live i{display:inline-block;width:7px;height:7px;border-radius:50%;background:#65e5a3;margin-right:8px;box-shadow:0 0 12px #65e5a3}
+@media(max-width:600px){.brand{left:14px;top:14px;font-size:9px}.controls{right:10px;bottom:10px;gap:6px}.controls button{padding:9px;font-size:10px}.live{left:14px;bottom:18px;font-size:8px}}
 </style></head><body>
-<iframe id="game" src="game.html?trailer=1" title="Frankfurt Life – echte Spielgrafik"></iframe>
-<div class="shade"></div><div class="brand">FRANKFURT LIFE · OFFIZIELLER IN-GAME TRAILER</div>
-<div class="note">ORIGINAL GAME ENGINE · THREE.JS</div>
-<div class="caption"><small>FRANKFURT AM MAIN</small><h1>DEINE STADT.<br><span style="color:#69caff">DEIN LEBEN.</span></h1><p>Die echte Spielwelt. Direkt aus Frankfurt Life gerendert.</p></div>
-<div class="controls"><button id="sound" class="primary">♫ MUSIK STARTEN</button><button id="fullscreen">⛶ VOLLBILD</button></div>
+<iframe id="game" src="game.html?trailer=1" title="Frankfurt Life – echte 3D-Spielwelt"></iframe>
+<div class="shade"></div><div class="brand">FRANKFURT LIFE · GAMEPLAY TRAILER</div>
+<div class="live"><i></i>ECHTE SPIELWELT · LIVE GERENDERT</div>
+<div class="controls"><button id="sound" class="primary">♫ MUSIK STARTEN</button><button id="replay">↻ NEU STARTEN</button><button id="fullscreen">⛶ VOLLBILD</button></div>
 <script>
 const game=document.getElementById('game'),sound=document.getElementById('sound');let audioOn=false;
+function sendAudio(){if(audioOn)game.contentWindow.postMessage('fl-start-trailer-audio','*');}
+game.addEventListener('load',()=>setTimeout(sendAudio,900));
 sound.addEventListener('click',()=>{audioOn=!audioOn;game.contentWindow.postMessage(audioOn?'fl-start-trailer-audio':'fl-stop-trailer-audio','*');sound.textContent=audioOn?'♫ MUSIK AN':'♫ MUSIK STARTEN';});
+document.getElementById('replay').addEventListener('click',()=>{game.src='game.html?trailer=1&take='+Date.now();});
 document.getElementById('fullscreen').addEventListener('click',()=>{document.documentElement.requestFullscreen?.();});
 </script></body></html>

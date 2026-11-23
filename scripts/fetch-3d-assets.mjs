@@ -59,5 +59,5 @@ const license = [
   'Source: https://tevy.dev/models',
   'Downloaded files are used locally by the Windows application; browser builds keep a remote fallback.',
   ''
-].join('\\n');
+].join('\n');
 await writeFile(join(outDir, 'README.md'), license, 'utf8');

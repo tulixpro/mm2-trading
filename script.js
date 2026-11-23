@@ -5,7 +5,8 @@ if(classicEdition){document.body.classList.add('classic-edition');document.title
 // The browser edition keeps using the CDN so GitHub Pages needs no node_modules folder.
 const flDesktopBuild=location.protocol==='file:';
 // Reiner WebGPU-Renderer: bewusst kein WebGL-Fallback.
-const THREE=await import(flDesktopBuild?'./node_modules/three/build/three.webgpu.js':'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.webgpu.js');
+const THREE=await import(flDesktopBuild?'./node_modules/three/build/three.module.js':'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js');
+const {WebGPURenderer}=await import(flDesktopBuild?'./node_modules/three/examples/jsm/renderers/webgpu/WebGPURenderer.js':'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/renderers/webgpu/WebGPURenderer.js');
 const {GLTFLoader}=await import(flDesktopBuild?'./node_modules/three/examples/jsm/loaders/GLTFLoader.js':'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/loaders/GLTFLoader.js');
 const flVehicleLoader=new GLTFLoader();
 const flVehicleAssets={
@@ -4129,7 +4130,7 @@ async function begin(){
   try{
     // WebGPU initialisieren. Es gibt absichtlich keinen WebGL-Fallback.
     if(!navigator.gpu)throw new Error('Dieser Browser oder Grafiktreiber unterstützt WebGPU nicht. Bitte einen aktuellen Browser mit WebGPU-Unterstützung verwenden.');
-    renderer=new THREE.WebGPURenderer({antialias:false,forceWebGL:false});
+    renderer=new WebGPURenderer({antialias:false});
     await renderer.init();
     renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,classicEdition?.40:lowEndDevice?.52:1));
     renderer.outputColorSpace=THREE.SRGBColorSpace;

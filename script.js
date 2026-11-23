@@ -2079,8 +2079,17 @@ function flStartCinematicMusic(){
 window.addEventListener('message',e=>{if(e.data==='fl-start-trailer-audio')flStartCinematicMusic();if(e.data==='fl-stop-trailer-audio'&&flCinematicAudio){flCinematicAudio.suspend();if(flCinematicMusicTimer){clearInterval(flCinematicMusicTimer);flCinematicMusicTimer=null;}}});
 function startIntroCinematic(){
  if(!viewport||!camera||!renderer)return;
- const trailerMode=new URLSearchParams(location.search).get('trailer')==='1';
- if(!trailerMode)flStartCinematicMusic();
+ const launchParams=new URLSearchParams(location.search);
+ const trailerMode=launchParams.get('trailer')==='1';
+ const directPlay=launchParams.get('play')==='1';
+ // Trailer/Play-Modus startet direkt die reguläre, steuerbare Spielwelt.
+ if(trailerMode||directPlay){
+  flOpeningCinematic=false;
+  camera.position.set(0,2.1,14);yaw=0;pitch=0;camera.rotation.order='YXZ';camera.rotation.y=yaw;camera.rotation.x=pitch;
+  if(directPlay)startIntroTutorial();
+  return;
+ }
+ flStartCinematicMusic();
  flOpeningCinematic=true;document.exitPointerLock?.();
  const overlay=document.createElement('div');overlay.className='opening-cinematic game-world-cinematic';
  overlay.innerHTML='<div class="opening-letterbox top"></div><div class="opening-letterbox bottom"></div><div class="opening-copy"><small id="openingKicker">FRANKFURT AM MAIN · CITY BLOCK 01</small><h2 id="openingTitle">ANKUNFT IN FRANKFURT.</h2><p id="openingText">Die Stadt erwacht.</p></div><div class="opening-count" id="openingCount">01 / 05</div><button type="button" class="opening-skip">'+(trailerMode?'TRAILER ÜBERSPRINGEN ⏭':'INTRO ÜBERSPRINGEN ⏭')+'</button>';

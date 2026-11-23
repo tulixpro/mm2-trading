@@ -3778,7 +3778,8 @@ function buildGamepadStatus(){
  gamepadStatus.textContent='CONTROLLER: SUCHE…';viewport.appendChild(gamepadStatus);
 }
 
-function move(dt=1/60){\n  if(flOpeningCinematic)return;
+function move(dt=1/60){
+  if(flOpeningCinematic)return;
   if(activeBoat){const fs=Math.min(3,Math.max(.25,dt*60));if(keys.KeyW||keys.ArrowUp)boatSpeed=Math.min(.62,boatSpeed+.004*fs);else if(keys.KeyS||keys.ArrowDown)boatSpeed=Math.max(-.18,boatSpeed-.006*fs);else boatSpeed*=Math.pow(.994,fs);const steer=(keys.KeyA||keys.ArrowLeft?1:0)-(keys.KeyD||keys.ArrowRight?1:0);boatHeading+=steer*(.009+Math.abs(boatSpeed)*.018)*fs;activeBoat.rotation.y=boatHeading;activeBoat.position.x+=Math.sin(boatHeading)*boatSpeed*fs;activeBoat.position.z+=Math.cos(boatHeading)*boatSpeed*fs;activeBoat.position.x=Math.max(-165,Math.min(165,activeBoat.position.x));activeBoat.position.z=Math.max(333,Math.min(720,activeBoat.position.z));activeBoat.position.y=.05+Math.sin(clock.elapsedTime*3)*.07;camera.position.set(activeBoat.position.x-Math.sin(boatHeading)*8,activeBoat.position.y+4,activeBoat.position.z-Math.cos(boatHeading)*8);camera.lookAt(activeBoat.position.x,1,activeBoat.position.z+Math.cos(boatHeading)*5);coords.textContent='MOTORBOOT · '+Math.round(Math.abs(boatSpeed)*95)+' KM/H';return;}
   if(planeFlying&&airportPlane){
     const frameScale=Math.min(3,Math.max(.25,dt*60));

@@ -3522,6 +3522,36 @@ function buildBreakableProps(){
   }
   g.position.set(x,.02,z);scene.add(g);breakableProps.push({group:g,type,radius:type==='sign'?.9:.8,active:true,velocity:0});
  }
+ // Baustellen- und Grundstückszäune: verzinkte Rahmen mit Drahtgitter und Querstreben.
+ // Die Segmente liegen am Rand der Gehwege und können bei einem kräftigen Aufprall umkippen.
+ const fenceFrame=new THREE.MeshStandardMaterial({color:0x59666b,metalness:.72,roughness:.48});
+ const fenceWire=new THREE.MeshStandardMaterial({color:0x829095,metalness:.58,roughness:.62});
+ const fenceBoards=new THREE.MeshStandardMaterial({color:0xd5bd82,roughness:.92});
+ const fencePlacements=[];
+ for(const side of [-1,1])for(const z of [-238,-198,-158,122,162,202])fencePlacements.push([side*10.75,z,side]);
+ for(const [x,z,side] of fencePlacements){
+  const g=new THREE.Group();
+  // Ein Segment ist 5,2 m lang und 1,45 m hoch.
+  for(const zz of [-2.55,2.55]){
+   const post=new THREE.Mesh(new THREE.BoxGeometry(.095,1.5,.095),fenceFrame);post.position.set(0,.75,zz);g.add(post);
+   const foot=new THREE.Mesh(new THREE.BoxGeometry(.62,.09,.2),fenceFrame);foot.position.set(0,.045,zz);g.add(foot);
+  }
+  for(const y of [.18,1.36]){
+   const rail=new THREE.Mesh(new THREE.BoxGeometry(.075,.075,5.15),fenceFrame);rail.position.set(0,y,0);g.add(rail);
+  }
+  for(let zz=-2.35;zz<=2.36;zz+=.24){
+   const wire=new THREE.Mesh(new THREE.BoxGeometry(.018,1.12,.018),fenceWire);wire.position.set(0,.77,zz);g.add(wire);
+  }
+  for(let y=.28;y<=1.28;y+=.2){
+   const wire=new THREE.Mesh(new THREE.BoxGeometry(.018,.018,4.72),fenceWire);wire.position.set(0,y,0);g.add(wire);
+  }
+  // Abgenutzte Warnbretter an einzelnen Segmenten.
+  if(Math.abs(z)%80===2){
+   const board=new THREE.Mesh(new THREE.BoxGeometry(.055,.24,1.15),fenceBoards);board.position.set(side*.055,.98,0);g.add(board);
+  }
+  g.position.set(x,.02,z);scene.add(g);
+  breakableProps.push({group:g,type:'fence',radius:1.6,halfLength:2.7,active:true,velocity:0});
+ }
 }
 function applyCarTuning(car){
  if(!car?.userData?.tuningParts)return;
@@ -3590,7 +3620,9 @@ function updateBreakableCollisions(dt){
   for(const prop of breakableProps){
    if(!prop.active)continue;
    const dx=jobCar.position.x-prop.group.position.x,dz=jobCar.position.z-prop.group.position.z;
-   if(Math.hypot(dx,dz)<prop.radius+1.45){
+   const hitsFence=prop.type==='fence'&&Math.abs(dx)<prop.radius+1.05&&Math.abs(dz)<(prop.halfLength||0)+.95;
+   const hitsRoundProp=prop.type!=='fence'&&Math.hypot(dx,dz)<prop.radius+1.45;
+   if(hitsFence||hitsRoundProp){
     prop.active=false;prop.velocity=Math.max(.14,Math.abs(carSpeed)*1.4);
     prop.group.userData.falling=true;prop.group.userData.fallDir=Math.atan2(dx,dz);
     damagePlayerCar(Math.abs(carSpeed)*.9);carSpeed*=.72;carSlip*=.5;

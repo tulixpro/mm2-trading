@@ -259,3 +259,5 @@ html:fullscreen body.game-app main,html:fullscreen body.game-app #gameViewport{h
 html.trailer-mode body .hud,html.trailer-mode body .controls{display:none!important}
 html.trailer-mode body #gameViewport{position:fixed;inset:0!important;width:100vw;height:100vh;margin:0}
 html.trailer-mode body{overflow:hidden}
+
+.brand-wordmark{width:176px;height:54px;object-fit:contain;border:0;display:block;flex:0 0 auto}@media(max-width:900px){.brand-wordmark{width:132px;height:44px}}

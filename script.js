@@ -4116,7 +4116,15 @@ function begin(){
   if(cameraSelect){cameraSelect.value=flStorage.getItem('flCamera')||'follow';cameraMode=cameraSelect.value||'follow';}
   status.textContent=lowEndDevice?'OLD-SCHOOL-MODUS · STADT BLEIBT GUT ERKENNBAR':'STADT GELADEN · KLICKE INS SPIEL';
   try{
-    renderer=new THREE.WebGLRenderer({antialias:!lowEndDevice&&!classicEdition,powerPreference:lowEndDevice||classicEdition?'low-power':'high-performance',stencil:false,depth:true,preserveDrawingBuffer:false});
+    // Einige Chrome-/Windows-Treiber scheitern mit low-power oder den erweiterten Optionen.
+    // Erst die bevorzugte Konfiguration versuchen, danach einen konservativen WebGL2-Fallback.
+    try{
+      renderer=new THREE.WebGLRenderer({antialias:!lowEndDevice&&!classicEdition,powerPreference:lowEndDevice||classicEdition?'low-power':'high-performance',stencil:false,depth:true,preserveDrawingBuffer:false});
+    }catch(firstRendererError){
+      console.warn('Frankfurt Life: Standard-WebGL-Initialisierung fehlgeschlagen, versuche Kompatibilitätsmodus.',firstRendererError);
+      const fallbackCanvas=document.createElement('canvas');
+      renderer=new THREE.WebGLRenderer({canvas:fallbackCanvas,antialias:false,alpha:false,stencil:false,depth:true,powerPreference:'high-performance',preserveDrawingBuffer:false});
+    }
     renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,classicEdition?.48:lowEndDevice?.52:1));
     renderer.outputColorSpace=THREE.SRGBColorSpace;
     renderer.toneMapping=THREE.ACESFilmicToneMapping;

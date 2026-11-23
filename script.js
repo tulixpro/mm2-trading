@@ -3604,9 +3604,16 @@ function flUpdatePolicePursuit(dt){
 function damagePlayerCar(impact=.24){
  if(!jobCar||impact<.15)return;
  const severity=impact>.43?2:1;
- damageLevel=Math.min(4,damageLevel+severity);flSavedDamage=damageLevel;
+ damageLevel=Math.min(4,damageLevel+severity);flSavedDamage=damageLevel;jobCar.userData.damageLevel=damageLevel;
  applyCarDamage(jobCar,damageLevel);refreshDamageHud();
  if(damageLevel>=3)carSpeed*=.72;
+ if(damageLevel>=4){
+  carSpeed=0;carSlip=0;flEngineOn=false;flEngineStartingUntil=0;
+  if(driving)status.textContent='MOTORSCHADEN · FAHRZEUG NICHT MEHR FAHRBEREIT · T ABSCHLEPPER RUFEN';
+  if(speedometerHud)speedometerHud.classList.add('hidden');
+ }else if(damageLevel===3){
+  status.textContent='SCHWERER UNFALLSCHADEN · NUR NOCH LANGSAM FAHREN · T ABSCHLEPPER';
+ }
  flSaveGame();damageFlash=Math.min(.55,.2+impact*.6);
  if(!classicEdition&&damageLevel>=1)flStartPolicePursuit();else if(classicEdition&&damageLevel>=1)flStartPolicePursuit();
 }

@@ -6,6 +6,17 @@ const THREE = await import('./node_modules/three/build/three.module.js').catch((
 const {GLTFLoader}=await import('./node_modules/three/examples/jsm/loaders/GLTFLoader.js').catch(()=>import('https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/loaders/GLTFLoader.js'));
 const flVehicleLoader=new GLTFLoader();
 const flVehicleAssets={
+  hatch:'./assets/models/hatchback.lod1.glb',
+  sedan:'./assets/models/family-sedan.lod1.glb',
+  sportback:'./assets/models/family-sedan.lod1.glb',
+  suv:'./assets/models/suv.lod1.glb',
+  wagon:'./assets/models/estate-car.lod1.glb',
+  van:'./assets/models/estate-car.lod1.glb',
+  coupe:'./assets/models/supercar.lod1.glb',
+  super:'./assets/models/supercar.lod1.glb',
+  police:'./assets/models/police-car.lod1.glb'
+};
+const flVehicleRemoteAssets={
   hatch:'https://tevy.dev/models/hatchback/v1/lod1.glb',
   sedan:'https://tevy.dev/models/family-sedan/v1/lod1.glb',
   sportback:'https://tevy.dev/models/family-sedan/v1/lod1.glb',
@@ -16,8 +27,25 @@ const flVehicleAssets={
   super:'https://tevy.dev/models/supercar/v2/lod1.glb',
   police:'https://tevy.dev/models/police-car/v1/lod1.glb'
 };
+function flLoadGLTFScene(primaryUrl,fallbackUrl){
+  return new Promise((resolve,reject)=>{
+    flVehicleLoader.load(primaryUrl,g=>resolve(g.scene),undefined,primaryError=>{
+      if(!fallbackUrl||fallbackUrl===primaryUrl){reject(primaryError);return;}
+      flVehicleLoader.load(fallbackUrl,g=>resolve(g.scene),undefined,reject);
+    });
+  });
+}
 const flVehicleCache=new Map();
 const flEnvironmentAssets={
+  rowan:'./assets/models/rowan.lod1.glb',
+  planeTree:'./assets/models/plane-tree.lod1.glb',
+  apartment:'./assets/models/apartment-block.lod1.glb',
+  officeTower:'./assets/models/office-tower.lod1.glb',
+  housingSlab:'./assets/models/public-housing-slab.lod1.glb',
+  mixedBlock:'./assets/models/mixed-tenant-block.lod1.glb',
+  supermarket:'./assets/models/supermarket-shell.lod1.glb'
+};
+const flEnvironmentRemoteAssets={
   rowan:'https://tevy.dev/models/rowan/v1/lod1.glb',
   planeTree:'https://tevy.dev/models/plane-tree/v1/lod1.glb',
   apartment:'https://tevy.dev/models/apartment-block/v2/lod1.glb',
@@ -32,7 +60,7 @@ function flLoadEnvironmentVisual(host,assetKey,fitSize,hideExisting=false){
   const url=flEnvironmentAssets[assetKey];
   let pending=flEnvironmentCache.get(url);
   if(!pending){
-    pending=new Promise((resolve,reject)=>flVehicleLoader.load(url,g=>resolve(g.scene),undefined,reject));
+    pending=flLoadGLTFScene(url,flEnvironmentRemoteAssets[assetKey]);
     flEnvironmentCache.set(url,pending);
     pending.catch(()=>flEnvironmentCache.delete(url));
   }
@@ -79,12 +107,12 @@ function flBuildEnvironmentAssets(){
 function flLoadVehicleVisual(car,model,color,W,L){
   // Schwache Geräte verwenden die eingebauten Low-Poly-Fahrzeuge statt großer Remote-GLBs.
   if(liteMode)return;
-  const vehicleUrl=flVehicleAssets[model]?.replace('/lod1.glb',qualitySelect?.value==='ultra'?'/lod0.glb':'/lod1.glb');
+  const vehicleUrl=flVehicleAssets[model]?.replace('.lod1.glb',qualitySelect?.value==='ultra'?'.lod0.glb':'.lod1.glb');
   const key=vehicleUrl?'asset:'+vehicleUrl:null;
   if(!key)return;
   let pending=flVehicleCache.get(key);
   if(!pending){
-    pending=new Promise((resolve,reject)=>flVehicleLoader.load(vehicleUrl,g=>resolve(g.scene),undefined,reject));
+    pending=flLoadGLTFScene(vehicleUrl,flVehicleRemoteAssets[model]);
     flVehicleCache.set(key,pending);
     pending.catch(()=>flVehicleCache.delete(key));
   }

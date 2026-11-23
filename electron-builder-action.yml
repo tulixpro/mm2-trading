@@ -12,6 +12,7 @@ files:
   - style.css
   - script.js
   - electron/**/*
+  - node_modules/three/**/*
   - assets/**/*
 extraMetadata:
   main: electron/main-action.cjs

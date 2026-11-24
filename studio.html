@@ -1,0 +1,13 @@
+<!doctype html>
+<html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#080d14"><title>Titan Engine Studio</title><link rel="stylesheet" href="studio.css">
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js"}}</script></head>
+<body><header><a href="launcher.html">← ZUM LAUNCHER</a><div class="brand">TITAN <span>ENGINE</span> STUDIO</div><button id="export">PROJEKT EXPORTIEREN ↓</button></header>
+<main><aside class="tools"><h1>Dein Spielprojekt</h1><p>Baue eine eigene 3D-Szene aus Grundobjekten. Dein Projekt kannst du als JSON-Datei speichern und später wieder laden.</p>
+<label>PROJEKTNAME<input id="projectName" value="Mein erstes Spiel" maxlength="48"></label>
+<h2>OBJEKTE HINZUFÜGEN</h2><button data-add="box">＋ Würfel</button><button data-add="sphere">＋ Kugel</button><button data-add="cylinder">＋ Zylinder</button><button data-add="ground">＋ Boden</button>
+<h2>AUSGEWÄHLTES OBJEKT</h2><div id="selection">Kein Objekt ausgewählt</div>
+<label>FARBE<input id="color" type="color" value="#55aaff"></label><label>GRÖSSE <input id="scale" type="range" min=".3" max="4" step=".1" value="1"></label>
+<button id="delete" class="danger">Auswahl löschen</button><button id="save">Projekt speichern ↓</button><label class="load">Projekt laden<input id="load" type="file" accept=".json,application/json"></label>
+<div class="hint">Tipp: Klicke ein Objekt in der Szene an. Mit WASD bewegst du die Kamera, mit dem Mausrad zoomst du.</div></aside>
+<section class="viewport"><div class="viewport-label">3D-VORSCHAU · TITAN ENGINE</div><div id="stage"></div><div class="bottom-hint">LINKSKLICK: AUSWÄHLEN · MAUSRAD: ZOOM</div></section></main>
+<script type="module" src="studio.js"></script></body></html>

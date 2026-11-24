@@ -4123,7 +4123,7 @@ document.addEventListener('visibilitychange',()=>{
 });
 async function begin(){
   if(started)return;started=true;flInitProceduralAudio();placeholder?.remove();
-  if(qualitySelect){const saved=flStorage.getItem('flQuality');qualitySelect.value=classicEdition||lowEndDevice?'legacy':(qualitySettings[launcherQuality]?launcherQuality:(saved&&qualitySettings[saved]?saved:(saved==='ultra'?'legacy':'high'));}
+  if(qualitySelect){const saved=flStorage.getItem('flQuality');qualitySelect.value=classicEdition||lowEndDevice?'legacy':(qualitySettings[launcherQuality]?launcherQuality:(saved&&qualitySettings[saved]?saved:(saved==='ultra'?'legacy':'high')));}
   if(fpsSelect){const validFps=['30','45','60','unlimited'];const savedFps=classicEdition?'30':(validFps.includes(launcherFps)?launcherFps:flStorage.getItem('flFps'));fpsSelect.value=validFps.includes(savedFps)?savedFps:(lowEndDevice?'30':'60');maxFps=fpsSelect.value==='unlimited'?0:Number(fpsSelect.value);}
   if(mouseSelect){mouseSelect.value=flStorage.getItem('flMouse')||'1';mouseSensitivity=Number(mouseSelect.value)||1;}
   if(fovSelect){fovSelect.value=flStorage.getItem('flFov')||'68';cameraFov=Number(fovSelect.value)||68;}

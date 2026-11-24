@@ -6,6 +6,9 @@ files:
   - launcher.html
   - launcher.css
   - launcher.js
+  - studio.html
+  - studio.css
+  - studio.js
   - game.html
   - game.css
   - script.js

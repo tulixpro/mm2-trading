@@ -20,9 +20,11 @@ on:
       - 'launcher.html'
       - 'launcher.css'
       - 'launcher.js'
+      - 'titan-engine.yml'
       - 'studio.html'
       - 'studio.css'
       - 'studio.js'
+      - 'electron/main-studio.cjs'
       - 'game.html'
       - 'manifest.webmanifest'
       - 'sw.js'
@@ -71,6 +73,11 @@ jobs:
         env:
           CSC_LINK: ${{ secrets.WINDOWS_CERTIFICATE }}
           CSC_KEY_PASSWORD: ${{ secrets.WINDOWS_CERTIFICATE_PASSWORD }}
+      - name: Build standalone Titan Engine Studio
+        run: npm run dist:engine
+        env:
+          CSC_LINK: ${{ secrets.WINDOWS_CERTIFICATE }}
+          CSC_KEY_PASSWORD: ${{ secrets.WINDOWS_CERTIFICATE_PASSWORD }}
       - name: Build separate San Andreas retro-3D edition
         run: npm run dist:classic
         env:
@@ -90,6 +97,7 @@ jobs:
             dist-action/*
             dist-legacy/*
             dist-sanandreas/*
+            dist-engine/*
           if-no-files-found: error
           retention-days: 7
 
@@ -107,5 +115,6 @@ jobs:
             dist-action/*.exe
             dist-legacy/*.exe
             dist-sanandreas/*.exe
+            dist-engine/*.exe
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -26,3 +26,6 @@
 .download-group a b{color:#a9ec7a;font-size:16px}
 .news,.settings-card,.status-box,.save-slot{border-radius:12px}
 @media(max-width:600px){.side-panel{padding:18px}.version-card{min-height:74px;padding:12px}.version-copy b{font-size:11px}}
+
+/* Titan Engine launcher identity */
+.titan-launcher-brand{display:flex;align-items:center;gap:13px;min-width:260px;color:#f5f0df;text-decoration:none}.titan-brand-mark{width:48px;height:48px;display:grid;place-items:center;border:2px solid #77e5ff;clip-path:polygon(50% 0,94% 24%,94% 76%,50% 100%,6% 76%,6% 24%);font-size:28px;font-weight:950;color:#77e5ff;text-shadow:0 0 16px #77e5ff66}.titan-brand-copy{display:flex;flex-direction:column;gap:4px}.titan-brand-copy b{font-size:21px;letter-spacing:2px;line-height:1}.titan-brand-copy b i{color:#77e5ff;font-style:normal}.titan-brand-copy small{font-size:8px;letter-spacing:2px;color:#aab9c2;font-weight:800}@media(max-width:760px){.titan-launcher-brand{min-width:0}.titan-brand-copy b{font-size:16px}.titan-brand-mark{width:40px;height:40px}}

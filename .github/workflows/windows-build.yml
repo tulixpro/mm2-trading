@@ -1,4 +1,10 @@
 name: Build Frankfurt Life for Windows
+
+# Only the newest commit should package and publish the shared beta release.
+concurrency:
+  group: frankfurt-life-windows-${{ github.ref }}
+  cancel-in-progress: true
+
 # Packages the modern and San Andreas editions after game-code or asset-catalog changes.
 
 permissions:

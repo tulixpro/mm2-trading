@@ -1,7 +1,8 @@
 import * as THREE from 'three';
+import { WebGPURenderer } from 'three/addons/renderers/webgpu/WebGPURenderer.js';
 const stage=document.querySelector('#stage'),scene=new THREE.Scene();scene.background=new THREE.Color(0x9bb5c5);scene.fog=new THREE.Fog(0x9bb5c5,24,75);
 const camera=new THREE.PerspectiveCamera(60,1,.1,200);camera.position.set(8,7,10);camera.lookAt(0,0,0);
-const renderer=new THREE.WebGLRenderer({antialias:true});renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;stage.appendChild(renderer.domElement);
+const renderer=new WebGPURenderer({antialias:false});renderer.setPixelRatio(Math.min(devicePixelRatio,1.5));await renderer.init();stage.appendChild(renderer.domElement);
 scene.add(new THREE.HemisphereLight(0xe7f5ff,0x52616a,2));const sun=new THREE.DirectionalLight(0xffffff,2.3);sun.position.set(6,12,5);sun.castShadow=true;scene.add(sun);
 const grid=new THREE.GridHelper(50,50,0x36576a,0x547080);scene.add(grid);
 const objects=[];let selected=null,serial=0;const raycaster=new THREE.Raycaster(),pointer=new THREE.Vector2();let dragging=false,lastX=0,lastY=0,angle=0,distance=15,target=new THREE.Vector3(0,0,0);
@@ -21,4 +22,5 @@ function download(data,name){const blob=new Blob([JSON.stringify(data,null,2)],{
 document.querySelector('#save').addEventListener('click',()=>download(project(),'titan-engine-projekt.json'));document.querySelector('#export').addEventListener('click',()=>download(project(),(document.querySelector('#projectName').value.trim()||'titan-projekt').replace(/[^a-z0-9-_]/gi,'-')+'.titan.json'));
 document.querySelector('#load').addEventListener('change',async e=>{const file=e.target.files[0];if(!file)return;try{const data=JSON.parse(await file.text());if(data.format!=='TitanEngineProject'||!Array.isArray(data.objects))throw Error('Ungültiges Projektformat');objects.slice().forEach(o=>scene.remove(o));objects.length=0;document.querySelector('#projectName').value=data.name||'Importiertes Projekt';data.objects.forEach(o=>add(o.type,{...o}));select(null)}catch(err){alert('Projekt konnte nicht geladen werden: '+err.message)}e.target.value=''});
 add('ground',{name:'BODEN',color:'#54765b',scale:1,position:[0,-.15,0]});add('box',{name:'STARTOBJEKT',color:'#55aaff'});
-function loop(){requestAnimationFrame(loop);updateCamera();renderer.render(scene,camera)}loop();
+async function loop(){updateCamera();try{await renderer.renderAsync(scene,camera)}catch(error){console.error('Titan Engine Studio WebGPU-Fehler:',error);document.querySelector('.viewport-label').textContent='WEBGPU-FEHLER · BITTE BROWSER-GPU PRÜFEN';return}requestAnimationFrame(loop)}
+if(!navigator.gpu){document.querySelector('.viewport-label').textContent='WEBGPU NICHT VERFÜGBAR · AKTUELLEN BROWSER VERWENDEN'}else{loop()}

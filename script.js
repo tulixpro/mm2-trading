@@ -232,7 +232,9 @@ const qualitySettings={
  ultra:{pixelRatio:1.45,shadows:true,shadowMapSize:4096,fog:340,exposure:1.12,ambient:1.55,label:'ULTRA · 4K-SCHATTEN'},
  advanced:{pixelRatio:1.05,shadows:true,shadowMapSize:2048,fog:250,exposure:1.08,ambient:1.7,label:'ERWEITERT · 2K-SCHATTEN'}
 };
-const launcherQuality=new URLSearchParams(location.search).get('quality');
+const launchParams=new URLSearchParams(location.search);
+const launcherQuality=launchParams.get('quality');
+const launcherFps=launchParams.get('fps');
 if(qualitySelect&&qualitySettings[launcherQuality]&&!classicEdition)qualitySelect.value=launcherQuality;
 let sunLight=null,hemiLight=null,flashlight=null,flashlightTarget=null,flashlightOn=false;
 function applyQuality(){
@@ -4121,8 +4123,8 @@ document.addEventListener('visibilitychange',()=>{
 });
 async function begin(){
   if(started)return;started=true;flInitProceduralAudio();placeholder?.remove();
-  if(qualitySelect){const saved=flStorage.getItem('flQuality');qualitySelect.value=lowEndDevice?'legacy':(saved&&qualitySettings[saved]?saved:(saved==='ultra'?'legacy':'high'));}
-  if(fpsSelect){const savedFps=classicEdition?'30':flStorage.getItem('flFps');fpsSelect.value=savedFps||(lowEndDevice?'30':'60');maxFps=fpsSelect.value==='unlimited'?0:Number(fpsSelect.value);}
+  if(qualitySelect){const saved=flStorage.getItem('flQuality');qualitySelect.value=classicEdition||lowEndDevice?'legacy':(qualitySettings[launcherQuality]?launcherQuality:(saved&&qualitySettings[saved]?saved:(saved==='ultra'?'legacy':'high'));}
+  if(fpsSelect){const validFps=['30','45','60','unlimited'];const savedFps=classicEdition?'30':(validFps.includes(launcherFps)?launcherFps:flStorage.getItem('flFps'));fpsSelect.value=validFps.includes(savedFps)?savedFps:(lowEndDevice?'30':'60');maxFps=fpsSelect.value==='unlimited'?0:Number(fpsSelect.value);}
   if(mouseSelect){mouseSelect.value=flStorage.getItem('flMouse')||'1';mouseSensitivity=Number(mouseSelect.value)||1;}
   if(fovSelect){fovSelect.value=flStorage.getItem('flFov')||'68';cameraFov=Number(fovSelect.value)||68;}
   if(cameraSelect){cameraSelect.value=flStorage.getItem('flCamera')||'follow';cameraMode=cameraSelect.value||'follow';}

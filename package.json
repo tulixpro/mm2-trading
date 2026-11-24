@@ -32,7 +32,10 @@
       "launcher.html",
       "launcher.css",
       "launcher.js",
-      "node_modules/three/**/*"
+      "node_modules/three/**/*",
+      "studio.html",
+      "studio.css",
+      "studio.js"
     ],
     "win": {
       "target": [

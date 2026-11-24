@@ -10,6 +10,8 @@
 <link rel="stylesheet" href="game.css"><script>if(new URLSearchParams(location.search).get("trailer")==="1")document.documentElement.classList.add("trailer-mode");</script>
 </head>
 <body class="game-app">
+<div class="titan-splash" id="titanSplash" aria-label="Titan Engine wird gestartet"><div class="titan-splash-mark"><svg viewBox="0 0 120 120" role="img" aria-label="Titan Engine"><path d="M60 5 108 32v56l-48 27L12 88V32Z" fill="none" stroke="#77e5ff" stroke-width="3"/><path d="M28 36h64M60 36v55M39 91h42" fill="none" stroke="#fff" stroke-width="8" stroke-linecap="square"/><path d="m28 36 32-19 32 19" fill="none" stroke="#77e5ff" stroke-width="4"/></svg></div><div class="titan-splash-kicker">FRANKFURT LIFE PRESENTS</div><div class="titan-splash-title">TITAN <span>ENGINE</span></div><div class="titan-splash-sub">NEXT-GEN CITY SIMULATION</div><div class="titan-splash-loader"><i></i></div><small>ENGINE WIRD INITIALISIERT</small></div>
+<script>window.setTimeout(()=>document.getElementById("titanSplash")?.classList.add("titan-splash-hidden"),2800);</script>
 <header class="hud">
   <div class="brand"><img class="brand-mark brand-wordmark" src="assets/frankfurt-life-san-andreas-logo.svg" alt="Frankfurt Life – San Andreas Edition"></div>
   <div class="hud-center"><span id="gameStatus">BEREIT ZUM START</span><span id="coords">SEKTOR 01</span></div>

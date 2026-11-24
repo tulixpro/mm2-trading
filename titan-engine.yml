@@ -1,0 +1,19 @@
+appId: de.frankfurtlife.titanengine
+productName: Titan Engine Studio
+directories:
+  output: dist-engine
+files:
+  - studio.html
+  - studio.css
+  - studio.js
+  - electron/main-studio.cjs
+  - node_modules/three/**/*
+extraMetadata:
+  main: electron/main-studio.cjs
+win:
+  target:
+    - nsis
+    - portable
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true

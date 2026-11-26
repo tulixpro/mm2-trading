@@ -101,11 +101,19 @@ function flLoadEnvironmentVisual(host,assetKey,fitSize,hideExisting=false){
 function flBuildEnvironmentAssets(){
   if(classicEdition||liteMode)return;
   const placements=[
+    // Landmark buildings and a denser ring of residential/commercial streets.
     {key:'apartment',x:-207,z:-142,fit:{x:39,y:30,z:23}},
     {key:'officeTower',x:210,z:-170,fit:{x:50,y:74,z:33}},
     {key:'housingSlab',x:-214,z:42,fit:{x:60,y:19,z:16}},
     {key:'mixedBlock',x:211,z:54,fit:{x:16,y:30,z:15}},
-    {key:'supermarket',x:-218,z:-226,fit:{x:33,y:9,z:25}}
+    {key:'supermarket',x:-218,z:-226,fit:{x:33,y:9,z:25}},
+    {key:'mixedBlock',x:-132,z:-192,fit:{x:25,y:27,z:18}},
+    {key:'apartment',x:132,z:-205,fit:{x:31,y:28,z:22}},
+    {key:'mixedBlock',x:145,z:-65,fit:{x:22,y:26,z:17}},
+    {key:'apartment',x:-145,z:-65,fit:{x:34,y:29,z:22}},
+    {key:'housingSlab',x:132,z:112,fit:{x:54,y:20,z:17}},
+    {key:'mixedBlock',x:-130,z:155,fit:{x:24,y:28,z:17}},
+    {key:'supermarket',x:218,z:190,fit:{x:34,y:10,z:26}}
   ];
   for(const item of placements){
     const host=new THREE.Group();host.position.set(item.x,0,item.z);scene.add(host);
@@ -226,7 +234,7 @@ const qualitySettings={
  minimum:{pixelRatio:.34,shadows:false,fog:92,exposure:.84,ambient:1.35,label:'ULTRA-SPARMODUS'},
  legacy:{pixelRatio:.58,shadows:false,fog:135,exposure:.94,ambient:1.55,label:'RETRO-3D'},
  low:{pixelRatio:.5,shadows:false,fog:118,exposure:.92,ambient:1.55,label:'NIEDRIG'},
- medium:{pixelRatio:.84,shadows:false,fog:180,exposure:1.02,ambient:1.85,label:'MITTEL'},
+ medium:{pixelRatio:.9,shadows:true,shadowMapSize:1024,fog:225,exposure:1.04,ambient:1.7,label:'MITTEL · ECHTZEIT-SCHATTEN'},
  high:{pixelRatio:1,shadows:true,shadowMapSize:1536,fog:245,exposure:1.08,ambient:1.75,label:'HOCH · ECHTZEIT-SCHATTEN'},
  maximum:{pixelRatio:1.15,shadows:true,shadowMapSize:2048,fog:270,exposure:1.1,ambient:1.65,label:'MAXIMAL · 2K-SCHATTEN'},
  ultra:{pixelRatio:1.45,shadows:true,shadowMapSize:4096,fog:340,exposure:1.12,ambient:1.55,label:'ULTRA · 4K-SCHATTEN'},

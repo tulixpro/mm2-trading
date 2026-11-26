@@ -197,4 +197,70 @@ vehicle("Frankfurt Police Sedan",PAINT_WHITE,police=True)
 building()
 street_props()
 tree()
+
+def road_segment():
+    clear_scene(); p=[]
+    def a(o): p.append(o); return o
+    a(cube("Asphalt road surface",(0,0,.06),(24,10,.18),ASPHALT,.04))
+    a(cube("Raised pavement left", (0,5.7,.16),(24,1.4,.32),CONCRETE,.08))
+    a(cube("Raised pavement right",(0,-5.7,.16),(24,1.4,.32),CONCRETE,.08))
+    for x in range(-10,11,4):
+        a(cube("Broken lane marking",(x,0,.16),(2.0,.13,.025),YELLOW,.01))
+    for side in (-1,1):
+        a(cube("Road edge line",(0,side*4.85,.16),(24,.09,.025),LIGHT,.01))
+        for x in range(-10,11,2):
+            a(cube("Paving joint",(x,side*5.7,.33),(.035,1.25,.012),ROOF,.004))
+    export_asset("frankfurt-road-segment.glb",p)
+
+def traffic_light():
+    clear_scene(); p=[]
+    def a(o): p.append(o); return o
+    a(cyl("Signal pole",(0,0,2.4),.09,4.8,BLACK,20))
+    a(cube("Signal housing",(.05,0,4.45),(.48,.42,1.25),BLACK,.12))
+    for z,m in ((4.82,RED_LAMP),(4.45,YELLOW),(4.08,GREEN)):
+        a(cyl("Signal lens",(.30,0,z),.135,.045,m,32,(0,math.pi/2,0)))
+    a(cube("Signal visor",(.34,0,4.82),(.18,.48,.12),BLACK,.035))
+    a(cube("Signal visor",(.34,0,4.45),(.18,.48,.12),BLACK,.035))
+    a(cube("Signal visor",(.34,0,4.08),(.18,.48,.12),BLACK,.035))
+    a(cyl("Weighted base",(0,0,.12),.24,.24,CONCRETE,24))
+    export_asset("frankfurt-traffic-light.glb",p)
+
+def street_furniture():
+    clear_scene(); p=[]
+    def a(o): p.append(o); return o
+    # Contemporary timber-and-steel public bench
+    for x in (-.85,.85):
+        a(cube("Bench leg",(x,0,.38),(.12,.72,.72),BLACK,.045))
+    for z in (.62,.82,1.02):
+        a(cube("Timber seat slat",(0,0,z),(2.0,.78,.12),BRICK,.035))
+    for z in (1.25,1.48):
+        a(cube("Timber backrest slat",(0,.34,z),(2.0,.12,.13),BRICK,.035))
+    a(cube("Bench steel crossbar",(0,.0,.55),(1.85,.09,.09),CHROME,.02))
+    export_asset("frankfurt-street-bench.glb",p)
+
+def bus_stop():
+    clear_scene(); p=[]
+    def a(o): p.append(o); return o
+    for x in (-1.9,1.9):
+        a(cube("Shelter upright",(x,0,1.55),(.12,.14,3.1),CHROME,.035))
+    a(cube("Shelter roof",(0,0,3.12),(4.1,1.55,.16),ROOF,.055))
+    a(cube("Rear glass panel",(0,.68,1.65),(3.75,.045,2.75),GLASS,.02))
+    a(cube("Side glass panel",(-1.92,0,1.65),(.045,1.3,2.75),GLASS,.02))
+    a(cube("Route information panel",(1.62,-.08,1.85),(.48,.08,1.15),SIGN,.025))
+    a(cube("Bench seat",(0,-.22,.72),(2.25,.42,.12),BRICK,.035))
+    export_asset("frankfurt-bus-stop.glb",p)
+
+def road_bollard():
+    clear_scene(); p=[]
+    base=cyl("Bollard footing",(0,0,.08),.19,.16,CONCRETE,24); p.append(base)
+    post=cyl("Steel bollard",(0,0,.62),.095,1.05,CHROME,24); p.append(post)
+    band=cyl("Reflective band",(0,0,.82),.099,.16,YELLOW,24); p.append(band)
+    cap=uv("Rounded bollard cap",(0,0,1.16),(.095,.095,.09),BLACK,20,10); p.append(cap)
+    export_asset("frankfurt-bollard.glb",p)
+
+road_segment()
+traffic_light()
+street_furniture()
+bus_stop()
+road_bollard()
 print("Asset pack complete:", OUT)

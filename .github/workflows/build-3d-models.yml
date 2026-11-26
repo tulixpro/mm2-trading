@@ -1,0 +1,55 @@
+name: Build Frankfurt Life 3D model pack
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "tools/blender/**"
+      - ".github/workflows/build-3d-models.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  build-models:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Install Blender
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y blender
+          blender --version
+      - name: Generate original Frankfurt Life models
+        env:
+          FRANKFURT_ASSET_OUT: ${{ runner.temp }}/frankfurt-life-models
+        run: |
+          blender --background --factory-startup --python tools/blender/build_frankfurt_assets.py
+      - name: Validate exported GLB files
+        run: |
+          python3 - <<'PY'
+          import json, pathlib, struct
+          root = pathlib.Path("${{ runner.temp }}/frankfurt-life-models")
+          files = sorted(root.glob("*.glb"))
+          assert len(files) >= 6, f"Expected at least 6 models, got {len(files)}"
+          for path in files:
+              data = path.read_bytes()
+              assert data[:4] == b"glTF", f"{path.name}: invalid GLB magic"
+              version, declared = struct.unpack_from("<II", data, 4)
+              assert version == 2 and declared == len(data), f"{path.name}: invalid GLB header"
+              chunk_len, chunk_type = struct.unpack_from("<II", data, 12)
+              assert chunk_type == 0x4E4F534A, f"{path.name}: missing JSON chunk"
+              doc = json.loads(data[20:20+chunk_len].decode("utf-8"))
+              assert doc.get("meshes"), f"{path.name}: no mesh data"
+              assert doc.get("materials"), f"{path.name}: no materials"
+              print(f"OK {path.name}: {len(doc['meshes'])} meshes, {len(doc.get('materials', []))} materials, {len(data)} bytes")
+          PY
+      - name: Upload GLB model pack
+        uses: actions/upload-artifact@v4
+        with:
+          name: Frankfurt-Life-Original-3D-Models
+          path: ${{ runner.temp }}/frankfurt-life-models/*.glb
+          if-no-files-found: error
+          retention-days: 30

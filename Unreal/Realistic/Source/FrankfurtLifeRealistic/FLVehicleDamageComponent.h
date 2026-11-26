@@ -11,7 +11,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FFLMechanicTowRequested, const FStri
 
 /** Gameplay damage model. Wheel visuals are assigned in the vehicle Blueprint. */
 UCLASS(ClassGroup=(FrankfurtLife), meta=(BlueprintSpawnableComponent))
-class FRANKFURTLIFEREALISTIC_API : public UActorComponent
+class FRANKFURTLIFEREALISTIC_API UFLVehicleDamageComponent : public UActorComponent
 {
     GENERATED_BODY()
 

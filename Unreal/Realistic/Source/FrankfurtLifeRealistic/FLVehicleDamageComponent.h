@@ -7,7 +7,7 @@
 class UStaticMeshComponent;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FFLVehicleDamageChanged, float, BodyHealth, float, EngineHealth, float, TyreHealth);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FFLMechanicTowRequested, const FString&, Reason);\nDECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FFLMechanicTowRequested, const FString&, Reason);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FFLMechanicTowRequested, const FString&, Reason);
 
 /** Gameplay damage model. Wheel visuals are assigned in the vehicle Blueprint. */
 UCLASS(ClassGroup=(FrankfurtLife), meta=(BlueprintSpawnableComponent))

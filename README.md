@@ -407,3 +407,11 @@ These are **project scaffolds only**, not finished playable Unreal games. The ex
 - Für schwächere Geräte bleiben reduzierte Renderauflösung und deaktivierte Echtzeit-Schatten aktiv.
 - Die Modellpakete sind kein Beleg für eine fertige AAA-Produktion: Stadtumfang, Figurenanimation, Fahrphysik, Innenräume und Laufzeittests bleiben Entwicklungsaufgaben.
 - Download-Skript: `node scripts/fetch-3d-assets.mjs`.
+
+## Eigene 3D-Modelle (Blender)
+
+Das Repository enthält jetzt einen Blender-Python-Generator für ein eigenes, modular aufgebautes Modellpaket. Er erzeugt sechs exportierte GLB-Modelle: einen Kompaktwagen, einen Kombi, einen Polizeiwagen, einen Frankfurter Mehrfamilien-/Geschäftsblock, eine Straßenlaterne und einen Platanenbaum. Die Fahrzeuge besitzen unter anderem separate Karosserie-, Glas-, Leuchten-, Stoßfänger-, Felgen- und Reifenmeshes.
+
+Die Modelle werden durch den GitHub-Actions-Workflow **Build Frankfurt Life 3D model pack** mit Blender im Headless-Modus erzeugt und als ZIP-fähiges Workflow-Artefakt **Frankfurt-Life-Original-3D-Models** bereitgestellt. Der Workflow validiert GLB-Header, Meshes und Materialien vor dem Upload. Die Quelldatei liegt unter `tools/blender/build_frankfurt_assets.py`.
+
+Diese erste Modellserie ist ein stilisierter eigener 3D-Asset-Prototyp, noch keine fotorealistischen, texturierten AAA-Modelle. Die GLB-Dateien sind ein separates Asset-Artefakt und werden noch nicht automatisch in die Unreal-Level eingebunden. Dafür folgt ein eigener Import-/Integrationsschritt samt Editor- und Laufzeittest.

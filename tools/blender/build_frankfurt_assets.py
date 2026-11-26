@@ -264,3 +264,64 @@ street_furniture()
 bus_stop()
 road_bollard()
 print("Asset pack complete:", OUT)
+
+
+def assembled_city_block():
+    """A complete, original Frankfurt/San-Andreas-inspired playable blockout scene."""
+    clear_scene()
+    p=[]
+    def a(o): p.append(o); return o
+    # Broad asphalt crossroad, raised pavements and warm retro lane markings.
+    a(cube("City block | asphalt", (0,0,.02), (76,58,.28), ASPHALT,.04))
+    a(cube("City block | east-west road", (0,0,.19), (76,13,.12), BLACK,.02))
+    a(cube("City block | north-south road", (0,0,.20), (13,58,.12), BLACK,.02))
+    for x in range(-34,35,6):
+        a(cube("City block | road dash", (x,0,.28), (3,.16,.025), YELLOW,.005))
+    for y in range(-25,26,6):
+        a(cube("City block | road dash", (0,y,.29), (.16,3,.025), YELLOW,.005))
+    # Four sidewalks and corner curb islands.
+    for y in (-8.2,8.2):
+        a(cube("City block | pavement", (0,y,.34), (76,3.2,.42), CONCRETE,.08))
+    for x in (-8.2,8.2):
+        a(cube("City block | pavement", (x,0,.35), (3.2,58,.42), CONCRETE,.08))
+    # Distinctive European mid-rise blocks with shopfronts and repeated windows.
+    palettes=[BRICK,PLASTER,CONCRETE]
+    for idx,(x,y,w,d,h) in enumerate([(-23,-19,18,14,18),(23,-19,18,14,23),(-23,19,18,14,21),(23,19,18,14,16)]):
+        facade=palettes[idx%len(palettes)]
+        a(cube("City block | building mass", (x,y,h/2+.5),(w,d,h),facade,.12))
+        a(cube("City block | roof cap", (x,y,h+0.65),(w+.35,d+.35,.35),ROOF,.05))
+        # street-facing windows on the side toward the central crossroad
+        front_y=y + (d/2+.09 if y<0 else -d/2-.09)
+        for floor in range(1,max(2,int(h//3))):
+            z=floor*2.75+1.6
+            for col in range(4):
+                wx=x-w*.36+col*w*.24
+                a(cube("City block | window frame",(wx,front_y,z),(1.8,.12,1.55),DARK,.025))
+                a(cube("City block | reflective glass",(wx,front_y+(.07 if y<0 else -.07),z),(1.55,.035,1.3),GLASS,.012))
+        a(cube("City block | shop awning",(x,front_y,h*.16+1.3),(w*.82,.65,.22),SIGN,.04))
+        for col in range(3):
+            wx=x-w*.3+col*w*.3
+            a(cube("City block | shop window",(wx,front_y,h*.16+0.65),(2.6,.08,1.5),GLASS,.02))
+    # Parked original cars, simplified but recognisable with wheels and glass.
+    for x,y,paint in [(-4,-13,PAINT_BLUE),(4,13,PAINT_SILVER),(-13,4,PAINT_WHITE),(13,-4,PAINT_BLUE)]:
+        a(cube("City block | parked car body",(x,y,1.05),(4.25,1.82,.72),paint,.2))
+        a(cube("City block | car cabin",(x-.15,y,1.68),(2.05,1.48,.65),GLASS,.14))
+        for wx in (x-1.35,x+1.35):
+            for sy in (-.96,.96):
+                a(cyl("City block | car tyre",(wx,y+sy,.68),.42,.22,BLACK,24,(math.pi/2,0,0)))
+                a(cyl("City block | wheel hub",(wx,y+sy*1.12,.68),.22,.04,CHROME,24,(math.pi/2,0,0)))
+        a(cube("City block | headlamps",(x+2.14,y,1.12),(.08,1.25,.17),LIGHT,.025))
+    # Trees, streetlights, bus shelter, traffic signals and benches.
+    for x,y in [(-12,-11),(12,11),(-30,0),(30,0)]:
+        a(cyl("City block | plane tree trunk",(x,y,2.0),.22,4.0,BARK,16))
+        a(uv("City block | leafy canopy",(x,y,4.6),(1.65,1.45,1.5),GREEN,20,12))
+    for x,y in [(-10,-9),(10,-9),(-10,9),(10,9)]:
+        a(cyl("City block | lamp post",(x,y,3.2),.07,6.4,BLACK,16))
+        a(cube("City block | lamp head",(x,y,6.35),(.55,.38,.18),LIGHT,.06))
+    # Painted crosswalks at each approach.
+    for side in (-1,1):
+        for i in range(7):
+            a(cube("City block | zebra crossing",(side*9.5,-3.0+i*.95,.31),(2.1,.42,.025),PLASTER,.01))
+    export_asset("frankfurt-san-andreas-city-block.glb",p)
+
+assembled_city_block()
